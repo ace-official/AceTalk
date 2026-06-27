@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>AceTalk | Simple Messenger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="icon-192-new.png?v=3">
+    <link rel="apple-touch-icon" href="icon-192-new.png?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --skype-blue: #00aff0;
+            --sidebar-bg: #2c3e50;
+            --chat-bg: #ffffff;
+            --call-green: #2ecc71;
+            --call-red: #e74c3c;
+            --call-purple: #8e44ad;
+            --msg-local: #f0faff;
+            --msg-remote: #f9f9f9;
+            --msg-local-border: #d1ecf1;
+            --msg-remote-border: #eee;
+            --chat-text: #333;
+            --input-area-bg: #fff;
+            --input-border: #ddd;
+            --input-bg: #fdfdfd;
+            --input-color: #333;
+            --sos-red: #e74c3c;
+            --sos-dark: #c0392b;
+            --contacts-bg: #1e2d3d;
+        }
+
+        .wallpaper-active .sidebar,
+        .wallpaper-active .main-chat,
+        .wallpaper-active .right-bar,
+        .wallpaper-active .input-area,
+        .wallpaper-active .my-status-box {
+            background: rgba(0,0,0,0.3) !important;
+            backdrop-filter: blur(15px);
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+
+        * { box-sizing: border-box; border-radius: 0 !important; }
+        button, .icon-btn,
+        button:not(:disabled):active { transform: scale(0.95) translateY(1px); }
+
+        @keyframes callPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(46,204,113,0.5); }
+            70%  { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
+            100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+        }
+
+        .icon-btn[onclick="sendMessage()"] { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease !important; }
+        .icon-btn[onclick="sendMessage()"]:hover { transform: translateX(4px) scale(1.15); }
+        .icon-btn[onclick="sendMessage()"]:active { transform: translateX(8px) scale(0.95); }
+        label.icon-btn { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease !important; cursor: pointer; }
+        label.icon-btn:hover { transform: scale(1.2) rotate(-5deg); }
+        label.icon-btn:active { transform: scale(0.9); }
+
+        @keyframes sosShake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-3px) rotate(-1deg); }
+            40%     { transform: translateX(3px) rotate(1deg); }
+            60%     { transform: translateX(-2px); }
+            80%     { transform: translateX(2px); }
+        }
+
+        body, html { height: 100%; margin: 0; font-family: 'Ubuntu', sans-serif; font-weight: 300; overflow: hidden; background-color: var(--sidebar-bg); display: flex; flex-direction: column; }
+
+        /* SPLASH */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--sidebar-bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+        .loaded #splash-screen { transform: translateY(-100%); }
+        .splash-loader { width: 50px; height: 2px; background: rgba(255,255,255,0.1); margin-top: 20px; position: relative; overflow: hidden; }
+        .splash-loader::after { content: ''; position: absolute; left: -100%; width: 100%; height: 100%; background: var(--skype-blue); animation: loading 1.5s infinite; }
+        @keyframes loading { 100% { left: 100%; } }
+
+        /* MOBILE NAV */
+        #mobile-nav { display: none; background: #1a252f; color: white; padding: 15px 20px; justify-content: space-between; align-items: center; border-bottom: 1px solid #111d28; z-index: 100; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .mobile-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+        .mobile-btn:hover { color: var(--skype-blue); }
+
+        .app-container { flex: 1; display: flex; width: 100vw; opacity: 0; position: relative; overflow: hidden; }
+        .loaded .app-container { opacity: 1; }
+
+        /* SIDEBAR & PROFILE STATUS BOX */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 25px; border-right: 1px solid #1a252f; z-index: 10; position: relative; }
+        .brand-section { margin-bottom: 25px; }
+        .brand-name { color: var(--skype-blue); font-size: 32px; font-weight: 700; margin: 0; }
+        .sidebar-slogan { font-size: 10px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 2px; }
+
+        .my-status-box { 
+            background: rgba(0,0,0,0.2); 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-left: 3px solid var(--skype-blue); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            min-height: 75px;
+        }
+        .status-header { display: flex; align-items: center; gap: 10px; }
+        .my-avatar-upload { width: 34px; height: 34px; min-width: 34px; background: #1a252f; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; cursor: pointer; border: 1px solid #34495e; overflow: hidden; }
+        .my-avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+        .status-input { flex: 1; width: 100%; background: transparent; border: none; color: white; font-weight: bold; font-size: 14px; outline: none; border-bottom: 1px solid #34495e; padding-bottom: 5px; font-family: 'Ubuntu', sans-serif; }
+
+        /* MODERN LANG SELECTOR */
+        .lang-switcher { margin-bottom: 20px; }
+        .lang-select { width: 100%; background: #1a252f; border: 1px solid #34495e; color: #ccc; padding: 10px 12px; font-family: 'Ubuntu', sans-serif; font-size: 12px; font-weight: bold; letter-spacing: 1px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="%2300aff0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; transition: border-color 0.2s ease, color 0.2s ease; }
+        .lang-select:hover { border-color: var(--skype-blue); color: white; }
+        .lang-select option { background: #1e2d3d; color: white; padding: 10px; font-weight: normal; }
+
+        /* MAIN CHAT & CONTEXT MENU */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--chat-bg); position: relative; min-width: 0; }
+        #chat-box { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+
+        #context-menu {
+            position: fixed; display: none; background: #1e2d3d; border: 1px solid #34495e; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 25000; flex-direction: column; min-width: 170px;
+        }
+        .ctx-item { padding: 12px 16px; color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-family: 'Ubuntu', sans-serif; transition: 0.2s ease; }
+        .ctx-item:hover { background: rgba(0,175,240,0.1); color: var(--skype-blue); padding-left: 20px; }
+        .ctx-item.danger:hover { background: rgba(231,76,60,0.1); color: var(--sos-red); }
+        
+        .pinned-area { background: rgba(0,175,240,0.08); border-bottom: 1px solid rgba(0,175,240,0.2); padding: 12px 30px; font-size: 13px; color: var(--skype-blue); display: none; align-items: center; justify-content: space-between; font-weight: bold; cursor: pointer; transition: 0.2s ease; }
+        .pinned-area:hover { background: rgba(0,175,240,0.15); }
+        .wallpaper-active .pinned-area { color: white; border-color: rgba(255,255,255,0.2); }
+        .msg-deleted { font-style: italic; opacity: 0.6; display: flex; align-items: center; gap: 5px; }
+
+        .msg { max-width: 70%; padding: 12px 18px; line-height: 1.6; position: relative; font-size: 14px; animation: msgIn 0.3s ease-out; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .local { background: var(--msg-local); align-self: flex-end; border: 1px solid var(--msg-local-border); border-right: 4px solid var(--skype-blue); color: var(--chat-text); cursor: context-menu; }
+        .remote { background: var(--msg-remote); align-self: flex-start; border: 1px solid var(--msg-remote-border); border-left: 4px solid #bdc3c7; color: var(--chat-text); cursor: context-menu; }
+        .msg-body { word-wrap: break-word; }
+        .msg-meta { font-size: 9px; margin-top: 5px; color: #999; display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
+
+        /* MESSAGE TICKS (SENT / DELIVERED / SEEN) */
+        .status-icon { margin-left: 4px; font-size: 11px; color: #a1a1a1; transition: color 0.2s ease; }
+        .status-icon.seen { color: var(--skype-blue); font-weight: bold; }
+
+        /* TRANSLATE BTN */
+        .translate-btn { background: none; border: none; font-size: 11px; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; transition: 0.2s; margin-right: 2px; }
+        .translate-btn:hover { opacity: 1; transform: scale(1.15); color: var(--skype-blue); }
+
+        /* SOS */
+        .msg-sos { max-width: 90%; align-self: center; background: #2d0000; border: 2px solid var(--sos-red); border-left: 6px solid var(--sos-red); color: #ff6b6b; padding: 14px 20px; font-size: 14px; animation: sosPulse 0.5s ease-out, msgIn 0.3s ease-out; cursor: default; }
+        @keyframes sosPulse { 0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.7); } 70% { box-shadow: 0 0 0 12px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); } }
+        .sos-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--sos-red); margin-bottom: 5px; }
+        .sos-from { font-size: 11px; color: #ff9999; margin-top: 6px; }
+        .sos-hop { font-size: 9px; color: #884444; margin-top: 3px; }
+
+        /* INPUT AREA */
+        .input-area { padding: 20px 30px; display: flex; gap: 15px; border-top: 1px solid var(--input-border); background: var(--input-area-bg); align-items: center; }
+        #message-input { flex: 1; padding: 14px; border: 1px solid var(--input-border); outline: none; font-size: 14px; background: var(--input-bg); color: var(--input-color); font-family: 'Ubuntu', sans-serif; }
+        .icon-btn { cursor: pointer; display: flex; align-items: center; transition: 0.2s; user-select: none; color: var(--skype-blue); }
+        .icon-btn:hover { transform: none !important; }
+
+        /* RIGHT BAR */
+        .right-bar { width: 240px; background: var(--contacts-bg); border-left: 1px solid #111d28; padding: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .contacts-header { padding: 18px 16px 12px; border-bottom: 1px solid #111d28; display: flex; justify-content: space-between; align-items: center; }
+        .contacts-title { font-size: 11px; font-weight: 700; color: #7f8c8d; letter-spacing: 1.5px; text-transform: uppercase; }
+        .contacts-count { background: var(--skype-blue); color: white; padding: 2px 7px; font-size: 10px; font-weight: bold; }
+        .contacts-section-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: #4a6278; padding: 10px 16px 4px; text-transform: uppercase; }
+        #online-list { padding: 0 8px; }
+        .contacts-divider { height: 1px; background: #111d28; margin: 8px 16px; }
+        #contacts-list { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
+        #contacts-list::-webkit-scrollbar { width: 3px; }
+        #contacts-list::-webkit-scrollbar-track { background: transparent; }
+        #contacts-list::-webkit-scrollbar-thumb { background: #34495e; }
+
+        /* CONTACT CARD */
+        .contact-card { display: flex; align-items: center; gap: 10px; padding: 9px 8px; cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s ease, border-color 0.15s ease, padding-left 0.15s ease; position: relative; }
+        .contact-card:hover { background: rgba(0,175,240,0.07); border-left-color: var(--skype-blue); padding-left: 12px; }
+        .contact-card.active { background: rgba(0,175,240,0.13); border-left-color: var(--skype-blue); }
+        .contact-card.online-now { border-left-color: var(--call-green); }
+        .contact-card.online-now:hover { border-left-color: var(--call-green); }
+
+        .contact-del-btn { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #4a6278; font-size: 15px; cursor: pointer; padding: 4px 6px; line-height: 1; transition: color 0.15s ease; }
+        .contact-del-btn:hover { color: var(--sos-red) !important; transform: translateY(-50%) scale(1.2); }
+        .contact-del-btn:active { transform: translateY(-50%) scale(0.9) !important; }
+        .contact-card:hover .contact-del-btn { display: block; }
+
+        .contact-avatar { width: 34px; height: 34px; min-width: 34px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 13px; position: relative; overflow: hidden; border: 1px solid #34495e; }
+        .contact-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .contact-online-dot { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; background: var(--call-green); border: 2px solid var(--contacts-bg); border-radius: 50% !important; z-index: 2; }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name { font-size: 12px; font-weight: 700; color: #cdd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-last { font-size: 10px; color: #4a6278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .no-contacts { padding: 20px 16px; font-size: 11px; color: #4a6278; text-align: center; line-height: 1.6; }
+
+        #chat-header { display: none; padding: 12px 30px; background: #f7f7f7; border-bottom: 1px solid #eee; align-items: center; gap: 12px; }
+        #chat-header-avatar { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 13px; overflow: hidden; border: 1px solid #ccc; }
+        #chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        #chat-header-name { font-size: 14px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 5px;}
+        #chat-header-status { font-size: 10px; color: #999; margin-top: 2px; transition: color 0.3s; }
+
+        /* Call overlay & Videos */
+        #call-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.97); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #call-overlay button:hover { filter: brightness(1.15); }
+        #call-overlay button:active { transform: scale(0.96); }
+        #call-videos { display: none; width: 100%; max-width: 800px; position: relative; margin-top: 20px; align-items: center; justify-content: center; }
+        #remote-video { width: 100%; max-height: 65vh; border: 2px solid var(--call-green); background: #000; }
+        #local-video { position: absolute; bottom: 15px; right: 15px; width: 140px; border: 2px solid var(--skype-blue); background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        #incoming-call-panel { position: fixed; bottom: 30px; right: 260px; background: #1e2d3d; border: 1px solid var(--call-green); border-left: 4px solid var(--call-green); padding: 16px 20px; z-index: 10001; display: none; flex-direction: column; gap: 10px; animation: slideInPanel 0.3s ease-out; min-width: 240px; }
+        @keyframes slideInPanel { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+        #incoming-call-name { color: white; font-weight: bold; font-size: 14px; }
+        #incoming-call-sub { color: #7f8c8d; font-size: 11px; }
+        .call-panel-btns { display: flex; gap: 8px; }
+        .call-panel-btns button { flex: 1; padding: 9px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; }
+        .btn-answer { background: var(--call-green); color: white; }
+        .btn-reject { background: var(--call-red); color: white; }
+
+        #sos-timer { font-size: 9px; color: #e74c3c; text-align: center; margin-top: 4px; min-height: 14px; letter-spacing: 1px; }
+
+        /* Buttons */
+        .wp-btn { background: #1a252f; border: none; border-left: 3px solid transparent; color: #7f8c8d; font-size: 12px; padding: 13px 15px; cursor: pointer; font-weight: bold; text-align: left; letter-spacing: 1px; width: 100%; font-family: 'Ubuntu', sans-serif; transition: color 0.2s ease, border-color 0.2s ease, padding-left 0.2s ease, background 0.2s ease; }
+        .wp-btn:hover { color: white; border-left-color: var(--skype-blue); padding-left: 20px; background: rgba(0,175,240,0.07); }
+        .sidebar-action-btn { border: none; color: white; padding: 13px 15px; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 13px; letter-spacing: 1px; width: 100%; text-align: left; border-left: 3px solid transparent; transition: padding-left 0.2s ease, border-color 0.2s ease, filter 0.2s ease; }
+        .sidebar-action-btn:hover { padding-left: 22px; border-left-color: rgba(255,255,255,0.6); filter: brightness(1.15); }
+
+        .btn-connect { background: var(--skype-blue); }
+        .btn-call    { background: var(--call-green); }
+        .btn-video   { background: var(--call-purple); }
+        .btn-sos     { background: var(--sos-red); font-size: 12px; }
+        .typing-pulse { color: #00aff0; font-weight: bold; font-size: 11px; padding: 4px 30px; }
+
+        /* NEW SETUP SCREEN */
+        #phone-setup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; }
+        #phone-setup h2 { color: var(--skype-blue); font-size: 32px; margin: 0 0 6px; font-weight: 700; }
+        #phone-setup p { color: #7f8c8d; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 30px; }
+        .name-input-wrap { display: flex; border: 1px solid #34495e; overflow: hidden; width: 300px; }
+        .name-prefix { background: #1a252f; color: #7f8c8d; padding: 14px 12px; font-size: 16px; font-weight: bold; border-right: 1px solid #34495e; }
+        #username-input { flex: 1; background: #1a252f; border: none; color: white; padding: 14px 12px; font-size: 15px; font-family: 'Ubuntu', sans-serif; outline: none; }
+        #setup-btn { margin-top: 12px; width: 300px; padding: 14px; background: var(--call-green); color: white; border: none; font-weight: bold; font-family: 'Ubuntu', sans-serif; font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: filter 0.2s ease; }
+        #setup-btn:hover { filter: brightness(1.15); }
+        #setup-btn:disabled { background: #555; cursor: not-allowed; }
+
+        /* ALL CUSTOM MODALS */
+        #delete-modal, #reset-modal, #edit-modal, #delete-msg-modal, #unsafe-file-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); z-index: 30000; display: none; align-items: center; 
+            justify-content: center; animation: fadeInBg 0.2s ease; 
+        }
+        @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        .modal-box { background: #1e2d3d; border: 1px solid #34495e; padding: 28px 30px; min-width: 280px; max-width: 360px; border-top: 3px solid var(--sos-red); animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%; box-sizing: border-box; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.85) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-title { color: white; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+        .modal-sub { color: #7f8c8d; font-size: 12px; line-height: 1.6; margin-bottom: 22px; }
+        .modal-btns { display: flex; gap: 8px; }
+        .modal-btns button { flex: 1; padding: 11px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; transition: filter 0.15s ease; }
+        .modal-btns button:hover { filter: brightness(1.15); }
+        .btn-modal-delete { background: var(--sos-red); color: white; }
+        .btn-modal-cancel { background: #2c3e50; color: #aaa; border: 1px solid #34495e; }
+        
+        #edit-msg-input { width: 100%; background: #1a252f; border: 1px solid #34495e; color: white; padding: 12px; font-family: 'Ubuntu', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s ease; margin-bottom: 20px; border-radius: 0; }
+        #edit-msg-input:focus { border-color: var(--skype-blue); }
+
+        @media (min-width: 769px) {
+            .sidebar .close-btn, .right-bar .close-btn { display: none !important; }
+        }
+
+        /* RESPONSIVE CSS (PHONE MODE) */
+        @media (max-width: 768px) {
+            #mobile-nav { display: flex; }
+            
+            #mobile-overlay {
+                display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 45;
+                opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            #mobile-overlay.active { opacity: 1; visibility: visible; }
+
+            .sidebar { 
+                position: fixed; left: 0; top: 0; height: 100dvh; width: 85%; max-width: 320px; 
+                transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+                z-index: 50; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding-top: 45px;
+            }
+            .right-bar { 
+                position: fixed; right: 0; top: 0; height: 100dvh; width: 85%; max-width: 320px; 
+                transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+                z-index: 50; box-shadow: -5px 0 15px rgba(0,0,0,0.5); padding-top: 45px;
+            }
+            
+            .sidebar.mobile-open { transform: translateX(0); }
+            .right-bar.mobile-open { transform: translateX(0); }
+            
+            #incoming-call-panel { right: 5%; bottom: 20px; min-width: 90%; }
+            .msg { max-width: 85%; }
+            .app-container { height: calc(100dvh - 60px); }
+            .main-chat { height: 100%; }
+            .input-area { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+            #chat-box { padding: 20px 15px; }
+
+            .sidebar .close-btn { position: absolute; top: 15px; right: 15px; font-size: 32px; display: block !important; z-index: 10; }
+            .right-bar .close-btn { position: absolute; top: 15px; left: 15px; font-size: 32px; display: block !important; z-index: 10; }
+            
+            .brand-section { display: block; margin-top: 65px; text-align: center; }
+            .brand-name { font-size: 28px; }
+            
+            .contacts-header { 
+                display: flex; justify-content: space-between; align-items: center; 
+                padding-top: 65px; padding-left: 20px; padding-right: 20px;
+                border-bottom: 1px solid #111d28; 
+            }
+            .contacts-title { font-size: 14px; letter-spacing: 1px; margin: 0; }
+            .contacts-count { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<audio id="snd-msg" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+<audio id="snd-call" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
+<audio id="snd-sos" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+<!-- SAĞ TIK / İÇERİK MENÜSÜ -->
+<div id="context-menu">
+    <div class="ctx-item" id="ctx-pin" onclick="handleCtxPin()">📌 Sabitle / Kaldır</div>
+    <div class="ctx-item" id="ctx-edit" onclick="handleCtxEdit()">✏️ Düzenle</div>
+    <div class="ctx-item danger" id="ctx-delete" onclick="handleCtxDelete()">🗑️ Herkesten Sil</div>
+</div>
+
+<!-- MESAJ DÜZENLEME MODALI -->
+<div id="edit-modal">
+    <div class="modal-box" style="border-top-color: var(--skype-blue);">
+        <div class="modal-title" data-i18n="editTitle">Mesajı Düzenle</div>
+        <input type="text" id="edit-msg-input" onkeypress="if(event.key==='Enter') confirmEditMsg()">
+        <div class="modal-btns">
+            <button class="btn-modal-delete" style="background:var(--skype-blue);" onclick="confirmEditMsg()" data-i18n="saveBtn">KAYDET</button>
+            <button class="btn-modal-cancel" onclick="closeEditModal()" data-i18n="cancelBtn">İPTAL</button>
+        </div>
+    </div>
+</div>
+
+<!-- MESAJ SİLME MODALI -->
+<div id="delete-msg-modal">
+    <div class="modal-box">
+        <div class="modal-title" data-i18n="delMsgTitle">Mesajı Sil</div>
+        <div class="modal-sub" data-i18n="delMsgDesc">Bu mesajı herkesten silmek istediğine emin misin?</div>
+        <div class="modal-btns">
+            <button class="btn-modal-delete" onclick="confirmDeleteMsg()" data-i18n="delBtn">SİL</button>
+            <button class="btn-modal-cancel" onclick="closeDeleteMsgModal()" data-i18n="cancelBtn">İPTAL</button>
+        </div>
+    </div>
+</div>
+
+<!-- GÜVENSİZ DOSYA (EXE) MODALI -->
+<div id="unsafe-file-modal">
+    <div class="modal-box" style="border-top-color: #e67e22;">
+        <div class="modal-title" data-i18n="unsafeTitle">Güvenlik Uyarısı</div>
+        <div class="modal-sub" data-i18n="unsafeWarn">Güvenli dosya olmayabilir!<br>Yine de indirmek istiyor musun?</div>
+        <div class="modal-btns">
+            <button class="btn-modal-delete" style="background:#e67e22;" onclick="confirmUnsafeDownload()" data-i18n="downloadBtn">İNDİR</button>
+            <button class="btn-modal-cancel" onclick="closeUnsafeModal()" data-i18n="cancelBtn">İPTAL</button>
+        </div>
+    </div>
+</div>
+
+<div id="mobile-nav">
+    <button class="mobile-btn" onclick="toggleMobileSidebar('left')">☰</button>
+    <strong style="letter-spacing: 1px; font-size: 18px; color: var(--skype-blue);">AceTalk</strong>
+    <button class="mobile-btn" onclick="toggleMobileSidebar('right')">👥</button>
+</div>
+
+<div id="call-overlay">
+    <div id="call-icon" style="font-size: 60px; margin-bottom: 20px;">📞</div>
+    <h2 id="call-name">AceTalk Voice</h2>
+    <p id="call-status" data-i18n="calling">ARANIYOR...</p>
+    <div id="call-videos">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay muted playsinline></video>
+        <audio id="remote-audio" autoplay></audio>
+    </div>
+    <button onclick="endCall()" data-i18n="closeCall" style="background: var(--call-red); color: white; border: none; padding: 15px 40px; font-weight: bold; cursor: pointer; margin-top: 30px;">KAPAT</button>
+</div>
+
+<div id="incoming-call-panel">
+    <div>
+        <div id="incoming-call-name" data-i18n="callName">Birileri arıyor...</div>
+        <div id="incoming-call-sub">Sesli arama geliyor</div>
+    </div>
+    <div class="call-panel-btns">
+        <button class="btn-answer" onclick="answerCall()" data-i18n="answerBtn">CEVAPLA</button>
+        <button class="btn-reject" onclick="rejectCall()" data-i18n="rejectBtn">REDDET</button>
+    </div>
+</div>
+
+<div id="delete-modal">
+    <div class="modal-box">
+        <div class="modal-title" data-i18n="delTitle">Kişiyi sil</div>
+        <div class="modal-sub" id="delete-modal-sub"></div>
+        <div class="modal-btns">
+            <button class="btn-modal-delete" onclick="confirmDelete()" data-i18n="delBtn">SİL</button>
+            <button class="btn-modal-cancel" onclick="closeDeleteModal()" data-i18n="cancelBtn">İPTAL</button>
+        </div>
+    </div>
+</div>
+
+<div id="reset-modal">
+    <div class="modal-box" style="border-top-color: #e67e22;">
+        <div class="modal-title" data-i18n="resetTitle">Hesabı sıfırla</div>
+        <div class="modal-sub" data-i18n="resetDesc">Kullanıcı adın, görünen ismin ve tüm konuşma geçmişin silinecek. Bu işlem geri alınamaz.</div>
+        <div class="modal-btns">
+            <button class="btn-modal-delete" onclick="confirmResetAccount()" data-i18n="resetBtn">SIFIRLA</button>
+            <button class="btn-modal-cancel" onclick="closeResetModal()" data-i18n="cancelBtn">İPTAL</button>
+        </div>
+    </div>
+</div>
+
+<div id="phone-setup" style="display:none;">
+    <div style="position: absolute; top: 20px; display: flex; gap: 10px;">
+        <button onclick="setLanguage('tr')" style="background: #1a252f; border: 1px solid #34495e; color: white; padding: 8px 15px; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-weight: bold; font-size: 12px; letter-spacing: 1px;">TR</button>
+        <button onclick="setLanguage('en')" style="background: #1a252f; border: 1px solid #34495e; color: white; padding: 8px 15px; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-weight: bold; font-size: 12px; letter-spacing: 1px;">EN</button>
+    </div>
+    <h2>AceTalk</h2>
+    <p data-i18n="setupTitle">Hesabını oluştur</p>
+    <div id="name-step" style="display: flex; flex-direction: column; align-items: center;">
+        <div class="name-input-wrap">
+            <span class="name-prefix">@</span>
+            <input type="text" id="username-input" data-i18n-placeholder="usernamePlace" placeholder="Kullanıcı Adı" maxlength="20" onkeypress="if(event.key==='Enter') tryCreateAccount()">
+        </div>
+        <button id="setup-btn" onclick="tryCreateAccount()" data-i18n="startBtn">BAŞLA ✓</button>
+        <div id="setup-error" style="color: var(--sos-red); font-size: 11px; margin-top: 8px; min-height: 16px; letter-spacing: 1px; text-align:center;"></div>
+        <div id="setup-suggestions" style="margin-top: 10px; display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width: 300px;"></div>
+        <div style="color: #4a6278; font-size: 10px; margin-top: 16px; text-align: center; max-width: 300px; line-height: 1.6;" data-i18n="setupDesc">Bu senin eşsiz ID'n olacak. Başkaları sana bu isimle bağlanacak.</div>
+    </div>
+</div>
+
+<div id="splash-screen">
+    <h1 style="color: var(--skype-blue); font-weight: 700; font-size: 48px; margin: 0;">AceTalk</h1>
+    <div class="sidebar-slogan" data-i18n="slogan" style="color: white; margin-top: 5px;">Simple Messenger</div>
+    <div class="splash-loader"></div>
+</div>
+
+<div id="mobile-overlay" onclick="closeAllMobileMenus()"></div>
+
+<div id="image-viewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <button onclick="closeImageViewer()" style="position:absolute; top:25px; right:25px; font-size:35px; font-weight:bold; color:white; background:none; border:none; cursor:pointer; transition: transform 0.2s;">✕</button>
+    <img id="image-viewer-img" src="" style="max-width:90%; max-height:90%; object-fit:contain; border-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+</div>
+
+<div class="app-container">
+    <div class="sidebar">
+        <button class="mobile-btn close-btn" style="color:#7f8c8d;" onclick="toggleMobileSidebar('left')">×</button>
+        <div class="brand-section">
+            <h1 class="brand-name">AceTalk</h1>
+            <div class="sidebar-slogan" data-i18n="slogan">Simple Messenger</div>
+        </div>
+
+        <div class="lang-switcher">
+            <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+            </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:15px;">
+            <button onclick="document.getElementById('wallpaper-input').click()" class="wp-btn" data-i18n="wallpaperBtn">❖ Duvar Kağıdı</button>
+            <button onclick="resetWallpaper()" class="wp-btn" data-i18n="resetWpBtn">↺ Varsayılan WP</button>
+            <input type="file" id="wallpaper-input" accept="image/*" style="display:none" onchange="setWallpaper(this)">
+            <button onclick="openResetModal()" class="wp-btn" style="color:#e74c3c; border-left-color: transparent;" data-i18n="resetAccBtn">⚠ Hesabı Sıfırla</button>
+        </div>
+
+        <div class="my-status-box">
+            <div class="status-header">
+                <label for="my-avatar-input" class="my-avatar-upload" id="my-avatar-display" title="Profil Fotoğrafını Değiştir">?</label>
+                <input type="file" id="my-avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+                <input type="text" id="my-name-input" class="status-input" value="AceUser" readonly title="Sohbette görünecek adın">
+            </div>
+            <span id="my-id" style="display:none;"></span>
+        </div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+            <input type="text" id="peer-id-input" data-i18n-placeholder="idPlaceholder" placeholder="Karşı tarafın ismi..." style="background: #1a252f; border: 1px solid #34495e; padding: 10px; color: white; outline: none; letter-spacing: 1px; font-family: 'Ubuntu', sans-serif;" onkeypress="if(event.key==='Enter') connectToPeer()">
+            <button onclick="connectToPeer()" data-i18n="connectBtn" class="sidebar-action-btn btn-connect">BAĞLAN</button>
+            <button onclick="startCall('audio')" data-i18n="voiceCall" class="sidebar-action-btn btn-call">SESLİ ARA</button>
+            <button onclick="startCall('video')" data-i18n="videoCall" class="sidebar-action-btn btn-video">KAMERALI ARA</button>
+            <div>
+                <button class="sidebar-action-btn btn-sos" id="sos-btn" onclick="sendSOS()" data-i18n="sosBtn">🚨 ACİL</button>
+                <div id="sos-timer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-chat" id="drop-zone" onclick="closeAllMobileMenus()">
+        <div id="chat-header">
+            <div id="chat-header-avatar"></div>
+            <div>
+                <div id="chat-header-name"></div>
+                <div id="chat-header-status"></div>
+            </div>
+        </div>
+        
+        <!-- SABİTLENEN MESAJ ALANI -->
+        <div id="pinned-area" class="pinned-area" onclick="document.getElementById('chat-box').scrollTo({top: 0, behavior: 'smooth'})">
+            <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                <span style="font-size:16px;">📌</span> 
+                <span id="pinned-text" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;"></span>
+            </div>
+            <button onclick="unpinCurrent(event)" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;padding:0 5px;" title="Sabitlemeyi Kaldır">✕</button>
+        </div>
+
+        <div id="chat-box">
+            <div id="welcome-msg" style="margin: auto; text-align: center; color: #ccc;">
+                <p data-i18n="secureChat">Güvenli ve şifreli uçtan uca sohbet.</p>
+                <small data-i18n="enterId">Bağlanmak için bir ID girin.</small>
+            </div>
+        </div>
+
+        <div class="typing-pulse" id="typing-ui" style="display:none;">birileri yazıyor...</div>
+
+        <div class="input-area">
+            <label for="media-input" class="icon-btn" title="Dosya Gönder">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+            </label>
+            <input type="file" id="media-input" accept="*/*" style="display:none" onchange="handleMedia(this)">
+            
+            <input type="text" id="message-input" data-i18n-placeholder="msgPlaceholder" placeholder="Mesajınızı yazın..."
+                   onkeypress="if(event.key==='Enter') sendMessage()"
+                   oninput="notifyTyping()">
+            <div class="icon-btn" onclick="sendMessage()" title="Gönder" style="font-size: 26px; color: var(--skype-blue);">➤</div>
+        </div>
+    </div>
+
+    <div class="right-bar">
+        <button class="mobile-btn close-btn" style="color:#7f8c8d;" onclick="toggleMobileSidebar('right')">×</button>
+        <div class="contacts-header">
+            <span class="contacts-title" data-i18n="contactsTitle">KİŞİLER</span>
+            <span class="contacts-count" id="contacts-total">0</span>
+        </div>
+        <div style="padding-top: 10px;"></div>
+        <div class="contacts-section-label" data-i18n="onlineNow">ŞU AN ÇEVRİMİÇİ</div>
+        <div id="online-list"></div>
+        <div class="contacts-divider"></div>
+        <div class="contacts-section-label" data-i18n="savedContacts">KAYDEDİLEN</div>
+        <div id="contacts-list">
+            <div class="no-contacts" id="no-contacts-msg" data-i18n="noContacts">
+                Henüz kişi yok.<br>Biri ile konuştuktan sonra burada görünür.
+            </div>
+        </div>
+        
+        <div data-i18n="appInfo" style="font-size: 9px; color: #4a6278; text-align: center; padding: 12px 10px; line-height: 1.6; letter-spacing: 0.5px; border-top: 1px solid #111d28; margin-top: auto; z-index: 5;">
+            AceTalk MileStone 3 • Kurucu: Ace © 2026 • Uçtan uca şifreli • Designed in Baku
+        </div>
+    </div>
+</div>
+
+<script>
+// ─── KRİTİK DEĞİŞKENLER ─────────────────────────────────────────────────────
+let peer = null;
+
+// ─── WALLPAPER ───────────────────────────────────────────────────────────────
+const DEFAULT_WALLPAPER = "https://raw.githubusercontent.com/benmalakko-netizen/AceTalk/main/Acetalkwallpaper.jpg";
+
+function applyWallpaper(url) {
+    document.body.style.backgroundImage = "url('" + url + "')";
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+    document.body.classList.add('wallpaper-active');
+}
+function setWallpaper(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => { localStorage.setItem('acetalk_wallpaper', e.target.result); applyWallpaper(e.target.result); }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function resetWallpaper() { localStorage.removeItem('acetalk_wallpaper'); applyWallpaper(DEFAULT_WALLPAPER); }
+
+// ─── MOBILE CONTROLS ─────────────────────────────────────────────────────────
+function toggleMobileSidebar(side) {
+    const left = document.querySelector('.sidebar');
+    const right = document.querySelector('.right-bar');
+    const overlay = document.getElementById('mobile-overlay');
+    if(side === 'left') { left.classList.add('mobile-open'); right.classList.remove('mobile-open'); } 
+    else { right.classList.add('mobile-open'); left.classList.remove('mobile-open'); }
+    if(overlay) overlay.classList.add('active');
+}
+
+// ─── AVATAR / PROFILE LOGIC ──────────────────────────────────────────────────
+let myAvatarBase64 = localStorage.getItem('acetalk_avatar') || null;
+let peerAvatars = {}; 
+
+function closeAllMobileMenus() {
+    if (window.innerWidth <= 768) {
+        document.querySelector('.sidebar').classList.remove('mobile-open');
+        document.querySelector('.right-bar').classList.remove('mobile-open');
+        const overlay = document.getElementById('mobile-overlay');
+        if(overlay) overlay.classList.remove('active');
+    }
+}
+
+function updateMyAvatarUI() {
+    const display = document.getElementById('my-avatar-display');
+    const myName = document.getElementById('my-name-input').value || '?';
+    if(myAvatarBase64) {
+        display.innerHTML = `<img src="${myAvatarBase64}">`;
+    } else {
+        display.innerHTML = myName.charAt(0).toUpperCase();
+        display.style.background = '#1a252f';
+    }
+}
+
+function handleAvatarUpload(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            myAvatarBase64 = e.target.result;
+            localStorage.setItem('acetalk_avatar', myAvatarBase64);
+            updateMyAvatarUI();
+            updateMyProfile(); 
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function updateMyProfile() {
+    const myName = document.getElementById('my-name-input').value;
+    updateMyAvatarUI();
+    connections.forEach(c => { try { c.send({type: 'profile', name: myName, avatar: myAvatarBase64}); } catch(e){} });
+}
+
+// ─── DİLLER ──────────────────────────────────────────────────────────────────
+const i18n = {
+    tr: { 
+        appInfo: "AceTalk MileStone 3 • Kurucu: Ace © 2026 • Uçtan uca şifreli • Designed in Baku", slogan: "Simple Messenger", myName: "ADIM", idPlaceholder: "Karşı tarafın ismi...", connectBtn: "BAĞLAN", voiceCall: "SESLİ ARA", videoCall: "KAMERALI ARA", secureChat: "Güvenli ve şifreli uçtan uca sohbet.", enterId: "Bağlanmak için bir isim girin.", msgPlaceholder: "Mesajınızı yazın...", calling: "ARANIYOR...", closeCall: "KAPAT", typing: "yazıyor...", sosBtn: "🚨 ACİL", sosCooldown: "saniye bekle", sosReceived: "ACİL YARDIM ÇAĞRISI", sosFrom: "Gönderen", sosHops: "ağ üzerinden ulaştı", sosNoConn: "Bağlı kimse yok! Önce birine bağlan.", wallpaperBtn: "❖ Duvar Kağıdı", resetWpBtn: "↺ Varsayılan WP", resetAccBtn: "⚠ Hesabı Sıfırla", micDenied: "Kamera/Mikrofon erişimi reddedildi!", noConn: "Şimdilik yalnızsın.", emptyOnline: "Burası çok ıssız..", connected: "🟢 BAĞLANDI", contactsTitle: "KİŞİLER", onlineNow: "ŞU AN ÇEVRİMİÇİ", savedContacts: "KAYDEDİLEN", noContacts: "Henüz kişi yok.\nBiri ile konuştuktan sonra burada görünür.", onlineStatus: "Çevrimiçi", offlineStatus: "Son görülme", incomingVoice: "Sesli arama geliyor", incomingVideo: "Görüntülü arama geliyor", answerBtn: "CEVAPLA", rejectBtn: "REDDET", setupTitle: "Hesabını oluştur", usernamePlace: "Kullanıcı Adı", startBtn: "BAŞLA ✓", setupDesc: "Bu senin eşsiz ID'n olacak. Başkaları sana bu isimle bağlanacak.", delTitle: "Kişiyi sil", delDesc: "kişisini ve tüm mesaj geçmişini silmek istediğine emin misin?", delBtn: "SİL", cancelBtn: "İPTAL", resetTitle: "Hesabı sıfırla", resetDesc: "Kullanıcı adın, görünen ismin ve tüm konuşma geçmişin silinecek. Bu işlem geri alınamaz.", resetBtn: "SIFIRLA", fileTooBig: "Dosya boyutu çok büyük! Maksimum 50 MB.", nameTaken: "Bu isim alınmış! Şunlardan birini dene:", nameShort: "En az 3 harf veya rakam olmalı!", checking: "Uygunluk kontrol ediliyor...", connError: "Bağlantı hatası, tekrar deneyin.", nameInUse: "Bu isim başka bir cihazda açık!", videoMsg: "Video", imageMsg: "Resim", fileMsg: "Dosya", callName: "Birileri arıyor...", translated: "(Çevrildi)", downloadBtn: "Yükle", previewBtn: "Önizle",
+        unsafeTitle: "Güvenlik Uyarısı", unsafeWarn: "Güvenli dosya olmayabilir!<br>Yine de indirmek istiyor musun?",
+        editTitle: "Mesajı Düzenle", saveBtn: "KAYDET",
+        delMsgTitle: "Mesajı Sil", delMsgDesc: "Bu mesajı herkesten silmek istediğine emin misin?"
+    },
+    en: { 
+        appInfo: "AceTalk MileStone 3 • Founder: Ace © 2026 • End-to-End Encrypted • Designed in Baku", slogan: "Simple Messenger", myName: "MY NAME", idPlaceholder: "Their username...", connectBtn: "CONNECT", voiceCall: "VOICE CALL", videoCall: "VIDEO CALL", secureChat: "Secure end-to-end encrypted chat.", enterId: "Enter an ID to connect.", msgPlaceholder: "Type your message...", calling: "CALLING...", closeCall: "HANG UP", typing: "is typing...", sosBtn: "🚨 SOS", sosCooldown: "seconds wait", sosReceived: "EMERGENCY SOS RECEIVED", sosFrom: "From", sosHops: "hops away", sosNoConn: "Nobody connected!", wallpaperBtn: "❖ Wallpaper", resetWpBtn: "↺ Default WP", resetAccBtn: "⚠ Reset Account", micDenied: "Camera/Mic access denied!", noConn: "You're alone for now.", emptyOnline: "It's so deserted here..", connected: "🟢 CONNECTED", contactsTitle: "CONTACTS", onlineNow: "ONLINE NOW", savedContacts: "SAVED", noContacts: "No contacts yet.\nAppears after chatting.", onlineStatus: "Online", offlineStatus: "Last seen", incomingVoice: "Incoming voice call", incomingVideo: "Incoming video call", answerBtn: "ANSWER", rejectBtn: "REJECT", setupTitle: "Create your account", usernamePlace: "Username", startBtn: "START ✓", setupDesc: "This is your unique ID. Others will connect using this name.", delTitle: "Delete contact", delDesc: "and all chat history? Are you sure?", delBtn: "DELETE", cancelBtn: "CANCEL", resetTitle: "Reset account", resetDesc: "Your username, display name, and all history will be deleted. This cannot be undone.", resetBtn: "RESET", fileTooBig: "File is too large! Maximum 50 MB.", nameTaken: "Name is taken! Try one of these:", nameShort: "Must be at least 3 letters or numbers!", checking: "Checking availability...", connError: "Connection error, try again.", nameInUse: "This name is open on another device!", videoMsg: "Video", imageMsg: "Image", fileMsg: "File", callName: "Someone is calling...", translated: "(Translated)", downloadBtn: "Download", previewBtn: "Preview",
+        unsafeTitle: "Security Warning", unsafeWarn: "This file may be unsafe!<br>Do you still want to download?",
+        editTitle: "Edit Message", saveBtn: "SAVE",
+        delMsgTitle: "Delete Message", delMsgDesc: "Are you sure you want to delete this message for everyone?"
+    }
+};
+
+let currentLang = localStorage.getItem('acetalk_lang') || 'tr';
+function getLang() { return i18n[currentLang] || i18n['en'] || i18n['tr']; }
+
+function applyDynamicTranslations(container = document) {
+    const l = getLang();
+    container.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if(l[key]) el.innerHTML = l[key];
+    });
+    container.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if(l[key]) el.placeholder = l[key];
+    });
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('acetalk_lang', lang);
+    const selectEl = document.getElementById('lang-select');
+    if (selectEl && selectEl.value !== lang) selectEl.value = lang;
+
+    applyDynamicTranslations(); 
+    
+    renderContacts();
+    updateOnlineList();
+    if (activePeerId) openContact(activePeerId); 
+}
+
+// ─── GOOGLE TRANSLATE ────────────────────────────────────────────────────────
+async function translateMsg(btn, bodyId) {
+    if(btn.innerText === '⏳') return;
+    const bodyDiv = document.getElementById(bodyId);
+    const rawText = bodyDiv.innerText;
+    btn.innerText = '⏳';
+    try {
+        const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + currentLang + '&dt=t&q=' + encodeURIComponent(rawText));
+        const data = await res.json();
+        let translated = '';
+        data[0].forEach(item => { if(item[0]) translated += item[0]; });
+        
+        const l = getLang();
+        bodyDiv.innerHTML = parseMarkdown(translated) + `<br><small style="font-size:9px; opacity:0.6;">${l.translated || '(Translated)'}</small>`;
+        btn.innerText = '✅';
+        btn.onclick = null; 
+    } catch(e) {
+        btn.innerText = '❌';
+        setTimeout(() => btn.innerText = '🌐', 2000);
+    }
+}
+
+// ─── CONTACTS STORAGE ────────────────────────────────────────────────────────
+function loadContacts() { try { return JSON.parse(localStorage.getItem('acetalk_contacts') || '{}'); } catch { return {}; } }
+function saveContacts(contacts) { localStorage.setItem('acetalk_contacts', JSON.stringify(contacts)); }
+
+function upsertContact(peerId, name, message) {
+    const contacts = loadContacts();
+    if (!contacts[peerId]) contacts[peerId] = { name: name || peerIdToName(peerId), lastSeen: null, messages: [] };
+    if (name) contacts[peerId].name = name;
+    if (message) {
+        contacts[peerId].messages.push(message);
+        if (contacts[peerId].messages.length > 200) contacts[peerId].messages = contacts[peerId].messages.slice(-200);
+    }
+    contacts[peerId].lastSeen = Date.now();
+    saveContacts(contacts);
+    renderContacts();
+}
+
+let activePeerId = null; 
+function openContact(peerId) {
+    activePeerId = peerId;
+    localStorage.setItem('acetalk_active_peer', peerId);
+    closeAllMobileMenus();
+    
+    const contacts = loadContacts();
+    const contact = contacts[peerId];
+    if (!contact) return;
+
+    const header = document.getElementById('chat-header');
+    const avatar = document.getElementById('chat-header-avatar');
+    const headerName = document.getElementById('chat-header-name');
+    const headerStatus = document.getElementById('chat-header-status');
+
+    header.style.display = 'flex';
+    if(peerAvatars[peerId]) { avatar.innerHTML = `<img src="${peerAvatars[peerId]}">`; } 
+    else { avatar.style.background = stringToColor(peerId); avatar.innerHTML = (contact.name || '?').charAt(0).toUpperCase(); }
+    
+    headerName.innerHTML = contact.name || peerIdToName(peerId);
+
+    const isOnline = connections.find(c => c.peer === peerId);
+    const l = getLang();
+    headerStatus.innerText = isOnline ? l.onlineStatus : (l.offlineStatus + ': ' + formatLastSeen(contact.lastSeen));
+
+    const box = document.getElementById('chat-box');
+    const welcome = document.getElementById('welcome-msg');
+    if (welcome) welcome.style.display = 'none';
+    box.innerHTML = '';
+
+    renderPinnedMessage(); // Sabitlenmiş mesajı ekrana getirir
+
+    let hasUnseen = false;
+    contact.messages.forEach(m => {
+        if (m.type === 'remote' && m.status !== 'seen') {
+            m.status = 'seen';
+            hasUnseen = true;
+        }
+        addMessage(m.type === 'local' ? '' : (m.user || contact.name), m.body, m.type, m.time, false, m.status, m.msgId);
+    });
+
+    if (hasUnseen) {
+        saveContacts(contacts);
+        const conn = connections.find(c => c.peer === peerId);
+        if (conn) {
+            const lastRemote = [...contact.messages].reverse().find(m => m.type === 'remote');
+            if (lastRemote) conn.send({type: 'seen', msgId: lastRemote.msgId || lastRemote.time});
+        }
+    }
+
+    box.scrollTop = box.scrollHeight;
+    renderContacts(); 
+}
+
+function formatLastSeen(ts) {
+    if (!ts) return '?';
+    const d = new Date(ts);
+    return d.toLocaleDateString([], {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function renderContacts() {
+    const contacts = loadContacts();
+    const list = document.getElementById('contacts-list');
+    const totalEl = document.getElementById('contacts-total');
+    const keys = Object.keys(contacts);
+
+    const onlineIds = new Set(connections.map(c => c.peer));
+    keys.sort((a, b) => {
+        const ao = onlineIds.has(a), bo = onlineIds.has(b);
+        if (ao !== bo) return ao ? -1 : 1;
+        return (contacts[b].lastSeen || 0) - (contacts[a].lastSeen || 0);
+    });
+
+    totalEl.innerText = keys.length;
+    const l = getLang();
+
+    if (keys.length === 0) {
+        list.innerHTML = '<div class="no-contacts" id="no-contacts-msg">' + l.noContacts + '</div>';
+        return;
+    }
+    list.innerHTML = '';
+
+    keys.forEach(peerId => {
+        const c = contacts[peerId];
+        const isOnline = onlineIds.has(peerId);
+        const isActive = peerId === activePeerId;
+        const lastMsg = c.messages.length ? c.messages[c.messages.length - 1] : null;
+        let lastText = '';
+        if(lastMsg) {
+            if(lastMsg.body.includes('<video')) lastText = '🎥 ' + l.videoMsg;
+            else if(lastMsg.body.includes('<img')) lastText = '📷 ' + l.imageMsg;
+            else if(lastMsg.body.includes('<a href="data:')) lastText = '📄 ' + l.fileMsg;
+            else if(lastMsg.isDeleted) lastText = '🚫 Bu mesaj silindi';
+            else lastText = (lastMsg.rawText || lastMsg.body).substring(0, 28).replace(/<[^>]*>?/gm, '') + ((lastMsg.rawText || lastMsg.body).length > 28 ? '…' : '');
+        }
+
+        const card = document.createElement('div');
+        card.className = 'contact-card' + (isOnline ? ' online-now' : '') + (isActive ? ' active' : '');
+        card.onclick = () => openContact(peerId);
+        
+        const avatarHtml = peerAvatars[peerId] ? `<img src="${peerAvatars[peerId]}">` : `${(c.name || '?').charAt(0).toUpperCase()}`;
+        
+        card.innerHTML = `
+            <div class="contact-avatar" style="${!peerAvatars[peerId] ? 'background:'+stringToColor(peerId) : ''}">
+                ${avatarHtml}
+                ${isOnline ? '<div class="contact-online-dot"></div>' : ''}
+            </div>
+            <div class="contact-info">
+                <div class="contact-name">${c.name || peerIdToName(peerId)}</div>
+                <div class="contact-last">${lastText || (isOnline ? l.onlineStatus : '')}</div>
+            </div>
+            <button class="contact-del-btn" onclick="openDeleteModal('${peerId}', event)" title="Sil">✕</button>
+        `;
+        list.appendChild(card);
+    });
+    updateOnlineList();
+}
+
+function updateOnlineList() {
+    const list = document.getElementById('online-list');
+    list.innerHTML = '';
+    const l = getLang();
+    
+    if (connections.length === 0) {
+        list.innerHTML = '<div style="padding: 10px 16px; font-size:10px; color:#4a6278; font-style:italic;">' + l.emptyOnline + '</div>';
+        return;
+    }
+    
+    connections.forEach(c => {
+        const displayName = peerNames[c.peer] || peerIdToName(c.peer);
+        const card = document.createElement('div');
+        card.className = 'contact-card online-now';
+        card.onclick = () => openContact(c.peer);
+        
+        const avatarHtml = peerAvatars[c.peer] ? `<img src="${peerAvatars[c.peer]}">` : `${displayName.charAt(0).toUpperCase()}`;
+        card.innerHTML = `
+            <div class="contact-avatar" style="${!peerAvatars[c.peer] ? 'background:'+stringToColor(c.peer) : ''}">
+                ${avatarHtml}
+                <div class="contact-online-dot"></div>
+            </div>
+            <div class="contact-info">
+                <div class="contact-name">${displayName}</div>
+                <div class="contact-last" style="color: #2ecc71;">${l.onlineStatus}</div>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// ─── SAĞ TIK (CONTEXT MENU) İŞLEMLERİ ──────────────────────────────────────────
+let ctxMsgId = null;
+let ctxMsgType = null;
+
+// Menüyü dışarı tıklayınca kapat
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#context-menu')) {
+        document.getElementById('context-menu').style.display = 'none';
+    }
+});
+
+function showContextMenu(e, msgId, type) {
+    e.preventDefault();
+    if (!activePeerId) return;
+
+    const contacts = loadContacts();
+    const contact = contacts[activePeerId];
+    if(!contact) return;
+    
+    const msg = contact.messages.find(m => m.msgId === msgId);
+    if(!msg || msg.isDeleted) return;
+
+    ctxMsgId = msgId;
+    ctxMsgType = type;
+
+    const menu = document.getElementById('context-menu');
+    menu.style.display = 'flex';
+    
+    let x = e.pageX;
+    let y = e.pageY;
+    if(x + 170 > window.innerWidth) x -= 170;
+    if(y + 150 > window.innerHeight) y -= 150;
+    
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+
+    const isMedia = msg.body.includes('<img') || msg.body.includes('<video') || msg.body.includes('<audio') || msg.body.includes('file-card');
+    
+    document.getElementById('ctx-edit').style.display = (type === 'local' && !isMedia) ? 'flex' : 'none';
+    document.getElementById('ctx-delete').style.display = (type === 'local') ? 'flex' : 'none';
+    
+    const isPinned = contact.pinnedMsg && contact.pinnedMsg.id === msgId;
+    document.getElementById('ctx-pin').innerHTML = isPinned ? '📌 Sabitlemeyi Kaldır' : '📌 Sabitle';
+}
+
+// DÜZENLEME MODALI FONKSİYONLARI
+function handleCtxEdit() {
+    document.getElementById('context-menu').style.display = 'none';
+    if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
+    
+    const contacts = loadContacts();
+    const msg = contacts[activePeerId].messages.find(m => m.msgId === ctxMsgId);
+    if(!msg || msg.isDeleted) return;
+    
+    const oldText = msg.rawText || msg.body.replace(/<[^>]*>?/gm, '');
+    document.getElementById('edit-msg-input').value = oldText;
+    document.getElementById('edit-modal').style.display = 'flex';
+    document.getElementById('edit-msg-input').focus();
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+}
+
+async function confirmEditMsg() {
+    const input = document.getElementById('edit-msg-input');
+    const newText = input.value;
+    document.getElementById('edit-modal').style.display = 'none';
+    
+    if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
+    const contacts = loadContacts();
+    const msg = contacts[activePeerId].messages.find(m => m.msgId === ctxMsgId);
+    if(!msg || msg.isDeleted) return;
+
+    const oldText = msg.rawText || msg.body.replace(/<[^>]*>?/gm, '');
+
+    if (newText !== null && newText.trim() !== '' && newText !== oldText) {
+        msg.rawText = newText;
+        msg.body = parseMarkdown(newText) + ' <small style="font-size:9px; opacity:0.6;">✏️ (düzenlendi)</small>';
+        saveContacts(contacts);
+        
+        const bodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`);
+        if(bodyEl) bodyEl.innerHTML = msg.body;
+        
+        const targets = connections.filter(c => c.peer === activePeerId);
+        for (let c of targets) {
+            if (e2eKeys[c.peer]) {
+                const enc = await encryptMsg(newText, e2eKeys[c.peer]);
+                c.send({type: 'edit', msgId: ctxMsgId, body: enc, isEncrypted: true});
+            } else {
+                c.send({type: 'edit', msgId: ctxMsgId, body: newText});
+            }
+        }
+    }
+}
+
+// SİLME MODALI FONKSİYONLARI
+function handleCtxDelete() {
+    document.getElementById('context-menu').style.display = 'none';
+    if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
+    
+    document.getElementById('delete-msg-modal').style.display = 'flex';
+}
+
+function closeDeleteMsgModal() {
+    document.getElementById('delete-msg-modal').style.display = 'none';
+}
+
+function confirmDeleteMsg() {
+    document.getElementById('delete-msg-modal').style.display = 'none';
+
+    if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
+    const contacts = loadContacts();
+    const contact = contacts[activePeerId];
+    const msg = contact.messages.find(m => m.msgId === ctxMsgId);
+    if(!msg) return;
+    
+    msg.isDeleted = true;
+    msg.body = '<span class="msg-deleted">🚫 Bu mesaj silindi</span>';
+    saveContacts(contacts);
+    
+    const bodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`);
+    if(bodyEl) bodyEl.innerHTML = msg.body;
+
+    if (contact.pinnedMsg && contact.pinnedMsg.id === ctxMsgId) {
+        unpinCurrent(new Event('click')); 
+    }
+    
+    connections.filter(c => c.peer === activePeerId).forEach(c => {
+        c.send({type: 'delete', msgId: ctxMsgId});
+    });
+}
+
+function handleCtxPin() {
+    document.getElementById('context-menu').style.display = 'none';
+    if(!ctxMsgId || !activePeerId) return;
+    
+    const contacts = loadContacts();
+    const contact = contacts[activePeerId];
+    const msg = contact.messages.find(m => m.msgId === ctxMsgId);
+    if(!msg) return;
+    
+    const isPinned = contact.pinnedMsg && contact.pinnedMsg.id === ctxMsgId;
+    
+    if (isPinned) {
+        unpinCurrent(new Event('click'));
+    } else {
+        const raw = msg.rawText || msg.body.replace(/<[^>]*>?/gm, '');
+        contact.pinnedMsg = { id: ctxMsgId, text: raw };
+        saveContacts(contacts);
+        renderPinnedMessage();
+        
+        connections.filter(c => c.peer === activePeerId).forEach(c => {
+            c.send({type: 'pin', msgId: ctxMsgId, text: raw});
+        });
+    }
+}
+
+function unpinCurrent(e) {
+    if(e) e.stopPropagation();
+    if(!activePeerId) return;
+    
+    const contacts = loadContacts();
+    if(contacts[activePeerId]) {
+        contacts[activePeerId].pinnedMsg = null;
+        saveContacts(contacts);
+        renderPinnedMessage();
+        
+        connections.filter(c => c.peer === activePeerId).forEach(c => {
+            c.send({type: 'unpin'});
+        });
+    }
+}
+
+function renderPinnedMessage() {
+    const area = document.getElementById('pinned-area');
+    const textEl = document.getElementById('pinned-text');
+    
+    if (!activePeerId) { area.style.display = 'none'; return; }
+    
+    const contacts = loadContacts();
+    const contact = contacts[activePeerId];
+    if(contact && contact.pinnedMsg) {
+        textEl.innerText = contact.pinnedMsg.text;
+        area.style.display = 'flex';
+    } else {
+        area.style.display = 'none';
+    }
+}
+
+// ─── SETUP & PEER CONNECTIONS ───────────────────────────────────────────────
+window.addEventListener('load', () => {
+    const saved = localStorage.getItem('acetalk_wallpaper');
+    applyWallpaper(saved || DEFAULT_WALLPAPER);
+    updateMyAvatarUI();
+    setLanguage(currentLang);
+
+    const savedUser = localStorage.getItem('acetalk_username');
+    if (savedUser) {
+        document.getElementById('my-name-input').value = localStorage.getItem('acetalk_displayname') || savedUser;
+        initPeer(savedUser);
+    } else {
+        document.getElementById('phone-setup').style.display = 'flex';
+    }
+});
+
+let connectionTimeout; 
+
+function tryCreateAccount() {
+    const raw = document.getElementById('username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    const errDiv = document.getElementById('setup-error');
+    const sugDiv = document.getElementById('setup-suggestions');
+    const btn = document.getElementById('setup-btn');
+    const l = getLang();
+    
+    if (raw.length < 3) { errDiv.innerText = l.nameShort; sugDiv.innerHTML = ''; return; }
+
+    errDiv.innerText = "Sunucuya bağlanılıyor, lütfen bekleyin...";
+    errDiv.style.color = "#00aff0";
+    sugDiv.innerHTML = '';
+    btn.disabled = true;
+
+    const peerId = 'ace_' + raw;
+    
+    if (peer) { try { peer.destroy(); } catch(e){} }
+    
+    peer = new Peer(peerId, { 
+        host: '0.peerjs.com', 
+        port: 443, 
+        secure: true, 
+        pingInterval: 10000 
+    });
+
+    connectionTimeout = setTimeout(() => {
+        btn.disabled = false;
+        errDiv.style.color = "var(--sos-red)";
+        errDiv.innerText = "Sunucu yanıt vermiyor. Lütfen tekrar deneyin.";
+        if (peer) { peer.destroy(); peer = null; }
+    }, 10000);
+
+    peer.on('open', id => {
+        clearTimeout(connectionTimeout); 
+        localStorage.setItem('acetalk_username', raw);
+        localStorage.setItem('acetalk_displayname', document.getElementById('username-input').value.trim()); 
+        
+        document.getElementById('phone-setup').style.display = 'none';
+        document.getElementById('my-name-input').value = localStorage.getItem('acetalk_displayname');
+        
+        document.getElementById('my-id').innerText = '@' + raw; 
+        document.body.classList.add('loaded');
+        
+        const savedContacts = loadContacts();
+        Object.keys(savedContacts).forEach(pid => {
+            if(pid !== id && !connections.find(c => c.peer === pid)) setupConn(peer.connect(pid));
+        });
+
+        const lastActive = localStorage.getItem('acetalk_active_peer');
+        if (lastActive && savedContacts[lastActive]) openContact(lastActive);
+    });
+
+    peer.on('error', err => {
+        clearTimeout(connectionTimeout); 
+        btn.disabled = false;
+        errDiv.style.color = "var(--sos-red)";
+        
+        if (err.type === 'unavailable-id') {
+            errDiv.innerText = l.nameTaken;
+            const suffixes = [Math.floor(Math.random()*100), '_ace', '26', 'tr'];
+            suffixes.forEach(s => {
+                const sBtn = document.createElement('button');
+                sBtn.innerText = raw + s;
+                sBtn.style.cssText = "background:#1a252f; color:#00aff0; border:1px solid #34495e; padding:5px 10px; cursor:pointer; font-size:11px; border-radius:0;";
+                sBtn.onclick = () => { document.getElementById('username-input').value = raw + s; tryCreateAccount(); };
+                sugDiv.appendChild(sBtn);
+            });
+        } else { 
+            errDiv.innerText = l.connError + " Detay: " + err.type; 
+        }
+        
+        if (peer) { peer.destroy(); peer = null; }
+    });
+
+    peer.on('connection', conn => setupConn(conn));
+    peer.on('call', handleIncomingCall);
+}
+
+function initPeer(username) {
+    const errDiv = document.getElementById('setup-error');
+    if(errDiv) errDiv.innerText = "Yeniden bağlanılıyor...";
+    
+    const peerId = 'ace_' + username;
+    if (peer) { try { peer.destroy(); } catch(e){} }
+    
+    peer = new Peer(peerId, { host: '0.peerjs.com', port: 443, secure: true, pingInterval: 10000 });
+
+    peer.on('open', id => { 
+        document.getElementById('my-id').innerText = '@' + username; 
+        document.body.classList.add('loaded');
+        
+        const savedContacts = loadContacts();
+        Object.keys(savedContacts).forEach(pid => {
+            if(pid !== id && !connections.find(c => c.peer === pid)) setupConn(peer.connect(pid));
+        });
+
+        const lastActive = localStorage.getItem('acetalk_active_peer');
+        if (lastActive && savedContacts[lastActive]) openContact(lastActive);
+    });
+
+    peer.on('error', err => {
+        if (err.type === 'unavailable-id') {
+            document.getElementById('phone-setup').style.display = 'flex';
+            document.getElementById('setup-error').innerText = getLang().nameInUse;
+            localStorage.removeItem('acetalk_username');
+            if (peer) { peer.destroy(); peer = null; }
+            document.body.classList.remove('loaded');
+        } else {
+            console.warn("Bağlantı koptu, yeniden deneniyor...");
+            setTimeout(() => { if(!peer || peer.disconnected) initPeer(username); }, 5000);
+        }
+    });
+
+    peer.on('connection', conn => setupConn(conn));
+    peer.on('call', handleIncomingCall);
+}
+
+// ─── E2E ENCRYPTION LOGIC ──────────────────────────────────────────────────
+let e2eKeys = {}; 
+
+async function generateE2EKey() {
+    return await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
+}
+async function exportKey(key) { return await crypto.subtle.exportKey("jwk", key); }
+async function importKey(jwk) { return await crypto.subtle.importKey("jwk", jwk, {name: "AES-GCM"}, true, ["encrypt", "decrypt"]); }
+
+async function encryptMsg(text, key) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(text);
+    const encrypted = await crypto.subtle.encrypt({name: "AES-GCM", iv: iv}, key, encoded);
+    return { iv: Array.from(iv), data: btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted))) };
+}
+
+async function decryptMsg(encryptedPayload, key) {
+    const iv = new Uint8Array(encryptedPayload.iv);
+    const dataStr = atob(encryptedPayload.data);
+    const dataBuffer = new Uint8Array(dataStr.length);
+    for(let i=0; i<dataStr.length; i++) dataBuffer[i] = dataStr.charCodeAt(i);
+    const decrypted = await crypto.subtle.decrypt({name: "AES-GCM", iv: iv}, key, dataBuffer);
+    return new TextDecoder().decode(decrypted);
+}
+
+// ─── CONTACT CONTROLS & RESET ────────────────────────────────────────────────
+let _deleteTargetId = null;
+function openDeleteModal(peerId, e) {
+    e.stopPropagation();
+    _deleteTargetId = peerId;
+    const c = loadContacts()[peerId];
+    const name = (c && c.name) ? c.name : peerIdToName(peerId);
+    const l = getLang();
+    document.getElementById('delete-modal-sub').innerHTML = `<span style="color: #00ffcc; font-weight: bold;">${name}</span> ` + l.delDesc;
+    document.getElementById('delete-modal').style.display = 'flex';
+}
+function closeDeleteModal() { document.getElementById('delete-modal').style.display = 'none'; _deleteTargetId = null; }
+function confirmDelete() {
+    if (!_deleteTargetId) return;
+    const contacts = loadContacts();
+    delete contacts[_deleteTargetId];
+    saveContacts(contacts);
+    if (activePeerId === _deleteTargetId) {
+        activePeerId = null;
+        localStorage.removeItem('acetalk_active_peer');
+        document.getElementById('chat-header').style.display = 'none';
+        const l = getLang();
+        document.getElementById('chat-box').innerHTML = '<div id="welcome-msg" style="margin: auto; text-align: center; color: #ccc;"><p data-i18n="secureChat">' + l.secureChat + '</p></div>';
+        renderPinnedMessage();
+    }
+    closeDeleteModal(); renderContacts();
+}
+
+function openResetModal() { 
+    closeAllMobileMenus(); 
+    document.getElementById('reset-modal').style.display = 'flex'; 
+}
+
+function closeResetModal() { 
+    document.getElementById('reset-modal').style.display = 'none'; 
+}
+
+function confirmResetAccount() {
+    try {
+        if (connections && connections.length > 0) {
+            connections.forEach(c => { try { c.send({type:'offline'}); c.close(); } catch(e){} });
+        }
+        if (peer) { try { peer.destroy(); } catch(e){} }
+    } catch(e) {
+        console.warn("Bağlantı kapatma hatası:", e);
+    }
+
+    const wp = localStorage.getItem('acetalk_wallpaper');
+    localStorage.clear();
+    if (wp) {
+        localStorage.setItem('acetalk_wallpaper', wp);
+    }
+
+    window.location.href = window.location.pathname + window.location.search;
+}
+
+let peerNames = {};
+let connections = [];
+let currentCall = null;
+let pendingCall = null;
+let pendingCallType = 'audio';
+let typingTimeout = null;
+
+function peerIdToName(peerId) { return peerId.replace(/^ace_/, ''); }
+
+function connectToPeer() {
+    const raw = document.getElementById('peer-id-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (!raw) return;
+    const pid = 'ace_' + raw;
+    if (connections.find(c => c.peer === pid)) return;
+    
+    setupConn(peer.connect(pid));
+    peerNames[pid] = peerNames[pid] || raw;
+    document.getElementById('peer-id-input').value = ''; 
+    closeAllMobileMenus();
+}
+
+function setupConn(conn) {
+    conn.on('open', () => {
+        if (!connections.find(c => c.peer === conn.peer)) {
+            connections.push(conn);
+            const myName = document.getElementById('my-name-input').value;
+            conn.send({type: 'profile', name: myName, avatar: myAvatarBase64});
+            upsertContact(conn.peer, peerNames[conn.peer] || null);
+            updateOnlineList();
+            renderContacts();
+            
+            if (!activePeerId) {
+                openContact(conn.peer);
+            }
+            
+            if (peer.id < conn.peer && window.crypto && crypto.subtle) {
+                generateE2EKey().then(key => {
+                    e2eKeys[conn.peer] = key;
+                    exportKey(key).then(jwk => {
+                        conn.send({type: 'e2e_key', jwk: jwk});
+                    });
+                });
+            }
+
+            const contacts = loadContacts();
+            if (contacts[conn.peer]) {
+                const pendingMsgs = contacts[conn.peer].messages.filter(m => m.type === 'local' && m.status === 'sent');
+                pendingMsgs.forEach(async m => {
+                    if (e2eKeys[conn.peer]) {
+                        const encryptedBody = await encryptMsg(m.rawText || m.body, e2eKeys[conn.peer]);
+                        conn.send({type: 'msg', name: myName, body: encryptedBody, time: m.time, msgId: m.msgId, isEncrypted: true});
+                    } else {
+                        conn.send({type: 'msg', name: myName, body: m.rawText || m.body, time: m.time, msgId: m.msgId});
+                    }
+                });
+            }
+        }
+    });
+
+    conn.on('data', data => {
+        if (data.type === 'profile') {
+            peerNames[conn.peer] = data.name;
+            if(data.avatar) peerAvatars[conn.peer] = data.avatar;
+            upsertContact(conn.peer, data.name);
+            if(activePeerId === conn.peer) openContact(conn.peer); 
+        }
+        else if (data.type === 'e2e_key') {
+            importKey(data.jwk).then(key => { e2eKeys[conn.peer] = key; }).catch(e => console.error("E2E anahtarı alınamadı", e));
+        }
+        else if (data.type === 'msg') {
+            (async () => {
+                playAudio('snd-msg');
+                let parsedRaw = data.body;
+                let parsed = data.body;
+                
+                if (data.isEncrypted && e2eKeys[conn.peer]) {
+                    try { 
+                        parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); 
+                        parsed = parseMarkdown(parsedRaw);
+                    } catch(e) { 
+                        parsed = "🔒 [Şifreli Mesaj Çözülemedi]"; 
+                        parsedRaw = parsed;
+                    }
+                } else if (data.isEncrypted && !e2eKeys[conn.peer]) {
+                    parsed = "🔒 [E2E Anahtarı Bekleniyor]";
+                    parsedRaw = parsed;
+                } else {
+                    parsed = parseMarkdown(parsedRaw);
+                }
+
+                const isSeen = (activePeerId === conn.peer && document.visibilityState === 'visible');
+                upsertContact(conn.peer, peerNames[conn.peer] || null, { type: 'remote', user: data.name, rawText: parsedRaw, body: parsed, time: data.time, msgId: data.msgId, status: isSeen ? 'seen' : 'delivered' });
+                
+                if (activePeerId === conn.peer) { addMessage(data.name, parsed, 'remote', data.time, true, isSeen ? 'seen' : 'delivered', data.msgId); }
+                if (isSeen) { conn.send({type: 'seen', msgId: data.msgId}); } else { conn.send({type: 'delivered', msgId: data.msgId}); }
+            })();
+        }
+        // KARŞIDAN GELEN DÜZENLEME İSTEĞİ
+        else if (data.type === 'edit') {
+            (async () => {
+                let parsedRaw = data.body;
+                if (data.isEncrypted && e2eKeys[conn.peer]) {
+                    try { parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); } catch(e) {}
+                }
+                const parsed = parseMarkdown(parsedRaw) + ' <small style="font-size:9px; opacity:0.6;">✏️ (düzenlendi)</small>';
+                
+                const contacts = loadContacts();
+                const msg = contacts[conn.peer]?.messages.find(m => m.msgId === data.msgId);
+                if (msg) {
+                    msg.rawText = parsedRaw;
+                    msg.body = parsed;
+                    saveContacts(contacts);
+                    if (activePeerId === conn.peer) {
+                        const bodyEl = document.querySelector(`.msg[data-msgid="${data.msgId}"] .msg-body`);
+                        if(bodyEl) bodyEl.innerHTML = parsed;
+                    }
+                }
+            })();
+        }
+        // KARŞIDAN GELEN SİLME İSTEĞİ
+        else if (data.type === 'delete') {
+            const contacts = loadContacts();
+            const contact = contacts[conn.peer];
+            const msg = contact?.messages.find(m => m.msgId === data.msgId);
+            if (msg) {
+                msg.isDeleted = true;
+                msg.body = '<span class="msg-deleted">🚫 Bu mesaj silindi</span>';
+                saveContacts(contacts);
+                if (activePeerId === conn.peer) {
+                    const bodyEl = document.querySelector(`.msg[data-msgid="${data.msgId}"] .msg-body`);
+                    if(bodyEl) bodyEl.innerHTML = msg.body;
+                    
+                    if(contact.pinnedMsg && contact.pinnedMsg.id === data.msgId) {
+                        contact.pinnedMsg = null;
+                        saveContacts(contacts);
+                        renderPinnedMessage();
+                    }
+                }
+            }
+        }
+        // KARŞIDAN GELEN SABİTLEME İSTEĞİ
+        else if (data.type === 'pin') {
+            const contacts = loadContacts();
+            if (contacts[conn.peer]) {
+                contacts[conn.peer].pinnedMsg = { id: data.msgId, text: data.text };
+                saveContacts(contacts);
+                if (activePeerId === conn.peer) renderPinnedMessage();
+            }
+        }
+        // KARŞIDAN GELEN SABİTLEME KALDIRMA İSTEĞİ
+        else if (data.type === 'unpin') {
+            const contacts = loadContacts();
+            if (contacts[conn.peer]) {
+                contacts[conn.peer].pinnedMsg = null;
+                saveContacts(contacts);
+                if (activePeerId === conn.peer) renderPinnedMessage();
+            }
+        }
+        else if (data.type === 'seen') updateMsgStatus(conn.peer, data.msgId, 'seen');
+        else if (data.type === 'delivered') updateMsgStatus(conn.peer, data.msgId, 'delivered');
+        else if (data.type === 'typing') { if(activePeerId === conn.peer) showTyping(data.name, data.state); }
+        else if (data.type === 'sos') handleSOS(data);
+        else if (data.type === 'offline') handlePeerDisconnect(conn.peer); 
+        else if (data.type === 'cancel_call') {
+            if (pendingCall) {
+                document.getElementById('incoming-call-panel').style.display = 'none';
+                document.getElementById('snd-call').pause();
+                pendingCall = null;
+            }
+            if (currentCall) { endCall(false); }
+        }
+    });
+
+    conn.on('close', () => handlePeerDisconnect(conn.peer));
+    conn.on('error', err => {});
+}
+
+function handlePeerDisconnect(peerId) {
+    connections = connections.filter(c => c.peer !== peerId);
+    const contacts = loadContacts();
+    if (contacts[peerId]) { contacts[peerId].lastSeen = Date.now(); saveContacts(contacts); }
+    updateOnlineList();
+    renderContacts();
+    if (activePeerId === peerId) {
+        const l = getLang();
+        document.getElementById('chat-header-status').innerText = l.offlineStatus + ': ' + formatLastSeen(Date.now());
+    }
+}
+
+window.addEventListener('beforeunload', () => { connections.forEach(c => { try { c.send({type:'offline'}); } catch(e){} }); });
+window.addEventListener('pagehide', () => { connections.forEach(c => { try { c.send({type:'offline'}); } catch(e){} }); });
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && activePeerId) {
+        const contacts = loadContacts();
+        let c = contacts[activePeerId];
+        if (c) {
+            let hasUnseen = false;
+            c.messages.forEach(m => {
+                if (m.type === 'remote' && m.status !== 'seen') { m.status = 'seen'; hasUnseen = true; }
+            });
+            if (hasUnseen) {
+                saveContacts(contacts);
+                const conn = connections.find(cn => cn.peer === activePeerId);
+                if (conn) {
+                    const lastRemote = [...c.messages].reverse().find(m => m.type === 'remote');
+                    if (lastRemote) conn.send({type: 'seen', msgId: lastRemote.msgId || lastRemote.time});
+                }
+            }
+        }
+    }
+});
+
+function updateMsgStatus(peerId, msgId, status) {
+    const contacts = loadContacts();
+    if (contacts[peerId]) {
+        let changed = false;
+        let foundIndex = contacts[peerId].messages.findIndex(m => (m.msgId === msgId) || (m.time === msgId));
+        if (foundIndex !== -1) {
+            for (let i = 0; i <= foundIndex; i++) {
+                let m = contacts[peerId].messages[i];
+                if (m.type === 'local' && m.status !== 'seen') {
+                    if (status === 'seen') m.status = 'seen';
+                    else if (status === 'delivered' && m.status === 'sent') m.status = 'delivered';
+                    changed = true;
+                    if (activePeerId === peerId) {
+                        const safeId = m.msgId || m.time.replace(/[:\s]/g, '');
+                        const el = document.getElementById('status-' + safeId);
+                        if (el) {
+                            el.innerHTML = m.status === 'sent' ? '✔' : '✔✔';
+                            el.className = m.status === 'seen' ? 'status-icon seen' : 'status-icon';
+                        }
+                    }
+                }
+            }
+        }
+        if (changed) saveContacts(contacts);
+    }
+}
+
+// ─── SOS ─────────────────────────────────────────────────────────────────────
+const seenSOS = new Set();
+let sosCooldownTimer = null;
+const SOS_COOLDOWN = 60;
+
+function sendSOS() {
+    const l = getLang();
+    if (connections.length === 0) { alert(l.noConn); return; }
+    const myName = document.getElementById('my-name-input').value;
+    const myId = document.getElementById('my-id').innerText;
+    const sosId = myId + '_' + Date.now();
+    const sosPacket = { type: 'sos', id: sosId, fromId: myId, fromName: myName, ttl: 5, hopCount: 0, timestamp: Date.now() };
+    seenSOS.add(sosId);
+    addSOSMessage(myName, 0, true);
+    connections.forEach(c => { try { c.send(sosPacket); } catch(e){} });
+    startSOSCooldown();
+}
+
+function handleSOS(data) {
+    if (seenSOS.has(data.id) || data.ttl <= 0) return;
+    seenSOS.add(data.id);
+    playAudio('snd-sos');
+    addSOSMessage(data.fromName, data.hopCount + 1, false);
+    const forwardPacket = { ...data, ttl: data.ttl - 1, hopCount: data.hopCount + 1 };
+    connections.forEach(c => { try { c.send(forwardPacket); } catch(e){} });
+}
+
+function addSOSMessage(fromName, hops, isSelf) {
+    const box = document.getElementById('chat-box');
+    const l = getLang();
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const hopText = hops > 0 ? '<div class="sos-hop">↳ ' + hops + ' ' + l.sosHops + '</div>' : '';
+    const div = document.createElement('div');
+    div.className = 'msg msg-sos';
+    div.innerHTML = '<div class="sos-label">⚠ ' + l.sosReceived + '</div><b style="font-size:15px;">' + (isSelf ? '🆘 ' : '🚨 ') + fromName + '</b><div class="sos-from">' + l.sosFrom + ': ' + fromName + '</div>' + hopText + '<div class="msg-meta" style="color:#884444;">' + time + '</div>';
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function startSOSCooldown() {
+    const btn = document.getElementById('sos-btn');
+    const timerEl = document.getElementById('sos-timer');
+    const l = getLang();
+    btn.disabled = true;
+    let remaining = SOS_COOLDOWN;
+    timerEl.innerText = remaining + ' ' + l.sosCooldown;
+    sosCooldownTimer = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(sosCooldownTimer);
+            btn.disabled = false;
+            timerEl.innerText = '';
+            btn.innerText = l.sosBtn;
+        } else { timerEl.innerText = remaining + ' ' + l.sosCooldown; }
+    }, 1000);
+}
+
+// ─── CALLS (AUDIO & VIDEO) ───────────────────────────────────────────────────
+function startCall(type) {
+    const l = getLang();
+    if (connections.length === 0) { alert(l.noConn); return; }
+    const targetId = activePeerId && connections.find(c => c.peer === activePeerId) ? activePeerId : connections[0].peer;
+    const constraints = type === 'video' ? { video: true, audio: true } : { video: false, audio: true };
+
+    navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+        const call = peer.call(targetId, stream, { metadata: { type: type } });
+        currentCall = call;
+        
+        document.getElementById('call-name').innerText = peerNames[targetId] || peerIdToName(targetId);
+        document.getElementById('call-status').innerText = l.calling;
+        
+        if (type === 'video') {
+            document.getElementById('call-icon').style.display = 'none';
+            document.getElementById('call-videos').style.display = 'flex';
+            document.getElementById('local-video').srcObject = stream;
+        } else {
+            document.getElementById('call-icon').style.display = 'block';
+            document.getElementById('call-videos').style.display = 'none';
+        }
+
+        document.getElementById('call-overlay').style.display = 'flex';
+        playAudio('snd-call');
+
+        call.on('stream', remoteStream => {
+            document.getElementById('snd-call').pause();
+            document.getElementById('call-status').innerText = l.connected;
+            if (type === 'video') { document.getElementById('remote-video').srcObject = remoteStream; } 
+            else { document.getElementById('remote-audio').srcObject = remoteStream; }
+        });
+        call.on('close', () => endCall());
+        call.on('error', () => endCall());
+    }).catch(() => alert(l.micDenied));
+}
+
+function handleIncomingCall(call) {
+    pendingCall = call;
+    pendingCallType = (call.metadata && call.metadata.type) ? call.metadata.type : 'audio';
+    const l = getLang();
+    
+    const callerName = peerNames[call.peer] || peerIdToName(call.peer);
+    const label = pendingCallType === 'video' ? '📹 ' : '📞 ';
+    const subText = pendingCallType === 'video' ? l.incomingVideo : l.incomingVoice;
+
+    document.getElementById('incoming-call-name').innerText = label + callerName;
+    document.getElementById('incoming-call-sub').innerText = subText;
+    document.getElementById('incoming-call-panel').style.display = 'flex';
+    playAudio('snd-call');
+}
+
+function answerCall() {
+    document.getElementById('incoming-call-panel').style.display = 'none';
+    document.getElementById('snd-call').pause();
+    if (!pendingCall) return;
+    
+    const l = getLang();
+    const constraints = pendingCallType === 'video' ? { video: true, audio: true } : { video: false, audio: true };
+
+    navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+        pendingCall.answer(stream);
+        currentCall = pendingCall;
+        pendingCall = null;
+        
+        document.getElementById('call-name').innerText = peerNames[currentCall.peer] || peerIdToName(currentCall.peer);
+        document.getElementById('call-status').innerText = l.connected;
+        
+        if (pendingCallType === 'video') {
+            document.getElementById('call-icon').style.display = 'none';
+            document.getElementById('call-videos').style.display = 'flex';
+            document.getElementById('local-video').srcObject = stream;
+        } else {
+            document.getElementById('call-icon').style.display = 'block';
+            document.getElementById('call-videos').style.display = 'none';
+        }
+
+        document.getElementById('call-overlay').style.display = 'flex';
+
+        currentCall.on('stream', remoteStream => {
+            if (pendingCallType === 'video') { document.getElementById('remote-video').srcObject = remoteStream; } 
+            else { document.getElementById('remote-audio').srcObject = remoteStream; }
+        });
+        currentCall.on('close', () => endCall());
+        currentCall.on('error', () => endCall());
+    }).catch(() => alert(l.micDenied));
+}
+
+function rejectCall() {
+    document.getElementById('incoming-call-panel').style.display = 'none';
+    document.getElementById('snd-call').pause();
+    if (pendingCall) { pendingCall.close(); pendingCall = null; }
+}
+
+function endCall(isBroadcast = true) {
+    if (currentCall) { currentCall.close(); currentCall = null; }
+    if (pendingCall) { pendingCall.close(); pendingCall = null; }
+    
+    if (isBroadcast) {
+        connections.forEach(c => { try { c.send({type: 'cancel_call'}); } catch(e){} });
+    }
+
+    document.getElementById('snd-call').pause();
+    document.getElementById('call-overlay').style.display = 'none';
+    document.getElementById('incoming-call-panel').style.display = 'none';
+    
+    const localVid = document.getElementById('local-video');
+    const remoteVid = document.getElementById('remote-video');
+    if (localVid.srcObject) { localVid.srcObject.getTracks().forEach(track => track.stop()); localVid.srcObject = null; }
+    if (remoteVid.srcObject) { remoteVid.srcObject.getTracks().forEach(track => track.stop()); remoteVid.srcObject = null; }
+}
+
+// ─── MESSAGES & MEDIA ────────────────────────────────────────────────────────
+function parseMarkdown(text) {
+    if (text === 'acetalkplanspremium0') { alert("Premium Easter Egg (Tested)!"); return "Premium Kodu Girildi"; }
+    return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/`(.*?)`/g, '<code>$1</code>');
+}
+
+async function sendMessage() {
+    const input = document.getElementById('message-input');
+    const myName = document.getElementById('my-name-input').value;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const msgId = Date.now().toString();
+
+    if (input.value.trim() === '') return;
+
+    if (!activePeerId) {
+        const l = getLang();
+        alert(l.noConn); 
+        return;
+    }
+
+    const rawBody = input.value;
+    const parsed = parseMarkdown(rawBody);
+    
+    upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', rawText: rawBody, body: parsed, time: time, msgId: msgId, status: 'sent' });
+    addMessage('', parsed, 'local', time, true, 'sent', msgId);
+    input.value = '';
+    notifyTyping(false);
+
+    const targets = connections.filter(c => c.peer === activePeerId);
+    if (targets.length > 0) {
+        for (let c of targets) {
+            if (e2eKeys[c.peer]) {
+                const encryptedBody = await encryptMsg(rawBody, e2eKeys[c.peer]);
+                try { c.send({type: 'msg', name: myName, body: encryptedBody, time: time, msgId: msgId, isEncrypted: true}); } catch(e){}
+            } else {
+                try { c.send({type: 'msg', name: myName, body: rawBody, time: time, msgId: msgId}); } catch(e){}
+            }
+        }
+    }
+}
+
+function addMessage(user, text, type, time, scroll, status = 'sent', msgId = null) {
+    const box = document.getElementById('chat-box');
+    const welcome = document.getElementById('welcome-msg');
+    if (welcome) welcome.style.display = 'none';
+    const displayTime = time.substring(0, 5);
+    const div = document.createElement('div');
+    
+    div.className = 'msg ' + type;
+    
+    if(msgId) {
+        div.setAttribute('data-msgid', msgId);
+        div.oncontextmenu = (e) => showContextMenu(e, msgId, type);
+    }
+    
+    let ticks = '';
+    if (type === 'local') {
+        const safeId = msgId || time.replace(/[:\s]/g, '');
+        let tickHtml = '✔';
+        let tickClass = 'status-icon';
+        if (status === 'delivered') { tickHtml = '✔✔'; }
+        if (status === 'seen') { tickHtml = '✔✔'; tickClass = 'status-icon seen'; }
+        ticks = `<span id="status-${safeId}" class="${tickClass}">${tickHtml}</span>`;
+    }
+
+    let translateBtn = '';
+    const tempId = 'msg-' + Math.floor(Math.random()*1000000);
+    
+    if(type === 'remote' && !text.includes('<img') && !text.includes('<video') && !text.includes('<audio') && !text.includes('file-card') && !text.includes('msg-deleted')) {
+        translateBtn = `<button class="translate-btn" onclick="translateMsg(this, 'body-${tempId}')" title="Çevir">🌐</button>`;
+    }
+
+    div.innerHTML = (user ? '<strong>' + user + '</strong><br>' : '') + 
+        '<div class="msg-body" id="body-' + tempId + '">' + text + '</div>' +
+        '<div class="msg-meta">' + translateBtn + displayTime + ticks + '</div>';
+    box.appendChild(div);
+
+    applyDynamicTranslations(div);
+
+    if (scroll) box.scrollTop = box.scrollHeight;
+}
+
+// ─── GÜVENSİZ DOSYA (EXE) İNDİRME ────────────────────────────────────────────
+let unsafeUrl = '';
+let unsafeFilename = '';
+
+window.confirmExeDownload = function(e, url, filename) {
+    e.preventDefault(); 
+    unsafeUrl = url;
+    unsafeFilename = filename;
+    document.getElementById('unsafe-file-modal').style.display = 'flex';
+    return false;
+}
+
+function closeUnsafeModal() {
+    document.getElementById('unsafe-file-modal').style.display = 'none';
+}
+
+function confirmUnsafeDownload() {
+    document.getElementById('unsafe-file-modal').style.display = 'none';
+    const a = document.createElement('a');
+    a.href = unsafeUrl;
+    a.download = unsafeFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function openImageViewer(src) {
+    document.getElementById('image-viewer-img').src = src;
+    document.getElementById('image-viewer').style.display = 'flex';
+}
+
+function closeImageViewer() {
+    document.getElementById('image-viewer').style.display = 'none';
+    document.getElementById('image-viewer-img').src = '';
+}
+
+function handleMedia(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    input.value = ''; 
+
+    const l = getLang();
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 50) {
+        alert(l.fileTooBig);
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async e => {
+        const b64 = e.target.result;
+        let mediaHtml = '';
+        
+        const ext = file.name.split('.').pop().toLowerCase();
+        const isExe = ['exe', 'deb', 'rpm', 'bat', 'sh', 'msi', 'apk', 'cmd'].includes(ext);
+        const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'heic', 'heif', 'ico'].includes(ext);
+        const isVid = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv'].includes(ext);
+        const isAud = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma'].includes(ext);
+        const isPdf = ext === 'pdf';
+
+        const dlText = l.downloadBtn || 'Yükle';
+        const pvText = l.previewBtn || 'Önizle';
+
+        if (isImg) {
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <img src="${b64}" onclick="openImageViewer(this.src)" style="max-width:100%; max-height:200px; cursor:pointer; border:1px solid #ddd; display:block; margin-bottom:8px;">
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
+        } else if (isVid) {
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <video src="${b64}" controls style="max-width:100%; border: 1px solid var(--skype-blue); display:block; margin-bottom:8px;"></video>
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
+        } else if (isAud) {
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <audio src="${b64}" controls style="max-width:100%; display:block; margin-bottom:8px;"></audio>
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
+        } else if (isExe) {
+            mediaHtml = `
+                <div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--sos-red); margin-top:5px; display:flex; flex-direction:column; gap:8px;">
+                    <strong style="font-size:12px; word-break:break-all; color:#333;">📦 ${file.name}</strong>
+                    <a href="#" onclick="return confirmExeDownload(event, '${b64}', '${file.name}')" style="font-size:11px; color:var(--sos-red); text-decoration:none; font-weight:bold; background: rgba(231,76,60,0.1); padding: 5px 10px; align-self: flex-start;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
+        } else {
+            const previewLink = isPdf ? `<a href="${b64}" target="_blank" style="font-size:11px; color:#8e44ad; text-decoration:none; font-weight:bold; background: rgba(142,68,173,0.1); padding: 5px 10px; margin-right:5px;">👁 <span data-i18n="previewBtn">${pvText}</span></a>` : '';
+            mediaHtml = `
+                <div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--skype-blue); margin-top:5px; display:flex; flex-direction:column; gap:8px;">
+                    <strong style="font-size:12px; word-break:break-all; color:#333;">📄 ${file.name}</strong>
+                    <div style="display:flex; gap: 5px;">
+                        ${previewLink}
+                        <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (mediaHtml) await sendSpecialMessage(mediaHtml);
+    };
+    reader.readAsDataURL(file);
+}
+
+async function sendSpecialMessage(content) {
+    const myName = document.getElementById('my-name-input').value;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const msgId = Date.now().toString();
+    
+    if (!activePeerId) {
+        const l = getLang();
+        alert(l.noConn);
+        return;
+    }
+
+    upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', rawText: content, body: content, time: time, msgId: msgId, status: 'sent' });
+    addMessage('', content, 'local', time, true, 'sent', msgId);
+
+    const targets = connections.filter(c => c.peer === activePeerId);
+    if (targets.length > 0) {
+        for (let c of targets) {
+            if (e2eKeys[c.peer]) {
+                const encryptedBody = await encryptMsg(content, e2eKeys[c.peer]);
+                try { c.send({type: 'msg', name: myName, body: encryptedBody, time: time, msgId: msgId, isEncrypted: true}); } catch(e){}
+            } else {
+                try { c.send({type: 'msg', name: myName, body: content, time: time, msgId: msgId}); } catch(e){}
+            }
+        }
+    }
+}
+
+function notifyTyping(state = true) {
+    if (!activePeerId) return;
+    const myName = document.getElementById('my-name-input').value;
+    const targetConn = connections.find(c => c.peer === activePeerId);
+    if(targetConn) {
+        try { targetConn.send({type: 'typing', name: myName, state: state}); } catch(e){}
+    }
+    if (state) { clearTimeout(typingTimeout); typingTimeout = setTimeout(() => notifyTyping(false), 3000); }
+}
+
+function showTyping(name, state) {
+    const ui = document.getElementById('typing-ui');
+    const l = getLang();
+    if (state) { ui.innerText = name + ' ' + l.typing; ui.style.display = 'block'; }
+    else { ui.style.display = 'none'; }
+}
+
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+        let v = (hash >> (i * 8)) & 0xFF;
+        v = Math.max(40, Math.min(180, v));
+        color += ('00' + v.toString(16)).substr(-2);
+    }
+    return color;
+}
+
+function playAudio(id) { document.getElementById(id).play().catch(() => {}); }
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => e.preventDefault());
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        const input = document.getElementById('media-input');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        handleMedia(input);
+    }
+});
+</script>
+</body>
+</html>
