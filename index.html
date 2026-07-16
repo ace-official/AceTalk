@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AceTalk | Simple Messenger</title>
-    <!-- Mobil için sıkılaştırılmış viewport -->
+    <!-- Ölçeklendirme sorunu için viewport güncellendi -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" type="image/png" href="icon-192-new.png?v=3">
     <link rel="apple-touch-icon" href="icon-192-new.png?v=3">
@@ -66,17 +66,13 @@
             80%     { transform: translateX(2px); }
         }
 
-        /* ANDROID KESİN ÇÖZÜM: 100dvh ve position fixed ile ekranı çivileme */
         body, html { 
-            height: 100dvh; 
-            width: 100vw; 
+            height: 100%; 
+            width: 100%; /* Taşmaları engelle */
             margin: 0; 
-            padding: 0;
             font-family: 'Ubuntu', sans-serif; 
             font-weight: 300; 
-            overflow: hidden; 
-            position: fixed; 
-            top: 0; left: 0;
+            overflow: hidden; /* Taşmaları engelle */
             background-color: var(--sidebar-bg); 
             display: flex; 
             flex-direction: column; 
@@ -99,7 +95,7 @@
         .mobile-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
         .mobile-btn:hover { color: var(--skype-blue); }
 
-        .app-container { flex: 1; display: flex; width: 100%; height: 100%; opacity: 0; position: relative; overflow: hidden; }
+        .app-container { flex: 1; display: flex; width: 100%; opacity: 0; position: relative; overflow: hidden; }
         .loaded .app-container { opacity: 1; }
 
         /* SIDEBAR & PROFILE STATUS BOX */
@@ -306,7 +302,7 @@
             
             #incoming-call-panel { right: 5%; bottom: 20px; min-width: 90%; }
             .msg { max-width: 85%; }
-            .app-container { height: calc(100dvh - 60px); width: 100%; overflow-x: hidden; }
+            .app-container { height: calc(100dvh - 60px); width: 100%; overflow-x: hidden; } /* Yana taşma çözüldü */
             .main-chat { height: 100%; width: 100%; }
             .input-area { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
             
@@ -580,10 +576,12 @@
 </div>
 
 <script>
+// ─── KRİTİK DEĞİŞKENLER ─────────────────────────────────────────────────────
 let peer = null;
-let peerHeartbeats = {}; 
-let peerIntervals = {}; 
+let peerHeartbeats = {}; // Bağlantı sürekliliği (ping) kontrolü için
+let peerIntervals = {}; // Ping döngüleri
 
+// Kullanıcı ekrana tıkladığında bildirim izni iste (modern tarayıcı kuralları)
 document.addEventListener('click', function requestNotif() {
     if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
@@ -591,6 +589,7 @@ document.addEventListener('click', function requestNotif() {
     document.removeEventListener('click', requestNotif);
 }, { once: true });
 
+// ─── WALLPAPER ───────────────────────────────────────────────────────────────
 const DEFAULT_WALLPAPER = "https://raw.githubusercontent.com/benmalakko-netizen/AceTalk/main/Acetalkwallpaper.jpg";
 
 function applyWallpaper(url) {
@@ -609,6 +608,7 @@ function setWallpaper(input) {
 }
 function resetWallpaper() { localStorage.removeItem('acetalk_wallpaper'); applyWallpaper(DEFAULT_WALLPAPER); }
 
+// ─── MOBILE CONTROLS ─────────────────────────────────────────────────────────
 function toggleMobileSidebar(side) {
     const left = document.querySelector('.sidebar');
     const right = document.querySelector('.right-bar');
@@ -618,6 +618,7 @@ function toggleMobileSidebar(side) {
     if(overlay) overlay.classList.add('active');
 }
 
+// ─── AVATAR / PROFILE LOGIC ──────────────────────────────────────────────────
 let myAvatarBase64 = localStorage.getItem('acetalk_avatar') || null;
 let peerAvatars = {}; 
 
@@ -660,14 +661,19 @@ function updateMyProfile() {
     connections.forEach(c => { try { c.send({type: 'profile', name: myName, avatar: myAvatarBase64}); } catch(e){} });
 }
 
+// ─── DİLLER ──────────────────────────────────────────────────────────────────
 const i18n = {
     tr: { 
         appInfo: "AceTalk MileStone 3 • Kurucu: Ace © 2026 • Uçtan uca şifreli • Designed in Baku", slogan: "Simple Messenger", myName: "ADIM", idPlaceholder: "Karşı tarafın ismi...", connectBtn: "BAĞLAN", voiceCall: "SESLİ ARA", videoCall: "KAMERALI ARA", secureChat: "Güvenli ve şifreli uçtan uca sohbet.", enterId: "Bağlanmak için bir isim girin.", msgPlaceholder: "Mesajınızı yazın...", calling: "ARANIYOR...", closeCall: "KAPAT", typing: "yazıyor...", sosBtn: "🚨 ACİL", sosCooldown: "saniye bekle", sosReceived: "ACİL YARDIM ÇAĞRISI", sosFrom: "Gönderen", sosHops: "ağ üzerinden ulaştı", sosNoConn: "Bağlı kimse yok! Önce birine bağlan.", wallpaperBtn: "❖ Duvar Kağıdı", resetWpBtn: "↺ Varsayılan WP", resetAccBtn: "⚠ Hesabı Sıfırla", micDenied: "Kamera/Mikrofon erişimi reddedildi!", noConn: "Şimdilik yalnızsın.", emptyOnline: "Burası çok ıssız..", connected: "🟢 BAĞLANDI", contactsTitle: "KİŞİLER", onlineNow: "ŞU AN ÇEVRİMİÇİ", savedContacts: "KAYDEDİLEN", noContacts: "Henüz kişi yok.\nBiri ile konuştuktan sonra burada görünür.", onlineStatus: "Çevrimiçi", offlineStatus: "Son görülme", incomingVoice: "Sesli arama geliyor", incomingVideo: "Görüntülü arama geliyor", answerBtn: "CEVAPLA", rejectBtn: "REDDET", setupTitle: "Hesabını oluştur", usernamePlace: "Kullanıcı Adı", startBtn: "BAŞLA ✓", setupDesc: "Bu senin eşsiz ID'n olacak. Başkaları sana bu isimle bağlanacak.", delTitle: "Kişiyi sil", delDesc: "kişisini ve tüm mesaj geçmişini silmek istediğine emin misin?", delBtn: "SİL", cancelBtn: "İPTAL", resetTitle: "Hesabı sıfırla", resetDesc: "Kullanıcı adın, görünen ismin ve tüm konuşma geçmişin silinecek. Bu işlem geri alınamaz.", resetBtn: "SIFIRLA", fileTooBig: "Dosya boyutu çok büyük! Maksimum 50 MB.", nameTaken: "Bu isim alınmış! Şunlardan birini dene:", nameShort: "En az 3 harf veya rakam olmalı!", checking: "Uygunluk kontrol ediliyor...", connError: "Bağlantı hatası, tekrar deneyin.", nameInUse: "Bu isim başka bir cihazda açık!", videoMsg: "Video", imageMsg: "Resim", fileMsg: "Dosya", callName: "Birileri arıyor...", translated: "(Çevrildi)", downloadBtn: "Yükle", previewBtn: "Önizle",
-        unsafeTitle: "Güvenlik Uyarısı", unsafeWarn: "Güvenli dosya olmayabilir!<br>Yine de indirmek istiyor musun?", editTitle: "Mesajı Düzenle", saveBtn: "KAYDET", delMsgTitle: "Mesajı Sil", delMsgDesc: "Bu mesajı herkesten silmek istediğine emin misin?"
+        unsafeTitle: "Güvenlik Uyarısı", unsafeWarn: "Güvenli dosya olmayabilir!<br>Yine de indirmek istiyor musun?",
+        editTitle: "Mesajı Düzenle", saveBtn: "KAYDET",
+        delMsgTitle: "Mesajı Sil", delMsgDesc: "Bu mesajı herkesten silmek istediğine emin misin?"
     },
     en: { 
         appInfo: "AceTalk MileStone 3 • Founder: Ace © 2026 • End-to-End Encrypted • Designed in Baku", slogan: "Simple Messenger", myName: "MY NAME", idPlaceholder: "Their username...", connectBtn: "CONNECT", voiceCall: "VOICE CALL", videoCall: "VIDEO CALL", secureChat: "Secure end-to-end encrypted chat.", enterId: "Enter an ID to connect.", msgPlaceholder: "Type your message...", calling: "CALLING...", closeCall: "HANG UP", typing: "is typing...", sosBtn: "🚨 SOS", sosCooldown: "seconds wait", sosReceived: "EMERGENCY SOS RECEIVED", sosFrom: "From", sosHops: "hops away", sosNoConn: "Nobody connected!", wallpaperBtn: "❖ Wallpaper", resetWpBtn: "↺ Default WP", resetAccBtn: "⚠ Reset Account", micDenied: "Camera/Mic access denied!", noConn: "You're alone for now.", emptyOnline: "It's so deserted here..", connected: "🟢 CONNECTED", contactsTitle: "CONTACTS", onlineNow: "ONLINE NOW", savedContacts: "SAVED", noContacts: "No contacts yet.\nAppears after chatting.", onlineStatus: "Online", offlineStatus: "Last seen", incomingVoice: "Incoming voice call", incomingVideo: "Incoming video call", answerBtn: "ANSWER", rejectBtn: "REJECT", setupTitle: "Create your account", usernamePlace: "Username", startBtn: "START ✓", setupDesc: "This is your unique ID. Others will connect using this name.", delTitle: "Delete contact", delDesc: "and all chat history? Are you sure?", delBtn: "DELETE", cancelBtn: "CANCEL", resetTitle: "Reset account", resetDesc: "Your username, display name, and all history will be deleted. This cannot be undone.", resetBtn: "RESET", fileTooBig: "File is too large! Maximum 50 MB.", nameTaken: "Name is taken! Try one of these:", nameShort: "Must be at least 3 letters or numbers!", checking: "Checking availability...", connError: "Connection error, try again.", nameInUse: "This name is open on another device!", videoMsg: "Video", imageMsg: "Image", fileMsg: "File", callName: "Someone is calling...", translated: "(Translated)", downloadBtn: "Download", previewBtn: "Preview",
-        unsafeTitle: "Security Warning", unsafeWarn: "This file may be unsafe!<br>Do you still want to download?", editTitle: "Edit Message", saveBtn: "SAVE", delMsgTitle: "Delete Message", delMsgDesc: "Are you sure you want to delete this message for everyone?"
+        unsafeTitle: "Security Warning", unsafeWarn: "This file may be unsafe!<br>Do you still want to download?",
+        editTitle: "Edit Message", saveBtn: "SAVE",
+        delMsgTitle: "Delete Message", delMsgDesc: "Are you sure you want to delete this message for everyone?"
     }
 };
 
@@ -691,12 +697,15 @@ function setLanguage(lang) {
     localStorage.setItem('acetalk_lang', lang);
     const selectEl = document.getElementById('lang-select');
     if (selectEl && selectEl.value !== lang) selectEl.value = lang;
+
     applyDynamicTranslations(); 
+    
     renderContacts();
     updateOnlineList();
     if (activePeerId) openContact(activePeerId); 
 }
 
+// ─── GOOGLE TRANSLATE ────────────────────────────────────────────────────────
 async function translateMsg(btn, bodyId) {
     if(btn.innerText === '⏳') return;
     const bodyDiv = document.getElementById(bodyId);
@@ -718,6 +727,7 @@ async function translateMsg(btn, bodyId) {
     }
 }
 
+// ─── CONTACTS STORAGE ────────────────────────────────────────────────────────
 function loadContacts() { try { return JSON.parse(localStorage.getItem('acetalk_contacts') || '{}'); } catch { return {}; } }
 function saveContacts(contacts) { localStorage.setItem('acetalk_contacts', JSON.stringify(contacts)); }
 
@@ -758,14 +768,13 @@ function openContact(peerId) {
     const isOnline = connections.find(c => c.peer === peerId);
     const l = getLang();
     headerStatus.innerText = isOnline ? l.onlineStatus : (l.offlineStatus + ': ' + formatLastSeen(contact.lastSeen));
-    if (isOnline) { headerStatus.style.color = "var(--call-green)"; } else { headerStatus.style.color = "#999"; }
 
     const box = document.getElementById('chat-box');
     const welcome = document.getElementById('welcome-msg');
     if (welcome) welcome.style.display = 'none';
     box.innerHTML = '';
 
-    renderPinnedMessage(); 
+    renderPinnedMessage(); // Sabitlenmiş mesajı ekrana getirir
 
     let hasUnseen = false;
     contact.messages.forEach(m => {
@@ -884,10 +893,11 @@ function updateOnlineList() {
     });
 }
 
-// CONTEXT MENU (SAĞ TIK) İŞLEMLERİ
+// ─── SAĞ TIK (CONTEXT MENU) İŞLEMLERİ ──────────────────────────────────────────
 let ctxMsgId = null;
 let ctxMsgType = null;
 
+// Menüyü dışarı tıklayınca kapat
 document.addEventListener('click', (e) => {
     if (!e.target.closest('#context-menu')) {
         document.getElementById('context-menu').style.display = 'none';
@@ -928,6 +938,7 @@ function showContextMenu(e, msgId, type) {
     document.getElementById('ctx-pin').innerHTML = isPinned ? '📌 Sabitlemeyi Kaldır' : '📌 Sabitle';
 }
 
+// DÜZENLEME MODALI FONKSİYONLARI
 function handleCtxEdit() {
     document.getElementById('context-menu').style.display = 'none';
     if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
@@ -942,7 +953,9 @@ function handleCtxEdit() {
     document.getElementById('edit-msg-input').focus();
 }
 
-function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+}
 
 async function confirmEditMsg() {
     const input = document.getElementById('edit-msg-input');
@@ -976,13 +989,17 @@ async function confirmEditMsg() {
     }
 }
 
+// SİLME MODALI FONKSİYONLARI
 function handleCtxDelete() {
     document.getElementById('context-menu').style.display = 'none';
     if(!ctxMsgId || ctxMsgType !== 'local' || !activePeerId) return;
+    
     document.getElementById('delete-msg-modal').style.display = 'flex';
 }
 
-function closeDeleteMsgModal() { document.getElementById('delete-msg-modal').style.display = 'none'; }
+function closeDeleteMsgModal() {
+    document.getElementById('delete-msg-modal').style.display = 'none';
+}
 
 function confirmDeleteMsg() {
     document.getElementById('delete-msg-modal').style.display = 'none';
@@ -1000,9 +1017,13 @@ function confirmDeleteMsg() {
     const bodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`);
     if(bodyEl) bodyEl.innerHTML = msg.body;
 
-    if (contact.pinnedMsg && contact.pinnedMsg.id === ctxMsgId) { unpinCurrent(new Event('click')); }
+    if (contact.pinnedMsg && contact.pinnedMsg.id === ctxMsgId) {
+        unpinCurrent(new Event('click')); 
+    }
     
-    connections.filter(c => c.peer === activePeerId).forEach(c => { c.send({type: 'delete', msgId: ctxMsgId}); });
+    connections.filter(c => c.peer === activePeerId).forEach(c => {
+        c.send({type: 'delete', msgId: ctxMsgId});
+    });
 }
 
 function handleCtxPin() {
@@ -1039,7 +1060,10 @@ function unpinCurrent(e) {
         contacts[activePeerId].pinnedMsg = null;
         saveContacts(contacts);
         renderPinnedMessage();
-        connections.filter(c => c.peer === activePeerId).forEach(c => { c.send({type: 'unpin'}); });
+        
+        connections.filter(c => c.peer === activePeerId).forEach(c => {
+            c.send({type: 'unpin'});
+        });
     }
 }
 
@@ -1059,12 +1083,16 @@ function renderPinnedMessage() {
     }
 }
 
-// SETUP & PEER CONNECTIONS
+// ─── SETUP & PEER CONNECTIONS ───────────────────────────────────────────────
 window.addEventListener('load', () => {
     const saved = localStorage.getItem('acetalk_wallpaper');
     applyWallpaper(saved || DEFAULT_WALLPAPER);
     updateMyAvatarUI();
     setLanguage(currentLang);
+
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 
     const savedUser = localStorage.getItem('acetalk_username');
     if (savedUser) {
@@ -1094,9 +1122,15 @@ function tryCreateAccount() {
     btn.disabled = true;
 
     const peerId = 'ace_' + raw;
+    
     if (peer) { try { peer.destroy(); } catch(e){} }
     
-    peer = new Peer(peerId, { host: '0.peerjs.com', port: 443, secure: true, pingInterval: 10000 });
+    peer = new Peer(peerId, { 
+        host: '0.peerjs.com', 
+        port: 443, 
+        secure: true, 
+        pingInterval: 10000 
+    });
 
     connectionTimeout = setTimeout(() => {
         btn.disabled = false;
@@ -1112,6 +1146,7 @@ function tryCreateAccount() {
         
         document.getElementById('phone-setup').style.display = 'none';
         document.getElementById('my-name-input').value = localStorage.getItem('acetalk_displayname');
+        
         document.getElementById('my-id').innerText = '@' + raw; 
         document.body.classList.add('loaded');
         
@@ -1139,7 +1174,9 @@ function tryCreateAccount() {
                 sBtn.onclick = () => { document.getElementById('username-input').value = raw + s; tryCreateAccount(); };
                 sugDiv.appendChild(sBtn);
             });
-        } else { errDiv.innerText = l.connError + " Detay: " + err.type; }
+        } else { 
+            errDiv.innerText = l.connError + " Detay: " + err.type; 
+        }
         
         if (peer) { peer.destroy(); peer = null; }
     });
@@ -1178,6 +1215,7 @@ function initPeer(username) {
             if (peer) { peer.destroy(); peer = null; }
             document.body.classList.remove('loaded');
         } else {
+            console.warn("Bağlantı koptu, yeniden deneniyor...");
             setTimeout(() => { if(!peer || peer.disconnected) initPeer(username); }, 5000);
         }
     });
@@ -1186,9 +1224,12 @@ function initPeer(username) {
     peer.on('call', handleIncomingCall);
 }
 
-// E2E ENCRYPTION
+// ─── E2E ENCRYPTION LOGIC ──────────────────────────────────────────────────
 let e2eKeys = {}; 
-async function generateE2EKey() { return await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]); }
+
+async function generateE2EKey() {
+    return await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
+}
 async function exportKey(key) { return await crypto.subtle.exportKey("jwk", key); }
 async function importKey(jwk) { return await crypto.subtle.importKey("jwk", jwk, {name: "AES-GCM"}, true, ["encrypt", "decrypt"]); }
 
@@ -1208,7 +1249,7 @@ async function decryptMsg(encryptedPayload, key) {
     return new TextDecoder().decode(decrypted);
 }
 
-// CONTACT CONTROLS
+// ─── CONTACT CONTROLS & RESET ────────────────────────────────────────────────
 let _deleteTargetId = null;
 function openDeleteModal(peerId, e) {
     e.stopPropagation();
@@ -1236,8 +1277,14 @@ function confirmDelete() {
     closeDeleteModal(); renderContacts();
 }
 
-function openResetModal() { closeAllMobileMenus(); document.getElementById('reset-modal').style.display = 'flex'; }
-function closeResetModal() { document.getElementById('reset-modal').style.display = 'none'; }
+function openResetModal() { 
+    closeAllMobileMenus(); 
+    document.getElementById('reset-modal').style.display = 'flex'; 
+}
+
+function closeResetModal() { 
+    document.getElementById('reset-modal').style.display = 'none'; 
+}
 
 function confirmResetAccount() {
     try {
@@ -1245,10 +1292,16 @@ function confirmResetAccount() {
             connections.forEach(c => { try { c.send({type:'offline'}); c.close(); } catch(e){} });
         }
         if (peer) { try { peer.destroy(); } catch(e){} }
-    } catch(e) {}
+    } catch(e) {
+        console.warn("Bağlantı kapatma hatası:", e);
+    }
+
     const wp = localStorage.getItem('acetalk_wallpaper');
     localStorage.clear();
-    if (wp) localStorage.setItem('acetalk_wallpaper', wp);
+    if (wp) {
+        localStorage.setItem('acetalk_wallpaper', wp);
+    }
+
     window.location.href = window.location.pathname + window.location.search;
 }
 
@@ -1284,34 +1337,28 @@ function setupConn(conn) {
             updateOnlineList();
             renderContacts();
             
-            if (!activePeerId) openContact(conn.peer);
+            if (!activePeerId) {
+                openContact(conn.peer);
+            }
             
-            // YENİ ICE ÇÖZÜMÜ: Tarayıcı Ağ Kartından Anlık Çevrimdışı Yakalama
-            setTimeout(() => {
-                if (conn.peerConnection) {
-                    conn.peerConnection.oniceconnectionstatechange = () => {
-                        const state = conn.peerConnection.iceConnectionState;
-                        if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-                            handlePeerDisconnect(conn.peer);
-                        }
-                    };
-                }
-            }, 1000);
-
-            // Gelişmiş Heartbeat / Ping Döngüsü
+            // Heartbeat (Ping) Başlangıcı - Anlık Çevrimdışı Yakalama İçin
             peerHeartbeats[conn.peer] = Date.now();
-            if(peerIntervals[conn.peer]) clearInterval(peerIntervals[conn.peer]);
             peerIntervals[conn.peer] = setInterval(() => {
-                if (conn.open) { try { conn.send({type: 'ping'}); } catch(e) {} }
-                if (Date.now() - peerHeartbeats[conn.peer] > 10000) { // 10 Saniye dayanma süresi
+                if (conn.open) {
+                    try { conn.send({type: 'ping'}); } catch(e) {}
+                }
+                // 12 Saniye boyunca karşıdan hiçbir paket (ping, mesaj vs) gelmezse bağlantı kopmuş sayılır
+                if (Date.now() - peerHeartbeats[conn.peer] > 12000) {
                     handlePeerDisconnect(conn.peer);
                 }
-            }, 3000);
+            }, 4000); // Her 4 saniyede bir ping at
 
             if (peer.id < conn.peer && window.crypto && crypto.subtle) {
                 generateE2EKey().then(key => {
                     e2eKeys[conn.peer] = key;
-                    exportKey(key).then(jwk => { conn.send({type: 'e2e_key', jwk: jwk}); });
+                    exportKey(key).then(jwk => {
+                        conn.send({type: 'e2e_key', jwk: jwk});
+                    });
                 });
             }
 
@@ -1331,10 +1378,14 @@ function setupConn(conn) {
     });
 
     conn.on('data', data => {
+        // Herhangi bir data geldiğinde karşı tarafın hayatta olduğunu (heartbeat) güncelliyoruz.
         peerHeartbeats[conn.peer] = Date.now();
         
-        if (data.type === 'ping') { try { conn.send({type: 'pong'}); } catch(e){} return; }
-        if (data.type === 'pong') return; 
+        if (data.type === 'ping') {
+            try { conn.send({type: 'pong'}); } catch(e){}
+            return;
+        }
+        if (data.type === 'pong') return; // Sadece hayatta kalma (heartbeat) döngüsü için, işlem yapma
 
         if (data.type === 'profile') {
             peerNames[conn.peer] = data.name;
@@ -1343,7 +1394,7 @@ function setupConn(conn) {
             if(activePeerId === conn.peer) openContact(conn.peer); 
         }
         else if (data.type === 'e2e_key') {
-            importKey(data.jwk).then(key => { e2eKeys[conn.peer] = key; }).catch(e => console.error(e));
+            importKey(data.jwk).then(key => { e2eKeys[conn.peer] = key; }).catch(e => console.error("E2E anahtarı alınamadı", e));
         }
         else if (data.type === 'msg') {
             (async () => {
@@ -1354,23 +1405,34 @@ function setupConn(conn) {
                     try { 
                         parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); 
                         parsed = parseMarkdown(parsedRaw);
-                    } catch(e) { parsed = "🔒 [Şifreli Mesaj Çözülemedi]"; parsedRaw = parsed; }
+                    } catch(e) { 
+                        parsed = "🔒 [Şifreli Mesaj Çözülemedi]"; 
+                        parsedRaw = parsed;
+                    }
                 } else if (data.isEncrypted && !e2eKeys[conn.peer]) {
-                    parsed = "🔒 [E2E Anahtarı Bekleniyor]"; parsedRaw = parsed;
+                    parsed = "🔒 [E2E Anahtarı Bekleniyor]";
+                    parsedRaw = parsed;
                 } else {
                     parsed = parseMarkdown(parsedRaw);
                 }
 
                 const isSeen = (activePeerId === conn.peer && document.visibilityState === 'visible');
                 
+                // --- ARKA PLAN (BACKGROUND) BİLDİRİMİ VE SESİ ---
                 if (document.hidden) {
-                    playAudio('snd-msg'); 
+                    playAudio('snd-msg'); // Sekme arka plandaysa ses çal
                     if ('Notification' in window && Notification.permission === 'granted') {
+                        // Resim/Video gibi html taglarını temizle
                         const cleanText = parsedRaw.replace(/<[^>]*>?/gm, ''); 
-                        const notif = new Notification("AceTalk: " + data.name, { body: cleanText, icon: 'icon-192-new.png' });
+                        const notif = new Notification("AceTalk: " + data.name, {
+                            body: cleanText,
+                            icon: 'icon-192-new.png'
+                        });
                         notif.onclick = () => { window.focus(); };
                     }
-                } else { playAudio('snd-msg'); }
+                } else {
+                    playAudio('snd-msg'); // Açıkken de ses çal
+                }
 
                 upsertContact(conn.peer, peerNames[conn.peer] || null, { type: 'remote', user: data.name, rawText: parsedRaw, body: parsed, time: data.time, msgId: data.msgId, status: isSeen ? 'seen' : 'delivered' });
                 
@@ -1378,6 +1440,7 @@ function setupConn(conn) {
                 if (isSeen) { conn.send({type: 'seen', msgId: data.msgId}); } else { conn.send({type: 'delivered', msgId: data.msgId}); }
             })();
         }
+        // KARŞIDAN GELEN DÜZENLEME İSTEĞİ
         else if (data.type === 'edit') {
             (async () => {
                 let parsedRaw = data.body;
@@ -1385,6 +1448,7 @@ function setupConn(conn) {
                     try { parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); } catch(e) {}
                 }
                 const parsed = parseMarkdown(parsedRaw) + ' <small style="font-size:9px; opacity:0.6;">✏️ (düzenlendi)</small>';
+                
                 const contacts = loadContacts();
                 const msg = contacts[conn.peer]?.messages.find(m => m.msgId === data.msgId);
                 if (msg) {
@@ -1398,6 +1462,7 @@ function setupConn(conn) {
                 }
             })();
         }
+        // KARŞIDAN GELEN SİLME İSTEĞİ
         else if (data.type === 'delete') {
             const contacts = loadContacts();
             const contact = contacts[conn.peer];
@@ -1409,6 +1474,7 @@ function setupConn(conn) {
                 if (activePeerId === conn.peer) {
                     const bodyEl = document.querySelector(`.msg[data-msgid="${data.msgId}"] .msg-body`);
                     if(bodyEl) bodyEl.innerHTML = msg.body;
+                    
                     if(contact.pinnedMsg && contact.pinnedMsg.id === data.msgId) {
                         contact.pinnedMsg = null;
                         saveContacts(contacts);
@@ -1417,6 +1483,7 @@ function setupConn(conn) {
                 }
             }
         }
+        // KARŞIDAN GELEN SABİTLEME İSTEĞİ
         else if (data.type === 'pin') {
             const contacts = loadContacts();
             if (contacts[conn.peer]) {
@@ -1425,6 +1492,7 @@ function setupConn(conn) {
                 if (activePeerId === conn.peer) renderPinnedMessage();
             }
         }
+        // KARŞIDAN GELEN SABİTLEME KALDIRMA İSTEĞİ
         else if (data.type === 'unpin') {
             const contacts = loadContacts();
             if (contacts[conn.peer]) {
@@ -1453,22 +1521,20 @@ function setupConn(conn) {
 }
 
 function handlePeerDisconnect(peerId) {
-    if (peerIntervals[peerId]) { clearInterval(peerIntervals[peerId]); delete peerIntervals[peerId]; }
-    const wasConnected = connections.some(c => c.peer === peerId);
-    connections = connections.filter(c => c.peer !== peerId);
+    if (peerIntervals[peerId]) {
+        clearInterval(peerIntervals[peerId]); // Ping döngüsünü temizle
+        delete peerIntervals[peerId];
+    }
     
-    if (wasConnected) {
-        const contacts = loadContacts();
-        if (contacts[peerId]) { contacts[peerId].lastSeen = Date.now(); saveContacts(contacts); }
-        updateOnlineList();
-        renderContacts();
-        
-        if (activePeerId === peerId) {
-            const l = getLang();
-            const statusEl = document.getElementById('chat-header-status');
-            statusEl.innerText = l.offlineStatus + ': ' + formatLastSeen(Date.now());
-            statusEl.style.color = "#999";
-        }
+    connections = connections.filter(c => c.peer !== peerId);
+    const contacts = loadContacts();
+    if (contacts[peerId]) { contacts[peerId].lastSeen = Date.now(); saveContacts(contacts); }
+    updateOnlineList();
+    renderContacts();
+    if (activePeerId === peerId) {
+        const l = getLang();
+        // Arayüzü yenilemeden "Son Görülme: 14:32" olarak anında değiştirir
+        document.getElementById('chat-header-status').innerText = l.offlineStatus + ': ' + formatLastSeen(Date.now());
     }
 }
 
@@ -1523,7 +1589,7 @@ function updateMsgStatus(peerId, msgId, status) {
     }
 }
 
-// SOS
+// ─── SOS ─────────────────────────────────────────────────────────────────────
 const seenSOS = new Set();
 let sosCooldownTimer = null;
 const SOS_COOLDOWN = 60;
@@ -1580,7 +1646,7 @@ function startSOSCooldown() {
     }, 1000);
 }
 
-// CALLS (AUDIO & VIDEO)
+// ─── CALLS (AUDIO & VIDEO) ───────────────────────────────────────────────────
 function startCall(type) {
     const l = getLang();
     if (connections.length === 0) { alert(l.noConn); return; }
@@ -1692,7 +1758,7 @@ function endCall(isBroadcast = true) {
     if (remoteVid.srcObject) { remoteVid.srcObject.getTracks().forEach(track => track.stop()); remoteVid.srcObject = null; }
 }
 
-// MESSAGES & MEDIA
+// ─── MESSAGES & MEDIA ────────────────────────────────────────────────────────
 function parseMarkdown(text) {
     if (text === 'acetalkplanspremium0') { alert("Premium Easter Egg (Tested)!"); return "Premium Kodu Girildi"; }
     return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/`(.*?)`/g, '<code>$1</code>');
@@ -1774,7 +1840,7 @@ function addMessage(user, text, type, time, scroll, status = 'sent', msgId = nul
     if (scroll) box.scrollTop = box.scrollHeight;
 }
 
-// MEDIA UPLOADS
+// ─── GÜVENSİZ DOSYA (EXE) İNDİRME ────────────────────────────────────────────
 let unsafeUrl = '';
 let unsafeFilename = '';
 
@@ -1786,7 +1852,9 @@ window.confirmExeDownload = function(e, url, filename) {
     return false;
 }
 
-function closeUnsafeModal() { document.getElementById('unsafe-file-modal').style.display = 'none'; }
+function closeUnsafeModal() {
+    document.getElementById('unsafe-file-modal').style.display = 'none';
+}
 
 function confirmUnsafeDownload() {
     document.getElementById('unsafe-file-modal').style.display = 'none';
@@ -1815,7 +1883,10 @@ function handleMedia(input) {
 
     const l = getLang();
     const fileSizeMB = file.size / (1024 * 1024);
-    if (fileSizeMB > 50) { alert(l.fileTooBig); return; }
+    if (fileSizeMB > 50) {
+        alert(l.fileTooBig);
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = async e => {
@@ -1833,16 +1904,44 @@ function handleMedia(input) {
         const pvText = l.previewBtn || 'Önizle';
 
         if (isImg) {
-            mediaHtml = `<div style="margin-top:5px;"><img src="${b64}" onclick="openImageViewer(this.src)" style="max-width:100%; max-height:200px; cursor:pointer; border:1px solid #ddd; display:block; margin-bottom:8px;"><a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a></div>`;
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <img src="${b64}" onclick="openImageViewer(this.src)" style="max-width:100%; max-height:200px; cursor:pointer; border:1px solid #ddd; display:block; margin-bottom:8px;">
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
         } else if (isVid) {
-            mediaHtml = `<div style="margin-top:5px;"><video src="${b64}" controls style="max-width:100%; border: 1px solid var(--skype-blue); display:block; margin-bottom:8px;"></video><a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a></div>`;
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <video src="${b64}" controls style="max-width:100%; border: 1px solid var(--skype-blue); display:block; margin-bottom:8px;"></video>
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
         } else if (isAud) {
-            mediaHtml = `<div style="margin-top:5px;"><audio src="${b64}" controls style="max-width:100%; display:block; margin-bottom:8px;"></audio><a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a></div>`;
+            mediaHtml = `
+                <div style="margin-top:5px;">
+                    <audio src="${b64}" controls style="max-width:100%; display:block; margin-bottom:8px;"></audio>
+                    <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px; display: inline-block;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
         } else if (isExe) {
-            mediaHtml = `<div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--sos-red); margin-top:5px; display:flex; flex-direction:column; gap:8px;"><strong style="font-size:12px; word-break:break-all; color:#333;">📦 ${file.name}</strong><a href="#" onclick="return confirmExeDownload(event, '${b64}', '${file.name}')" style="font-size:11px; color:var(--sos-red); text-decoration:none; font-weight:bold; background: rgba(231,76,60,0.1); padding: 5px 10px; align-self: flex-start;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a></div>`;
+            mediaHtml = `
+                <div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--sos-red); margin-top:5px; display:flex; flex-direction:column; gap:8px;">
+                    <strong style="font-size:12px; word-break:break-all; color:#333;">📦 ${file.name}</strong>
+                    <a href="#" onclick="return confirmExeDownload(event, '${b64}', '${file.name}')" style="font-size:11px; color:var(--sos-red); text-decoration:none; font-weight:bold; background: rgba(231,76,60,0.1); padding: 5px 10px; align-self: flex-start;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                </div>
+            `;
         } else {
             const previewLink = isPdf ? `<a href="${b64}" target="_blank" style="font-size:11px; color:#8e44ad; text-decoration:none; font-weight:bold; background: rgba(142,68,173,0.1); padding: 5px 10px; margin-right:5px;">👁 <span data-i18n="previewBtn">${pvText}</span></a>` : '';
-            mediaHtml = `<div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--skype-blue); margin-top:5px; display:flex; flex-direction:column; gap:8px;"><strong style="font-size:12px; word-break:break-all; color:#333;">📄 ${file.name}</strong><div style="display:flex; gap: 5px;">${previewLink}<a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a></div></div>`;
+            mediaHtml = `
+                <div class="file-card" style="background:rgba(0,0,0,0.03); padding:12px; border-left:3px solid var(--skype-blue); margin-top:5px; display:flex; flex-direction:column; gap:8px;">
+                    <strong style="font-size:12px; word-break:break-all; color:#333;">📄 ${file.name}</strong>
+                    <div style="display:flex; gap: 5px;">
+                        ${previewLink}
+                        <a href="${b64}" download="${file.name}" style="font-size:11px; color:var(--skype-blue); text-decoration:none; font-weight:bold; background: rgba(0,175,240,0.1); padding: 5px 10px;">⬇ <span data-i18n="downloadBtn">${dlText}</span></a>
+                    </div>
+                </div>
+            `;
         }
 
         if (mediaHtml) await sendSpecialMessage(mediaHtml);
