@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>AceTalk | Simple Messenger</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Ölçeklendirme sorunu için viewport güncellendi -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" type="image/png" href="icon-192-new.png?v=3">
     <link rel="apple-touch-icon" href="icon-192-new.png?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
@@ -65,7 +66,17 @@
             80%     { transform: translateX(2px); }
         }
 
-        body, html { height: 100%; margin: 0; font-family: 'Ubuntu', sans-serif; font-weight: 300; overflow: hidden; background-color: var(--sidebar-bg); display: flex; flex-direction: column; }
+        body, html { 
+            height: 100%; 
+            width: 100%; /* Taşmaları engelle */
+            margin: 0; 
+            font-family: 'Ubuntu', sans-serif; 
+            font-weight: 300; 
+            overflow: hidden; /* Taşmaları engelle */
+            background-color: var(--sidebar-bg); 
+            display: flex; 
+            flex-direction: column; 
+        }
 
         /* SPLASH */
         #splash-screen {
@@ -84,7 +95,7 @@
         .mobile-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
         .mobile-btn:hover { color: var(--skype-blue); }
 
-        .app-container { flex: 1; display: flex; width: 100vw; opacity: 0; position: relative; overflow: hidden; }
+        .app-container { flex: 1; display: flex; width: 100%; opacity: 0; position: relative; overflow: hidden; }
         .loaded .app-container { opacity: 1; }
 
         /* SIDEBAR & PROFILE STATUS BOX */
@@ -131,7 +142,7 @@
         .wallpaper-active .pinned-area { color: white; border-color: rgba(255,255,255,0.2); }
         .msg-deleted { font-style: italic; opacity: 0.6; display: flex; align-items: center; gap: 5px; }
 
-        .msg { max-width: 70%; padding: 12px 18px; line-height: 1.6; position: relative; font-size: 14px; animation: msgIn 0.3s ease-out; }
+        .msg { max-width: 70%; padding: 12px 18px; line-height: 1.6; position: relative; font-size: 14px; animation: msgIn 0.3s ease-out; word-wrap: break-word; word-break: break-word; }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .local { background: var(--msg-local); align-self: flex-end; border: 1px solid var(--msg-local-border); border-right: 4px solid var(--skype-blue); color: var(--chat-text); cursor: context-menu; }
         .remote { background: var(--msg-remote); align-self: flex-start; border: 1px solid var(--msg-remote-border); border-left: 4px solid #bdc3c7; color: var(--chat-text); cursor: context-menu; }
@@ -291,9 +302,12 @@
             
             #incoming-call-panel { right: 5%; bottom: 20px; min-width: 90%; }
             .msg { max-width: 85%; }
-            .app-container { height: calc(100dvh - 60px); }
-            .main-chat { height: 100%; }
+            .app-container { height: calc(100dvh - 60px); width: 100%; overflow-x: hidden; } /* Yana taşma çözüldü */
+            .main-chat { height: 100%; width: 100%; }
             .input-area { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+            
+            /* iOS klavye açıldığında zoom yapmasını engeller */
+            #message-input { font-size: 16px !important; }
             #chat-box { padding: 20px 15px; }
 
             .sidebar .close-btn { position: absolute; top: 15px; right: 15px; font-size: 32px; display: block !important; z-index: 10; }
@@ -564,6 +578,16 @@
 <script>
 // ─── KRİTİK DEĞİŞKENLER ─────────────────────────────────────────────────────
 let peer = null;
+let peerHeartbeats = {}; // Bağlantı sürekliliği (ping) kontrolü için
+let peerIntervals = {}; // Ping döngüleri
+
+// Kullanıcı ekrana tıkladığında bildirim izni iste (modern tarayıcı kuralları)
+document.addEventListener('click', function requestNotif() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    document.removeEventListener('click', requestNotif);
+}, { once: true });
 
 // ─── WALLPAPER ───────────────────────────────────────────────────────────────
 const DEFAULT_WALLPAPER = "https://raw.githubusercontent.com/benmalakko-netizen/AceTalk/main/Acetalkwallpaper.jpg";
@@ -1066,6 +1090,10 @@ window.addEventListener('load', () => {
     updateMyAvatarUI();
     setLanguage(currentLang);
 
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
     const savedUser = localStorage.getItem('acetalk_username');
     if (savedUser) {
         document.getElementById('my-name-input').value = localStorage.getItem('acetalk_displayname') || savedUser;
@@ -1078,6 +1106,8 @@ window.addEventListener('load', () => {
 let connectionTimeout; 
 
 function tryCreateAccount() {
+    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    
     const raw = document.getElementById('username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     const errDiv = document.getElementById('setup-error');
     const sugDiv = document.getElementById('setup-suggestions');
@@ -1285,6 +1315,7 @@ let typingTimeout = null;
 function peerIdToName(peerId) { return peerId.replace(/^ace_/, ''); }
 
 function connectToPeer() {
+    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
     const raw = document.getElementById('peer-id-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     if (!raw) return;
     const pid = 'ace_' + raw;
@@ -1310,6 +1341,18 @@ function setupConn(conn) {
                 openContact(conn.peer);
             }
             
+            // Heartbeat (Ping) Başlangıcı - Anlık Çevrimdışı Yakalama İçin
+            peerHeartbeats[conn.peer] = Date.now();
+            peerIntervals[conn.peer] = setInterval(() => {
+                if (conn.open) {
+                    try { conn.send({type: 'ping'}); } catch(e) {}
+                }
+                // 12 Saniye boyunca karşıdan hiçbir paket (ping, mesaj vs) gelmezse bağlantı kopmuş sayılır
+                if (Date.now() - peerHeartbeats[conn.peer] > 12000) {
+                    handlePeerDisconnect(conn.peer);
+                }
+            }, 4000); // Her 4 saniyede bir ping at
+
             if (peer.id < conn.peer && window.crypto && crypto.subtle) {
                 generateE2EKey().then(key => {
                     e2eKeys[conn.peer] = key;
@@ -1335,6 +1378,15 @@ function setupConn(conn) {
     });
 
     conn.on('data', data => {
+        // Herhangi bir data geldiğinde karşı tarafın hayatta olduğunu (heartbeat) güncelliyoruz.
+        peerHeartbeats[conn.peer] = Date.now();
+        
+        if (data.type === 'ping') {
+            try { conn.send({type: 'pong'}); } catch(e){}
+            return;
+        }
+        if (data.type === 'pong') return; // Sadece hayatta kalma (heartbeat) döngüsü için, işlem yapma
+
         if (data.type === 'profile') {
             peerNames[conn.peer] = data.name;
             if(data.avatar) peerAvatars[conn.peer] = data.avatar;
@@ -1346,7 +1398,6 @@ function setupConn(conn) {
         }
         else if (data.type === 'msg') {
             (async () => {
-                playAudio('snd-msg');
                 let parsedRaw = data.body;
                 let parsed = data.body;
                 
@@ -1366,6 +1417,23 @@ function setupConn(conn) {
                 }
 
                 const isSeen = (activePeerId === conn.peer && document.visibilityState === 'visible');
+                
+                // --- ARKA PLAN (BACKGROUND) BİLDİRİMİ VE SESİ ---
+                if (document.hidden) {
+                    playAudio('snd-msg'); // Sekme arka plandaysa ses çal
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        // Resim/Video gibi html taglarını temizle
+                        const cleanText = parsedRaw.replace(/<[^>]*>?/gm, ''); 
+                        const notif = new Notification("AceTalk: " + data.name, {
+                            body: cleanText,
+                            icon: 'icon-192-new.png'
+                        });
+                        notif.onclick = () => { window.focus(); };
+                    }
+                } else {
+                    playAudio('snd-msg'); // Açıkken de ses çal
+                }
+
                 upsertContact(conn.peer, peerNames[conn.peer] || null, { type: 'remote', user: data.name, rawText: parsedRaw, body: parsed, time: data.time, msgId: data.msgId, status: isSeen ? 'seen' : 'delivered' });
                 
                 if (activePeerId === conn.peer) { addMessage(data.name, parsed, 'remote', data.time, true, isSeen ? 'seen' : 'delivered', data.msgId); }
@@ -1453,6 +1521,11 @@ function setupConn(conn) {
 }
 
 function handlePeerDisconnect(peerId) {
+    if (peerIntervals[peerId]) {
+        clearInterval(peerIntervals[peerId]); // Ping döngüsünü temizle
+        delete peerIntervals[peerId];
+    }
+    
     connections = connections.filter(c => c.peer !== peerId);
     const contacts = loadContacts();
     if (contacts[peerId]) { contacts[peerId].lastSeen = Date.now(); saveContacts(contacts); }
@@ -1460,6 +1533,7 @@ function handlePeerDisconnect(peerId) {
     renderContacts();
     if (activePeerId === peerId) {
         const l = getLang();
+        // Arayüzü yenilemeden "Son Görülme: 14:32" olarak anında değiştirir
         document.getElementById('chat-header-status').innerText = l.offlineStatus + ': ' + formatLastSeen(Date.now());
     }
 }
