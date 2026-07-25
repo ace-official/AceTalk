@@ -27,7 +27,7 @@
             position: relative;
         }
 
-        /* Blurlu Arka Plan */
+        /* Blurlu ve Karartılmış Arka Plan */
         body::before {
             content: "";
             position: absolute;
@@ -37,7 +37,8 @@
             bottom: -20px;
             background: url('Acetalkwallpaper.jpg') no-repeat center center fixed;
             background-size: cover;
-            filter: blur(12px);
+            /* blur yanına brightness eklenerek görsel karartıldı */
+            filter: blur(12px) brightness(0.4); 
             z-index: -1;
         }
 
@@ -56,7 +57,7 @@
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 8px 16px;
-            border-radius: 0; /* Yuvarlak hatlar kaldırıldı, sivri kenar */
+            border-radius: 0; /* Sivri kenar */
             cursor: pointer;
             font-family: 'Ubuntu', sans-serif;
             font-weight: 700;
