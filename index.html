@@ -31,13 +31,13 @@
             --status-sleep: #f1c40f;
         }
 
-        /* YUMUŞAK ANİMASYON TEMELLERİ */
+        /* DAHA SADE VE YUMUŞAK ANİMASYON TEMELLERİ */
         * { box-sizing: border-box; border-radius: 0 !important; }
         body, .app-container { transition: background-color 0.4s ease, backdrop-filter 0.4s ease; }
         button, .icon-btn, .contact-card, .wp-btn, .sidebar-action-btn, .ctx-item { 
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important; 
+            transition: all 0.2s ease !important; 
         }
-        button:not(:disabled):active, .icon-btn:active { transform: scale(0.92) translateY(2px) !important; }
+        button:not(:disabled):active, .icon-btn:active { transform: scale(0.96) !important; }
 
         .wallpaper-active .sidebar,
         .wallpaper-active .main-chat,
@@ -50,8 +50,8 @@
             border-color: rgba(255,255,255,0.1) !important;
         }
 
-        .icon-btn[onclick="sendMessage()"]:hover { transform: translateX(5px) scale(1.15) !important; }
-        label.icon-btn:hover { transform: scale(1.2) rotate(-8deg) !important; }
+        .icon-btn[onclick="sendMessage()"]:hover { transform: scale(1.05) !important; }
+        label.icon-btn:hover { transform: scale(1.05) !important; }
 
         @keyframes callPulse {
             0%   { box-shadow: 0 0 0 0 rgba(46,204,113,0.5); }
@@ -74,7 +74,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--sidebar-bg); display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 9999;
-            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.8s ease;
+            transition: transform 0.6s ease, opacity 0.6s ease;
         }
         .loaded #splash-screen { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         .splash-loader { width: 60px; height: 3px; background: rgba(255,255,255,0.1); margin-top: 25px; position: relative; overflow: hidden; }
@@ -84,7 +84,7 @@
         /* MOBILE NAV */
         #mobile-nav { display: none; background: #1a252f; color: white; padding: 15px 20px; justify-content: space-between; align-items: center; border-bottom: 1px solid #111d28; z-index: 100; width: 100%; box-shadow: 0 2px 15px rgba(0,0,0,0.3); }
         .mobile-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
-        .mobile-btn:hover { color: var(--skype-blue); transform: scale(1.1); }
+        .mobile-btn:hover { color: var(--skype-blue); transform: scale(1.05); }
 
         .app-container { flex: 1; display: flex; width: 100vw; opacity: 0; position: relative; overflow: hidden; }
         .loaded .app-container { opacity: 1; }
@@ -92,7 +92,7 @@
         /* SIDEBAR & PROFILE STATUS BOX */
         .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 25px; border-right: 1px solid #1a252f; z-index: 10; position: relative; }
         .brand-section { margin-bottom: 25px; transition: transform 0.3s ease; }
-        .brand-section:hover { transform: translateX(5px); }
+        .brand-section:hover { transform: translateX(3px); }
         .brand-name { color: var(--skype-blue); font-size: 32px; font-weight: 700; margin: 0; text-shadow: 0 2px 10px rgba(0,175,240,0.2); }
         .sidebar-slogan { font-size: 10px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
 
@@ -108,17 +108,17 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .status-header { display: flex; align-items: center; gap: 10px; }
-        .my-avatar-upload { width: 34px; height: 34px; min-width: 34px; background: #1a252f; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; cursor: pointer; border: 1px solid #34495e; overflow: hidden; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .my-avatar-upload:hover { transform: scale(1.1) rotate(5deg); border-color: var(--skype-blue); }
+        .my-avatar-upload { width: 34px; height: 34px; min-width: 34px; background: #1a252f; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; cursor: pointer; border: 1px solid #34495e; overflow: hidden; transition: transform 0.2s ease; }
+        .my-avatar-upload:hover { transform: scale(1.05); border-color: var(--skype-blue); }
         .my-avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
         .status-input { flex: 1; width: 100%; background: transparent; border: none; color: white; font-weight: bold; font-size: 14px; outline: none; border-bottom: 1px solid #34495e; padding-bottom: 5px; font-family: 'Ubuntu', sans-serif; transition: border-color 0.3s ease; }
         .status-input:focus { border-color: var(--skype-blue); }
 
-        /* STATUS SELECTOR */
+        /* STATUS SELECTOR - ARKA PLAN ŞEFFAF YAPILDI */
         .status-selector { display: flex; gap: 5px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; }
-        .status-icon-btn { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid transparent; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.4; }
-        .status-icon-btn:hover { opacity: 0.8; background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
-        .status-icon-btn.active { opacity: 1; background: rgba(0,0,0,0.5); border-bottom: 2px solid currentColor; transform: scale(1.05); }
+        .status-icon-btn { flex: 1; background: transparent; border: 1px solid transparent; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.4; }
+        .status-icon-btn:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+        .status-icon-btn.active { opacity: 1; background: transparent; border-bottom: 2px solid currentColor; transform: scale(1.05); }
 
         /* MODERN LANG SELECTOR */
         .lang-switcher { margin-bottom: 20px; }
@@ -134,37 +134,37 @@
             position: fixed; display: none; background: rgba(30, 45, 61, 0.95); backdrop-filter: blur(10px); 
             border: 1px solid #34495e; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 25000; 
             flex-direction: column; min-width: 180px; transform-origin: top left;
-            animation: contextPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: contextPop 0.2s ease;
         }
-        @keyframes contextPop { from { opacity: 0; transform: scale(0.9) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes contextPop { from { opacity: 0; transform: scale(0.95) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
         .ctx-item { padding: 12px 16px; color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-family: 'Ubuntu', sans-serif; font-weight: bold; }
-        .ctx-item svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .ctx-item svg { width: 16px; height: 16px; transition: transform 0.2s ease; }
         .ctx-item:hover { background: rgba(0,175,240,0.15); color: var(--skype-blue); padding-left: 22px; }
-        .ctx-item:hover svg { transform: scale(1.2); }
+        .ctx-item:hover svg { transform: scale(1.1); }
         .ctx-item.danger:hover { background: rgba(231,76,60,0.15); color: var(--sos-red); }
 
-        .pinned-area { background: rgba(0,175,240,0.08); border-bottom: 1px solid rgba(0,175,240,0.2); padding: 12px 30px; font-size: 13px; color: var(--skype-blue); display: none; align-items: center; justify-content: space-between; font-weight: bold; cursor: pointer; transition: 0.3s ease; animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .pinned-area { background: rgba(0,175,240,0.08); border-bottom: 1px solid rgba(0,175,240,0.2); padding: 12px 30px; font-size: 13px; color: var(--skype-blue); display: none; align-items: center; justify-content: space-between; font-weight: bold; cursor: pointer; transition: 0.3s ease; animation: slideDown 0.3s ease; }
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .pinned-area:hover { background: rgba(0,175,240,0.15); padding-left: 35px; }
         .wallpaper-active .pinned-area { color: white; border-color: rgba(255,255,255,0.2); }
         .msg-deleted { font-style: italic; opacity: 0.6; display: flex; align-items: center; gap: 6px; }
 
-        .msg { max-width: 70%; padding: 12px 18px; line-height: 1.6; position: relative; font-size: 14px; animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: context-menu; -webkit-touch-callout: none; }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(15px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .msg { max-width: 70%; padding: 12px 18px; line-height: 1.6; position: relative; font-size: 14px; animation: msgIn 0.3s ease-out; cursor: context-menu; -webkit-touch-callout: none; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .local { background: var(--msg-local); align-self: flex-end; border: 1px solid var(--msg-local-border); border-right: 4px solid var(--skype-blue); color: var(--chat-text); transform-origin: top right; }
         .remote { background: var(--msg-remote); align-self: flex-start; border: 1px solid var(--msg-remote-border); border-left: 4px solid #bdc3c7; color: var(--chat-text); transform-origin: top left; }
-        .msg:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .msg:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .msg-body { word-wrap: break-word; }
         .msg-meta { font-size: 9px; margin-top: 5px; color: #999; display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
 
         .status-icon { margin-left: 4px; font-size: 11px; color: #a1a1a1; transition: color 0.3s ease, transform 0.3s ease; }
         .status-icon.seen { color: var(--skype-blue); font-weight: bold; transform: scale(1.1); }
 
-        .translate-btn { background: none; border: none; font-size: 11px; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); margin-right: 2px; }
-        .translate-btn:hover { opacity: 1; transform: scale(1.3) rotate(10deg); color: var(--skype-blue); }
+        .translate-btn { background: none; border: none; font-size: 11px; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; transition: 0.2s ease; margin-right: 2px; }
+        .translate-btn:hover { opacity: 1; transform: scale(1.2) rotate(10deg); color: var(--skype-blue); }
 
-        .msg-sos { max-width: 90%; align-self: center; background: #2d0000; border: 2px solid var(--sos-red); border-left: 6px solid var(--sos-red); color: #ff6b6b; padding: 14px 20px; font-size: 14px; animation: sosPulse 0.5s ease-out, msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: default; }
+        .msg-sos { max-width: 90%; align-self: center; background: #2d0000; border: 2px solid var(--sos-red); border-left: 6px solid var(--sos-red); color: #ff6b6b; padding: 14px 20px; font-size: 14px; animation: sosPulse 0.5s ease-out, msgIn 0.3s ease; cursor: default; }
         @keyframes sosPulse { 0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.7); } 70% { box-shadow: 0 0 0 15px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); } }
         .sos-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--sos-red); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
         .sos-from { font-size: 11px; color: #ff9999; margin-top: 6px; }
@@ -188,6 +188,15 @@
         #contacts-list::-webkit-scrollbar-track { background: transparent; }
         #contacts-list::-webkit-scrollbar-thumb { background: #34495e; }
 
+        /* KİŞİ YOK YAZISI (KÜÇÜLTÜLDÜ VE RENGİ UYARLANDI) */
+        .no-contacts {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+            padding: 20px 10px;
+            line-height: 1.6;
+        }
+
         /* CONTACT CARD */
         .contact-card { display: flex; align-items: center; gap: 10px; padding: 9px 8px; cursor: pointer; border-left: 3px solid transparent; position: relative; }
         .contact-card:hover { background: rgba(0,175,240,0.07); border-left-color: var(--skype-blue); padding-left: 14px; }
@@ -195,18 +204,23 @@
         .contact-card.online-now { border-left-color: var(--call-green); }
         .contact-card.online-now:hover { border-left-color: var(--call-green); }
 
-        .contact-del-btn { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #4a6278; font-size: 15px; cursor: pointer; padding: 4px 6px; line-height: 1; transition: color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .contact-del-btn:hover { color: var(--sos-red) !important; transform: translateY(-50%) scale(1.3); }
+        .contact-del-btn { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #4a6278; font-size: 15px; cursor: pointer; padding: 4px 6px; line-height: 1; transition: color 0.2s ease, transform 0.2s ease; }
+        .contact-del-btn:hover { color: var(--sos-red) !important; transform: translateY(-50%) scale(1.1); }
         .contact-card:hover .contact-del-btn { display: block; animation: fadeInBg 0.3s ease; }
 
         .contact-avatar { width: 34px; height: 34px; min-width: 34px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 13px; position: relative; overflow: hidden; border: 1px solid #34495e; }
         .contact-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .contact-online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: var(--call-green); border: 2px solid var(--contacts-bg); border-radius: 50% !important; z-index: 2; transition: background-color 0.3s ease; }
+        
+        /* SAĞ ALTTAKİ SABİT DURUM NOKTASI (HEM ONLINE HEM OFFLINE İÇİN) */
+        .contact-status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border: 2px solid var(--contacts-bg); border-radius: 50% !important; z-index: 2; transition: background-color 0.3s ease; }
+        .contact-status-dot.online { background: var(--call-green); }
+        .contact-status-dot.offline { background: #7f8c8d; }
+        
         .contact-info { flex: 1; min-width: 0; }
         .contact-name { font-size: 12px; font-weight: 700; color: #cdd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
         .contact-last { font-size: 10px; color: #4a6278; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 
-        #chat-header { display: none; padding: 12px 30px; background: #f7f7f7; border-bottom: 1px solid #eee; align-items: center; gap: 12px; animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #chat-header { display: none; padding: 12px 30px; background: #f7f7f7; border-bottom: 1px solid #eee; align-items: center; gap: 12px; animation: slideDown 0.3s ease; }
         #chat-header-avatar { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px; overflow: hidden; border: 1px solid #ccc; }
         #chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
         #chat-header-name { font-size: 15px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 8px;}
@@ -220,12 +234,12 @@
         #local-video { position: absolute; bottom: 15px; right: 15px; width: 140px; border: 2px solid var(--skype-blue); background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: transform 0.3s ease; }
         #local-video:hover { transform: scale(1.05); }
 
-        #incoming-call-panel { position: fixed; bottom: 30px; right: 260px; background: rgba(30, 45, 61, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--call-green); border-left: 4px solid var(--call-green); padding: 16px 20px; z-index: 10001; display: none; flex-direction: column; gap: 10px; animation: slideInPanel 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); min-width: 250px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        #incoming-call-panel { position: fixed; bottom: 30px; right: 260px; background: rgba(30, 45, 61, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--call-green); border-left: 4px solid var(--call-green); padding: 16px 20px; z-index: 10001; display: none; flex-direction: column; gap: 10px; animation: slideInPanel 0.3s ease; min-width: 250px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
         @keyframes slideInPanel { from { opacity:0; transform: translateX(30px) scale(0.95); } to { opacity:1; transform: translateX(0) scale(1); } }
         #incoming-call-name { color: white; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; }
         #incoming-call-sub { color: #7f8c8d; font-size: 11px; }
         .call-panel-btns { display: flex; gap: 8px; }
-        .call-panel-btns button { flex: 1; padding: 10px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; transition: filter 0.3s ease, transform 0.3s ease; }
+        .call-panel-btns button { flex: 1; padding: 10px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; transition: filter 0.2s ease, transform 0.2s ease; }
         .call-panel-btns button:hover { filter: brightness(1.15); transform: translateY(-2px); }
         .btn-answer { background: var(--call-green); color: white; }
         .btn-reject { background: var(--call-red); color: white; }
@@ -238,8 +252,8 @@
         
         .sidebar-action-btn { border: none; color: white; padding: 13px 15px; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 13px; letter-spacing: 1px; width: 100%; text-align: left; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; }
         .sidebar-action-btn:hover { padding-left: 24px; border-left-color: rgba(255,255,255,0.6); filter: brightness(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .sidebar-action-btn svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .sidebar-action-btn:hover svg { transform: scale(1.2); }
+        .sidebar-action-btn svg { width: 16px; height: 16px; transition: transform 0.2s ease; }
+        .sidebar-action-btn:hover svg { transform: scale(1.1); }
 
         .btn-connect { background: var(--skype-blue); }
         .btn-call    { background: var(--call-green); }
@@ -252,12 +266,12 @@
         /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 30000; display: none; align-items: center; justify-content: center; animation: fadeInBg 0.3s ease; }
         @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
-        .modal-box { background: #1e2d3d; border: 1px solid #34495e; padding: 28px 30px; min-width: 280px; max-width: 360px; border-top: 3px solid var(--sos-red); width: 100%; box-sizing: border-box; box-shadow: 0 15px 35px rgba(0,0,0,0.5); animation: modalSoftPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        @keyframes modalSoftPop { from { opacity: 0; transform: scale(0.9) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-box { background: #1e2d3d; border: 1px solid #34495e; padding: 28px 30px; min-width: 280px; max-width: 360px; border-top: 3px solid var(--sos-red); width: 100%; box-sizing: border-box; box-shadow: 0 15px 35px rgba(0,0,0,0.5); animation: modalSoftPop 0.2s ease-out; }
+        @keyframes modalSoftPop { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .modal-title { color: white; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
         .modal-sub { color: #7f8c8d; font-size: 12px; line-height: 1.6; margin-bottom: 22px; }
         .modal-btns { display: flex; gap: 8px; }
-        .modal-btns button { flex: 1; padding: 11px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; transition: filter 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .modal-btns button { flex: 1; padding: 11px; border: none; font-weight: bold; cursor: pointer; font-family: 'Ubuntu', sans-serif; font-size: 12px; letter-spacing: 1px; transition: filter 0.2s ease, transform 0.2s ease; }
         .modal-btns button:hover { filter: brightness(1.2); transform: translateY(-2px); }
         .btn-modal-delete { background: var(--sos-red); color: white; }
         .btn-modal-cancel { background: #2c3e50; color: #aaa; border: 1px solid #34495e; }
@@ -273,7 +287,7 @@
         .name-input-wrap:focus-within { border-color: var(--skype-blue); }
         .name-prefix { background: #1a252f; color: #7f8c8d; padding: 14px 12px; font-size: 16px; font-weight: bold; border-right: 1px solid #34495e; }
         #username-input { flex: 1; background: #1a252f; border: none; color: white; padding: 14px 12px; font-size: 15px; font-family: 'Ubuntu', sans-serif; outline: none; }
-        #setup-btn { margin-top: 15px; width: 300px; padding: 15px; background: var(--call-green); color: white; border: none; font-weight: bold; font-family: 'Ubuntu', sans-serif; font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 4px 15px rgba(46,204,113,0.3); }
+        #setup-btn { margin-top: 15px; width: 300px; padding: 15px; background: var(--call-green); color: white; border: none; font-weight: bold; font-family: 'Ubuntu', sans-serif; font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(46,204,113,0.3); }
         #setup-btn:hover { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,113,0.4); }
 
         @media (min-width: 769px) {
@@ -293,12 +307,12 @@
 
             .sidebar { 
                 position: fixed; left: 0; top: 0; height: 100dvh; width: 85%; max-width: 320px; 
-                transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+                transform: translateX(-100%); transition: transform 0.3s ease; 
                 z-index: 50; box-shadow: 5px 0 25px rgba(0,0,0,0.5); padding-top: 45px;
             }
             .right-bar { 
                 position: fixed; right: 0; top: 0; height: 100dvh; width: 85%; max-width: 320px; 
-                transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+                transform: translateX(100%); transition: transform 0.3s ease; 
                 z-index: 50; box-shadow: -5px 0 25px rgba(0,0,0,0.5); padding-top: 45px;
             }
             
@@ -475,10 +489,10 @@
 <div id="mobile-overlay" onclick="closeAllMobileMenus()"></div>
 
 <div id="image-viewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; backdrop-filter: blur(5px); animation: fadeInBg 0.3s ease;">
-    <button onclick="closeImageViewer()" style="position:absolute; top:25px; right:25px; color:white; background:none; border:none; cursor:pointer; transition: transform 0.3s;">
+    <button onclick="closeImageViewer()" style="position:absolute; top:25px; right:25px; color:white; background:none; border:none; cursor:pointer; transition: transform 0.2s;">
         <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
-    <img id="image-viewer-img" src="" style="max-width:90%; max-height:90%; object-fit:contain; border-radius: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.6); animation: modalSoftPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+    <img id="image-viewer-img" src="" style="max-width:90%; max-height:90%; object-fit:contain; border-radius: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.6); animation: modalSoftPop 0.2s ease-out;">
 </div>
 
 <div class="app-container">
@@ -522,7 +536,7 @@
             </div>
             <span id="my-id" style="display:none;"></span>
             
-            <!-- YENİ DURUM SEÇİCİ -->
+            <!-- ŞEFFAF DURUM SEÇİCİ -->
             <div class="status-selector">
                 <button class="status-icon-btn active" id="my-status-available" onclick="changeStatus('available')" title="Müsait" style="color:var(--call-green)">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -735,16 +749,16 @@ function updateMyProfile() {
     connections.forEach(c => { try { c.send({type: 'profile', name: myName, avatar: myAvatarBase64, status: myStatus}); } catch(e){} });
 }
 
-// ─── DİLLER ──────────────────────────────────────────────────────────────────
+// ─── DİLLER (SON GÖRÜLME KALDIRILDI) ─────────────────────────────────────────
 const i18n = {
     tr: { 
-        appInfo: "AceTalk MileStone 3 • Kurucu: Ace © 2026 • Uçtan uca şifreli • Designed in Baku", slogan: "Simple Messenger", myName: "ADIM", idPlaceholder: "Karşı tarafın ismi...", connectBtn: "BAĞLAN", voiceCall: "SESLİ ARA", videoCall: "KAMERALI ARA", secureChat: "Güvenli ve şifreli uçtan uca sohbet.", enterId: "Bağlanmak için bir isim girin.", msgPlaceholder: "Mesajınızı yazın...", calling: "ARANIYOR...", closeCall: "KAPAT", typing: "yazıyor...", sosBtn: "ACİL", sosCooldown: "sn", sosReceived: "ACİL YARDIM ÇAĞRISI", sosFrom: "Gönderen", sosHops: "ağ üzerinden ulaştı", sosNoConn: "Bağlı kimse yok! Önce birine bağlan.", wallpaperBtn: "❖ Duvar Kağıdı", resetWpBtn: "↺ Varsayılan WP", resetAccBtn: "⚠ Hesabı Sıfırla", micDenied: "Kamera/Mikrofon erişimi reddedildi!", noConn: "Şimdilik yalnızsın.", emptyOnline: "Burası çok ıssız..", connected: "🟢 BAĞLANDI", contactsTitle: "KİŞİLER", onlineNow: "ŞU AN ÇEVRİMİÇİ", savedContacts: "KAYDEDİLEN", noContacts: "Henüz kişi yok.\nBiri ile konuştuktan sonra burada görünür.", onlineStatus: "Çevrimiçi", offlineStatus: "Son görülme", incomingVoice: "Sesli arama geliyor", incomingVideo: "Görüntülü arama geliyor", answerBtn: "CEVAPLA", rejectBtn: "REDDET", setupTitle: "Hesabını oluştur", usernamePlace: "Kullanıcı Adı", startBtn: "BAŞLA", setupDesc: "Bu senin eşsiz ID'n olacak. Başkaları sana bu isimle bağlanacak.", delTitle: "Kişiyi sil", delDesc: "kişisini ve tüm mesaj geçmişini silmek istediğine emin misin?", delBtn: "SİL", cancelBtn: "İPTAL", resetTitle: "Hesabı sıfırla", resetDesc: "Kullanıcı adın, görünen ismin ve tüm konuşma geçmişin silinecek. Bu işlem geri alınamaz.", resetBtn: "SIFIRLA", fileTooBig: "Dosya boyutu çok büyük! Maksimum 50 MB.", nameTaken: "Bu isim alınmış! Şunlardan birini dene:", nameShort: "En az 3 harf veya rakam olmalı!", checking: "Uygunluk kontrol ediliyor...", connError: "Bağlantı hatası, tekrar deneyin.", nameInUse: "Bu isim başka bir cihazda açık!", videoMsg: "Video", imageMsg: "Resim", fileMsg: "Dosya", callName: "Birileri arıyor...", translated: "(Çevrildi)", downloadBtn: "Yükle", previewBtn: "Önizle",
+        appInfo: "AceTalk MileStone 3 • Kurucu: Ace © 2026 • Uçtan uca şifreli • Designed in Baku", slogan: "Simple Messenger", myName: "ADIM", idPlaceholder: "Karşı tarafın ismi...", connectBtn: "BAĞLAN", voiceCall: "SESLİ ARA", videoCall: "KAMERALI ARA", secureChat: "Güvenli ve şifreli uçtan uca sohbet.", enterId: "Bağlanmak için bir isim girin.", msgPlaceholder: "Mesajınızı yazın...", calling: "ARANIYOR...", closeCall: "KAPAT", typing: "yazıyor...", sosBtn: "ACİL", sosCooldown: "sn", sosReceived: "ACİL YARDIM ÇAĞRISI", sosFrom: "Gönderen", sosHops: "ağ üzerinden ulaştı", sosNoConn: "Bağlı kimse yok! Önce birine bağlan.", wallpaperBtn: "❖ Duvar Kağıdı", resetWpBtn: "↺ Varsayılan WP", resetAccBtn: "⚠ Hesabı Sıfırla", micDenied: "Kamera/Mikrofon erişimi reddedildi!", noConn: "Şimdilik yalnızsın.", emptyOnline: "Burası çok ıssız..", connected: "🟢 BAĞLANDI", contactsTitle: "KİŞİLER", onlineNow: "ŞU AN ÇEVRİMİÇİ", savedContacts: "KAYDEDİLEN", noContacts: "Henüz kişi yok.<br>Biri ile konuştuktan sonra burada görünür.", onlineStatus: "Çevrimiçi", offlineStatus: "Çevrimdışı", incomingVoice: "Sesli arama geliyor", incomingVideo: "Görüntülü arama geliyor", answerBtn: "CEVAPLA", rejectBtn: "REDDET", setupTitle: "Hesabını oluştur", usernamePlace: "Kullanıcı Adı", startBtn: "BAŞLA", setupDesc: "Bu senin eşsiz ID'n olacak. Başkaları sana bu isimle bağlanacak.", delTitle: "Kişiyi sil", delDesc: "kişisini ve tüm mesaj geçmişini silmek istediğine emin misin?", delBtn: "SİL", cancelBtn: "İPTAL", resetTitle: "Hesabı sıfırla", resetDesc: "Kullanıcı adın, görünen ismin ve tüm konuşma geçmişin silinecek. Bu işlem geri alınamaz.", resetBtn: "SIFIRLA", fileTooBig: "Dosya boyutu çok büyük! Maksimum 50 MB.", nameTaken: "Bu isim alınmış! Şunlardan birini dene:", nameShort: "En az 3 harf veya rakam olmalı!", checking: "Uygunluk kontrol ediliyor...", connError: "Bağlantı hatası, tekrar deneyin.", nameInUse: "Bu isim başka bir cihazda açık!", videoMsg: "Video", imageMsg: "Resim", fileMsg: "Dosya", callName: "Birileri arıyor...", translated: "(Çevrildi)", downloadBtn: "Yükle", previewBtn: "Önizle",
         unsafeTitle: "Güvenlik Uyarısı", unsafeWarn: "Güvenli dosya olmayabilir!<br>Yine de indirmek istiyor musun?",
         editTitle: "Mesajı Düzenle", saveBtn: "KAYDET",
         delMsgTitle: "Mesajı Sil", delMsgDesc: "Bu mesajı herkesten silmek istediğine emin misin?"
     },
     en: { 
-        appInfo: "AceTalk MileStone 3 • Founder: Ace © 2026 • End-to-End Encrypted • Designed in Baku", slogan: "Simple Messenger", myName: "MY NAME", idPlaceholder: "Their username...", connectBtn: "CONNECT", voiceCall: "VOICE CALL", videoCall: "VIDEO CALL", secureChat: "Secure end-to-end encrypted chat.", enterId: "Enter an ID to connect.", msgPlaceholder: "Type your message...", calling: "CALLING...", closeCall: "HANG UP", typing: "is typing...", sosBtn: "SOS", sosCooldown: "sec", sosReceived: "EMERGENCY SOS RECEIVED", sosFrom: "From", sosHops: "hops away", sosNoConn: "Nobody connected!", wallpaperBtn: "❖ Wallpaper", resetWpBtn: "↺ Default WP", resetAccBtn: "⚠ Reset Account", micDenied: "Camera/Mic access denied!", noConn: "You're alone for now.", emptyOnline: "It's so deserted here..", connected: "🟢 CONNECTED", contactsTitle: "CONTACTS", onlineNow: "ONLINE NOW", savedContacts: "SAVED", noContacts: "No contacts yet.\nAppears after chatting.", onlineStatus: "Online", offlineStatus: "Last seen", incomingVoice: "Incoming voice call", incomingVideo: "Incoming video call", answerBtn: "ANSWER", rejectBtn: "REJECT", setupTitle: "Create your account", usernamePlace: "Username", startBtn: "START", setupDesc: "This is your unique ID. Others will connect using this name.", delTitle: "Delete contact", delDesc: "and all chat history? Are you sure?", delBtn: "DELETE", cancelBtn: "CANCEL", resetTitle: "Reset account", resetDesc: "Your username, display name, and all history will be deleted. This cannot be undone.", resetBtn: "RESET", fileTooBig: "File is too large! Maximum 50 MB.", nameTaken: "Name is taken! Try one of these:", nameShort: "Must be at least 3 letters or numbers!", checking: "Checking availability...", connError: "Connection error, try again.", nameInUse: "This name is open on another device!", videoMsg: "Video", imageMsg: "Image", fileMsg: "File", callName: "Someone is calling...", translated: "(Translated)", downloadBtn: "Download", previewBtn: "Preview",
+        appInfo: "AceTalk MileStone 3 • Founder: Ace © 2026 • End-to-End Encrypted • Designed in Baku", slogan: "Simple Messenger", myName: "MY NAME", idPlaceholder: "Their username...", connectBtn: "CONNECT", voiceCall: "VOICE CALL", videoCall: "VIDEO CALL", secureChat: "Secure end-to-end encrypted chat.", enterId: "Enter an ID to connect.", msgPlaceholder: "Type your message...", calling: "CALLING...", closeCall: "HANG UP", typing: "is typing...", sosBtn: "SOS", sosCooldown: "sec", sosReceived: "EMERGENCY SOS RECEIVED", sosFrom: "From", sosHops: "hops away", sosNoConn: "Nobody connected!", wallpaperBtn: "❖ Wallpaper", resetWpBtn: "↺ Default WP", resetAccBtn: "⚠ Reset Account", micDenied: "Camera/Mic access denied!", noConn: "You're alone for now.", emptyOnline: "It's so deserted here..", connected: "🟢 CONNECTED", contactsTitle: "CONTACTS", onlineNow: "ONLINE NOW", savedContacts: "SAVED", noContacts: "No contacts yet.<br>Appears after chatting.", onlineStatus: "Online", offlineStatus: "Offline", incomingVoice: "Incoming voice call", incomingVideo: "Incoming video call", answerBtn: "ANSWER", rejectBtn: "REJECT", setupTitle: "Create your account", usernamePlace: "Username", startBtn: "START", setupDesc: "This is your unique ID. Others will connect using this name.", delTitle: "Delete contact", delDesc: "and all chat history? Are you sure?", delBtn: "DELETE", cancelBtn: "CANCEL", resetTitle: "Reset account", resetDesc: "Your username, display name, and all history will be deleted. This cannot be undone.", resetBtn: "RESET", fileTooBig: "File is too large! Maximum 50 MB.", nameTaken: "Name is taken! Try one of these:", nameShort: "Must be at least 3 letters or numbers!", checking: "Checking availability...", connError: "Connection error, try again.", nameInUse: "This name is open on another device!", videoMsg: "Video", imageMsg: "Image", fileMsg: "File", callName: "Someone is calling...", translated: "(Translated)", downloadBtn: "Download", previewBtn: "Preview",
         unsafeTitle: "Security Warning", unsafeWarn: "This file may be unsafe!<br>Do you still want to download?",
         editTitle: "Edit Message", saveBtn: "SAVE",
         delMsgTitle: "Delete Message", delMsgDesc: "Are you sure you want to delete this message for everyone?"
@@ -843,9 +857,10 @@ function openContact(peerId) {
     const statusIconHtml = `<span style="color:${getStatusColor(pStatus)}; display:flex; align-items:center;">${getStatusSVG(pStatus)}</span>`;
     headerName.innerHTML = `${contact.name || peerIdToName(peerId)} ${statusIconHtml}`;
 
+    // SADECE ONLINE YA DA OFFLINE - Saat / Son Görülme kaldırıldı.
     const isOnline = connections.find(c => c.peer === peerId);
     const l = getLang();
-    headerStatus.innerText = isOnline ? l.onlineStatus : (l.offlineStatus + ': ' + formatLastSeen(contact.lastSeen));
+    headerStatus.innerText = isOnline ? l.onlineStatus : l.offlineStatus;
 
     const box = document.getElementById('chat-box');
     const welcome = document.getElementById('welcome-msg');
@@ -874,12 +889,6 @@ function openContact(peerId) {
 
     setTimeout(() => box.scrollTop = box.scrollHeight, 50);
     renderContacts(); 
-}
-
-function formatLastSeen(ts) {
-    if (!ts) return '?';
-    const d = new Date(ts);
-    return d.toLocaleDateString([], {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
 function renderContacts() {
@@ -924,14 +933,22 @@ function renderContacts() {
         
         const avatarHtml = peerAvatars[peerId] ? `<img src="${peerAvatars[peerId]}">` : `${(c.name || '?').charAt(0).toUpperCase()}`;
         
+        // PROFİL SAĞ ALT DURUM NOKTASI (HER ZAMAN GÜNCEL)
+        const statusClass = isOnline ? 'online' : 'offline';
+        const statusDotHtml = `<div class="contact-status-dot ${statusClass}"></div>`;
+        
+        // EĞER MESAJ YOKSA DİREKT DURUM YAZAR (ÇEVRİMİÇİ / ÇEVRİMDIŞI)
+        const statusText = isOnline ? l.onlineStatus : l.offlineStatus;
+        const displaySubText = lastText ? lastText : statusText;
+
         card.innerHTML = `
             <div class="contact-avatar" style="${!peerAvatars[peerId] ? 'background:'+stringToColor(peerId) : ''}">
                 ${avatarHtml}
-                ${isOnline ? '<div class="contact-online-dot"></div>' : ''}
+                ${statusDotHtml}
             </div>
             <div class="contact-info">
                 <div class="contact-name">${c.name || peerIdToName(peerId)}</div>
-                <div class="contact-last">${lastText || (isOnline ? l.onlineStatus : '')}</div>
+                <div class="contact-last">${displaySubText}</div>
             </div>
             <button class="contact-del-btn" onclick="openDeleteModal('${peerId}', event)" title="Sil">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -965,11 +982,11 @@ function updateOnlineList() {
         card.innerHTML = `
             <div class="contact-avatar" style="${!peerAvatars[c.peer] ? 'background:'+stringToColor(c.peer) : ''}">
                 ${avatarHtml}
-                <div class="contact-online-dot"></div>
+                <div class="contact-status-dot online"></div>
             </div>
             <div class="contact-info">
                 <div class="contact-name">${displayName} ${statusIconHtml}</div>
-                <div class="contact-last" style="color: #2ecc71;">${l.onlineStatus}</div>
+                <div class="contact-last" style="color: var(--call-green);">${l.onlineStatus}</div>
             </div>
         `;
         list.appendChild(card);
@@ -1549,7 +1566,7 @@ function handlePeerDisconnect(peerId) {
     renderContacts();
     if (activePeerId === peerId) {
         const l = getLang();
-        document.getElementById('chat-header-status').innerText = l.offlineStatus + ': ' + formatLastSeen(Date.now());
+        document.getElementById('chat-header-status').innerText = l.offlineStatus;
     }
 }
 
@@ -1829,7 +1846,7 @@ function addMessage(user, text, type, time, scroll, status = 'sent', msgId = nul
         div.setAttribute('data-msgid', msgId);
         div.oncontextmenu = (e) => showContextMenu(e, msgId, type);
         
-        // Mobile Long Press (Dokunmatik ekran için yarım saniye basılı tutma)
+        // Mobile Long Press (Dokunmatik ekran için)
         div.addEventListener('touchstart', (e) => handleMsgTouchStart(e, msgId, type), {passive: true});
         div.addEventListener('touchend', handleMsgTouchEnd);
         div.addEventListener('touchmove', handleMsgTouchMove, {passive: true});
