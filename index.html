@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>AceTalk | V18 (Dinamik Saat & Mükemmel Arayüz)</title>
+    <title>AceTalk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -235,7 +235,10 @@
     </div>
 
     <div id="setup-screen">
-        <h1 style="font-size: 48px; margin-bottom: 40px; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">AceTalk</h1>
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 40px;">
+            <img src="https://raw.githubusercontent.com/ace-official/AceTalk/main/%20AceTalk%20logo%20TP.png" alt="AceTalk Logo" style="height: 60px; object-fit: contain;">
+            <h1 style="font-size: 48px; margin: 0; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">AceTalk</h1>
+        </div>
         <div id="setup-error"></div>
         <div id="setup-suggestions" style="margin-bottom: 20px;"></div>
         <input type="text" id="setup-id" placeholder="ID Girin" onkeypress="if(event.key==='Enter') login()">
@@ -1243,7 +1246,6 @@
     }
     document.addEventListener('click', (e) => { if (!e.target.closest('#context-menu')) document.getElementById('context-menu').style.display = 'none'; });
 
-    // sabitleme, ingilizcesini unuttum .d
     function handleCtxPin() {
         document.getElementById('context-menu').style.display = 'none';
         const contacts = loadContacts();
