@@ -236,7 +236,7 @@
 
     <div id="setup-screen">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 40px;">
-            <img src="https://raw.githubusercontent.com/ace-official/AceTalk/main/%20AceTalk%20logo%20TP.png" alt="AceTalk Logo" style="height: 60px; object-fit: contain;">
+            <img src="https://raw.githubusercontent.com/ace-official/AceTalk/main/AceTalklogoTP.png" alt="AceTalk Logo" style="height: 60px; object-fit: contain;">
             <h1 style="font-size: 48px; margin: 0; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">AceTalk</h1>
         </div>
         <div id="setup-error"></div>
@@ -532,7 +532,6 @@
     let peerStatusModes = {};
     let e2eKeys = {};
 
-    // YENİ KURALLAR: Varsayılan durum YOK. Boş string atanıyor.
     let myProfile = { id: '', name: '', avatarB64: null, statusText: '', statusMode: 'online' };
 
     function loadContacts() { try { return JSON.parse(localStorage.getItem('acetalk_contacts') || '{}'); } catch { return {}; } }
@@ -594,7 +593,6 @@
         if (savedProfile) {
             myProfile = JSON.parse(savedProfile);
 
-            // KÖKLÜ TEMİZLİK: Eski yapışan durumlar varsa zorla siliyoruz
             if (myProfile.statusText === 'AceTalk kullanıyor ✨') {
                 myProfile.statusText = '';
             }
@@ -718,7 +716,6 @@
         document.getElementById('profile-modal').style.display='flex';
     }
 
-    // SVG İCONS
     function getStatusIcon(isOnline, mode, size=16) {
         const sz = size;
         if (!isOnline) {
@@ -784,7 +781,6 @@
             return 0;
         });
 
-        // KİŞİLER RENDER
         keys.forEach(peerId => {
             const c = contacts[peerId];
             const isOnline = onlineIds.has(peerId);
@@ -809,7 +805,6 @@
         addTile.innerHTML = `<div class="tile-initial">+</div><div class="tile-bottom"><div class="tile-name">${d.addContact}</div></div>`;
         contactsRow.appendChild(addTile);
 
-        // MY MOOD
         if (myProfile.statusText && myProfile.statusText.trim() !== '') {
             const myStatusTile = document.createElement('div');
             myStatusTile.className = 'tile';
@@ -818,7 +813,6 @@
             statusesRow.appendChild(myStatusTile);
         }
 
-        // FRİENDS MOOD
         keys.forEach(peerId => {
             const c = contacts[peerId];
             if (c.textStatus && c.textStatus.trim() !== '' && c.textStatus !== 'AceTalk kullanıyor ✨') {
@@ -900,7 +894,6 @@
                 peerNames[conn.peer] = data.name;
                 if(data.avatar) peerAvatars[conn.peer] = data.avatar;
                 if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
-                // Eğer eski saçma durum gelirse onu yoksay
                 let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus;
                 upsertContact(conn.peer, data.name, null, cleanStatus);
                 if(activePeerId === conn.peer) openChat(conn.peer);
