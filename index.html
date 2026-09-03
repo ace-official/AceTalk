@@ -1,15 +1,6 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18417012079"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'AW-18417012079');
-</script>
     <meta charset="UTF-8">
     <title>AceTalk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -75,11 +66,9 @@
         .icon-btn:hover { opacity: 1; }
 
         .user-corner { display: flex; align-items: center; gap: 15px; cursor: pointer; }
-
         .user-corner-info { text-align: right; }
         .user-corner-name { font-size: 18px; font-weight: 700; }
         .user-corner-id { font-size: 12px; color: var(--grid-dark); font-weight: 700; margin-top: 2px;}
-
         .user-corner-avatar { width: 45px; height: 45px; background: var(--grid-dark); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; position: relative; line-height: 1; }
         .user-corner-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-badge { position: absolute; bottom: -4px; right: -4px; display: flex; z-index: 5; background: transparent; border-radius: 50% !important; }
@@ -93,7 +82,6 @@
         .tile-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
 
         .tile-initial { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: var(--tile-font); font-weight: 700; color: var(--text-black); z-index: 1; background-color: var(--grid-light); opacity: 0.75; line-height: 1; padding-bottom: var(--tile-bottom-h); }
-
         .tile-bottom { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--tile-bottom-h); background-color: rgba(0, 0, 0, 0.75); color: white; display: flex; flex-direction: column; justify-content: center; padding: 0 15px; z-index: 2; }
         .tile-name { font-size: var(--tile-bottom-font); font-weight: 700; display: flex; align-items: center; }
         .tile-sub { font-size: 13px; color: var(--status-green); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
@@ -232,10 +220,10 @@
     <audio id="snd-sos" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <div id="context-menu">
-        <div class="ctx-item" id="ctx-pin" onclick="handleCtxPin()">📌 Sabitle</div>
-        <div class="ctx-item" id="ctx-unpin" onclick="handleCtxUnpin()" style="display:none;">📍 Sabitlemeyi Kaldır</div>
-        <div class="ctx-item" id="ctx-edit" onclick="handleCtxEdit()">✏️ Düzenle</div>
-        <div class="ctx-item danger" id="ctx-delete" onclick="handleCtxDelete()">🗑️ Herkesten Sil</div>
+        <div class="ctx-item" id="ctx-pin-container" onclick="handleCtxPin()">📌 <span id="t-ctx-pin">Pin</span></div>
+        <div class="ctx-item" id="ctx-unpin-container" onclick="handleCtxUnpin()" style="display:none;">📍 <span id="t-ctx-unpin">Unpin</span></div>
+        <div class="ctx-item" id="ctx-edit-container" onclick="handleCtxEdit()">✏️ <span id="t-ctx-edit">Edit</span></div>
+        <div class="ctx-item danger" id="ctx-delete-container" onclick="handleCtxDelete()">🗑️ <span id="t-ctx-del">Delete for Everyone</span></div>
     </div>
 
     <div id="image-viewer">
@@ -250,33 +238,24 @@
         </div>
         <div id="setup-error"></div>
         <div id="setup-suggestions" style="margin-bottom: 20px;"></div>
-        <input type="text" id="setup-id" placeholder="ID Girin" onkeypress="if(event.key==='Enter') login()">
-        <button onclick="login()" id="setup-btn">GİRİŞ YAP</button>
+        <input type="text" id="setup-id" placeholder="Enter ID" onkeypress="if(event.key==='Enter') login()">
+        <button onclick="login()" id="t-login-btn">LOGIN</button>
     </div>
 
     <div id="home-screen" class="screen">
         <div class="home-header">
             <div class="home-title-area">
-                <div class="home-title" id="t-title">Merhaba!</div>
-                <select class="lang-select" id="lang-picker" onchange="changeLanguage(this.value)">
-                    <option value="tr">🇹🇷 Türkçe</option>
-                    <option value="en">🇬🇧 English</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="ru">🇷🇺 Русский</option>
-                    <option value="zh">🇨🇳 中文</option>
-                </select>
+                <div class="home-title" id="t-title">Hello!</div>
             </div>
 
             <div class="header-right">
-                <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'" title="Ayarlar">
+                <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings">
                     <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
 
                 <div class="user-corner" onclick="openProfileModal()">
                     <div class="user-corner-info">
-                        <div class="user-corner-name" id="my-display-name">Kullanıcı</div>
+                        <div class="user-corner-name" id="my-display-name">User</div>
                         <div class="user-corner-id" id="my-display-id">@id</div>
                     </div>
                     <div class="user-corner-avatar" id="my-display-avatar">?</div>
@@ -285,10 +264,10 @@
         </div>
 
         <div class="main-hub-container">
-            <div class="section-label" id="t-contacts">Kişiler</div>
+            <div class="section-label" id="t-contacts">Contacts</div>
             <div class="horizontal-row" id="contacts-row"></div>
 
-            <div class="section-label" style="margin-top: 10px;" id="t-statuses">Durumlar & Haller</div>
+            <div class="section-label" style="margin-top: 10px;" id="t-statuses">Statuses & Moods</div>
             <div class="horizontal-row" id="statuses-row"></div>
         </div>
     </div>
@@ -300,17 +279,17 @@
             </button>
             <div class="avatar-sq" id="current-chat-avatar">?</div>
             <div class="chat-info">
-                <div class="chat-name" id="current-chat-name">İsim</div>
-                <div class="chat-id-status" id="current-chat-id">@id • Çevrimdışı</div>
+                <div class="chat-name" id="current-chat-name">Name</div>
+                <div class="chat-id-status" id="current-chat-id">@id • Offline</div>
             </div>
             <div class="chat-actions">
-                <button class="action-btn sos" title="Acil Durum (SOS)" onclick="sendSOS()">
+                <button class="action-btn sos" title="SOS Emergency" onclick="sendSOS()">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 </button>
-                <button class="action-btn" title="Sesli Ara" onclick="startCall('audio')">
+                <button class="action-btn" title="Audio Call" onclick="startCall('audio')">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                 </button>
-                <button class="action-btn" title="Kameralı Ara" onclick="startCall('video')">
+                <button class="action-btn" title="Video Call" onclick="startCall('video')">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14"></rect></svg>
                 </button>
             </div>
@@ -318,16 +297,16 @@
         <div id="pinned-msg-banner"></div>
         <div class="chat-body" id="chat-box"></div>
         <div class="chat-footer">
-            <div class="typing-pulse" id="typing-ui">birileri yazıyor...</div>
+            <div class="typing-pulse" id="typing-ui">someone is typing...</div>
             <div class="chat-input-wrapper">
-                <button class="icon-btn" onclick="document.getElementById('media-input').click()" title="Dosya Gönder" style="margin-left: 10px;">
+                <button class="icon-btn" onclick="document.getElementById('media-input').click()" title="Send Media" style="margin-left: 10px;">
                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                 </button>
                 <input type="file" id="media-input" accept="*/*" style="display:none" onchange="handleMedia(this)">
 
-                <input type="text" id="message-input" placeholder="Mesaj ekle.." onkeypress="if(event.key==='Enter') sendMessage()" oninput="notifyTyping()">
+                <input type="text" id="message-input" placeholder="Add message.." onkeypress="if(event.key==='Enter') sendMessage()" oninput="notifyTyping()">
 
-                <button class="icon-btn" onclick="sendMessage()" title="Gönder" style="margin-right: 10px; color: var(--skype-blue);">
+                <button class="icon-btn" onclick="sendMessage()" title="Send" style="margin-right: 10px; color: var(--skype-blue);">
                     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>
@@ -336,86 +315,104 @@
 
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-box">
-            <div class="modal-title" id="t-settings-title">Ayarlar</div>
+            <div class="modal-title" id="t-settings-title">Settings</div>
+            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                <span style="font-size: 16px; font-weight: 700;" id="t-theme">Açık Tema</span>
+                <span style="font-size: 16px; font-weight: 700;" id="t-lang">Language</span>
+                <select class="lang-select" id="lang-picker" onchange="changeLanguage(this.value)" style="padding: 4px 8px; margin: 0;">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 中文</option>
+                </select>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                <span style="font-size: 16px; font-weight: 700;" id="t-theme">Light Theme</span>
                 <label class="toggle-switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme(this)"><span class="slider"></span></label>
             </div>
+            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-                <span style="font-size: 16px; font-weight: 700;" id="t-notif">Bildirim Sesleri</span>
+                <span style="font-size: 16px; font-weight: 700;" id="t-notif">Notification Sounds</span>
                 <label class="toggle-switch"><input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"><span class="slider"></span></label>
             </div>
-            <div style="font-size: 16px; font-weight: 700; margin-bottom: 10px;" id="t-wp">Duvar Kağıdı (İsteğe Bağlı)</div>
+
+            <div style="font-size: 16px; font-weight: 700; margin-bottom: 10px;" id="t-wp">Wallpaper (Optional)</div>
             <label class="custom-file-upload">
                 <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(this)">
-                <span id="wp-file-name">Dosya Seç...</span>
+                <span id="wp-file-name">Choose File...</span>
             </label>
-            <button class="btn-cancel" style="width:100%; margin-bottom: 15px;" onclick="resetWallpaper()" id="t-wp-reset">Varsayılanı Geri Yükle</button>
+            <button class="btn-cancel" style="width:100%; margin-bottom: 15px;" onclick="resetWallpaper()" id="t-wp-reset">Restore Default</button>
             <div class="modal-btns">
-                <button class="btn-primary" onclick="document.getElementById('settings-modal').style.display='none'">KAPAT</button>
+                <button class="btn-primary" id="btn-close-set" onclick="document.getElementById('settings-modal').style.display='none'">CLOSE</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="profile-modal">
         <div class="modal-box">
-            <div class="modal-title">Profili Düzenle</div>
-            <input type="text" id="edit-name" class="modal-input" placeholder="Takma Adın (Görünen İsim)">
+            <div class="modal-title" id="t-edit-prof">Edit Profile</div>
+            <input type="text" id="edit-name" class="modal-input" placeholder="Nickname (Display Name)">
 
-            <div style="font-size: 12px; margin-bottom: 5px;">Durum Modu</div>
+            <div style="font-size: 12px; margin-bottom: 5px;" id="t-status-mode">Status Mode</div>
             <div class="status-selector" id="edit-status-mode">
                 <button class="status-btn online" onclick="selectStatusMode('online')">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="var(--status-green)"/></svg> Çevrimiçi
+                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="var(--status-green)"/></svg> <span id="t-mode-online">Online</span>
                 </button>
                 <button class="status-btn sleep" onclick="selectStatusMode('sleep')">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#f1c40f"/><path d="M14 7a5 5 0 0 0-4 9 5.5 5.5 0 1 1 4-9z" fill="var(--bg-base)"/></svg> Uykuda
+                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#f1c40f"/><path d="M14 7a5 5 0 0 0-4 9 5.5 5.5 0 1 1 4-9z" fill="var(--bg-base)"/></svg> <span id="t-mode-sleep">Sleep</span>
                 </button>
                 <button class="status-btn dnd" onclick="selectStatusMode('dnd')">
-                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#e74c3c"/><rect x="7" y="10.5" width="10" height="3" fill="var(--bg-base)" rx="1"/></svg> Rahatsız Etme
+                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#e74c3c"/><rect x="7" y="10.5" width="10" height="3" fill="var(--bg-base)" rx="1"/></svg> <span id="t-mode-dnd">DND</span>
                 </button>
             </div>
 
-            <div style="font-size: 12px; margin-bottom: 5px;">Profil Fotoğrafı</div>
+            <div style="font-size: 12px; margin-bottom: 5px;" id="t-prof-pic">Profile Picture</div>
             <label class="custom-file-upload">
                 <input type="file" id="edit-avatar" accept="image/*" onchange="updateFileName(this, 'avatar-file-name')">
-                <span id="avatar-file-name">Dosya Seç...</span>
+                <span id="avatar-file-name">Choose File...</span>
             </label>
             <div class="modal-btns">
-                <button class="btn-primary" onclick="saveProfile()">KAYDET</button>
-                <button class="btn-cancel" onclick="document.getElementById('profile-modal').style.display='none'">İPTAL</button>
+                <button class="btn-primary" id="btn-save-prof" onclick="saveProfile()">SAVE</button>
+                <button class="btn-cancel" id="btn-cancel-prof" onclick="document.getElementById('profile-modal').style.display='none'">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="add-contact-modal">
         <div class="modal-box">
-            <div class="modal-title" id="t-modal-contact">Kişi Ekle..</div>
-            <input type="text" id="new-contact-id" class="modal-input" placeholder="Kullanıcının ID'sini Girin">
+            <div class="modal-title" id="t-modal-contact">Add Contact..</div>
+            <input type="text" id="new-contact-id" class="modal-input" placeholder="Enter User ID">
             <div class="modal-btns">
-                <button class="btn-primary" onclick="addContact()">BAĞLAN</button>
-                <button class="btn-cancel" onclick="document.getElementById('add-contact-modal').style.display='none'">İPTAL</button>
+                <button class="btn-primary" id="btn-conn-add" onclick="addContact()">CONNECT</button>
+                <button class="btn-cancel" id="btn-cancel-add" onclick="document.getElementById('add-contact-modal').style.display='none'">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="add-status-modal">
         <div class="modal-box">
-            <div class="modal-title" id="t-modal-status">Durum Ekle..</div>
-            <input type="text" id="new-status-text" class="modal-input" placeholder="Aklından ne geçiyor?">
+            <div class="modal-title" id="t-modal-status">Add Status..</div>
+            <input type="text" id="new-status-text" class="modal-input" placeholder="What's on your mind?">
             <div class="modal-btns">
-                <button class="btn-primary" onclick="addStatus()">PAYLAŞ</button>
-                <button class="btn-cancel" onclick="document.getElementById('add-status-modal').style.display='none'">İPTAL</button>
+                <button class="btn-primary" id="btn-share-stat" onclick="addStatus()">SHARE</button>
+                <button class="btn-cancel" id="btn-cancel-stat" onclick="document.getElementById('add-status-modal').style.display='none'">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div id="edit-modal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">Mesajı Düzenle</div>
+            <div class="modal-title" id="t-edit-msg-title">Edit Message</div>
             <input type="text" id="edit-msg-input" class="modal-input" onkeypress="if(event.key==='Enter') confirmEditMsg()">
             <div class="modal-btns">
-                <button class="btn-primary" onclick="confirmEditMsg()">KAYDET</button>
-                <button class="btn-cancel" onclick="document.getElementById('edit-modal').style.display='none'">İPTAL</button>
+                <button class="btn-primary" id="btn-save-edit" onclick="confirmEditMsg()">SAVE</button>
+                <button class="btn-cancel" id="btn-cancel-edit" onclick="document.getElementById('edit-modal').style.display='none'">CANCEL</button>
             </div>
         </div>
     </div>
@@ -424,71 +421,199 @@
         <div id="call-icon" style="margin-bottom: 25px; color: var(--status-green);">
             <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="currentColor" stroke-width="2" style="border-radius: 50%;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
         </div>
-        <h2 id="call-name" style="margin:0; font-size:32px; font-weight: 700;">İsim</h2>
-        <p id="call-status" style="color:#aaa; letter-spacing:2px; font-weight: 700;">ARANIYOR...</p>
+        <h2 id="call-name" style="margin:0; font-size:32px; font-weight: 700;">Name</h2>
+        <p id="call-status" style="color:#aaa; letter-spacing:2px; font-weight: 700;">CALLING...</p>
         <div id="call-videos">
             <video id="remote-video" autoplay playsinline></video>
             <video id="local-video" autoplay muted playsinline></video>
             <audio id="remote-audio" autoplay></audio>
         </div>
         <div style="display:flex; gap: 20px; margin-top: 40px;">
-            <button onclick="shareScreen()" id="btn-screen" style="background: var(--skype-blue); color: white; border: none; padding: 16px 30px; font-weight: bold; cursor: pointer; display: none;">💻 EKRAN PAYLAŞ</button>
-            <button onclick="endCall()" style="background: var(--call-red); color: white; border: none; padding: 16px 50px; font-weight: bold; cursor: pointer;">KAPAT</button>
+            <button onclick="shareScreen()" id="btn-screen" style="background: var(--skype-blue); color: white; border: none; padding: 16px 30px; font-weight: bold; cursor: pointer; display: none;">💻 SHARE SCREEN</button>
+            <button onclick="endCall()" id="btn-hangup" style="background: var(--call-red); color: white; border: none; padding: 16px 50px; font-weight: bold; cursor: pointer;">HANG UP</button>
         </div>
     </div>
 
     <div id="incoming-call-panel">
         <div>
-            <div id="incoming-call-name" style="font-size: 18px; font-weight: 700;">Birileri arıyor...</div>
-            <div id="incoming-call-sub" style="font-size: 12px; color: var(--grid-dark); font-weight: 700;">Arama geliyor</div>
+            <div id="incoming-call-name" style="font-size: 18px; font-weight: 700;">Someone is calling...</div>
+            <div id="incoming-call-sub" style="font-size: 12px; color: var(--grid-dark); font-weight: 700;">Incoming Call</div>
         </div>
         <div style="display:flex; gap:10px;">
-            <button onclick="answerCall()" style="flex:1; background:var(--status-green); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">CEVAPLA</button>
-            <button onclick="rejectCall()" style="flex:1; background:var(--call-red); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">REDDET</button>
+            <button onclick="answerCall()" id="btn-answer" style="flex:1; background:var(--status-green); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">ANSWER</button>
+            <button onclick="rejectCall()" id="btn-reject" style="flex:1; background:var(--call-red); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">REJECT</button>
         </div>
     </div>
 
 <script>
     /* =========================================================
-       1. THEME AND LAN.
+       1. THEME AND LANGUAGE DICTIONARY
     ========================================================= */
     const dict = {
-        tr: { greeting: ["İyi Geceler", "Günaydın", "Tünaydın", "İyi Akşamlar"], contacts: "Kişiler", statuses: "Durumlar & Haller", addContact: "Kişi Ekle..", addStatus: "Durum Ekle..", online: "Çevrimiçi", msgPlaceholder: "Mesaj ekle..", settings: "Ayarlar", notif: "Bildirim Sesleri", wp: "Duvar Kağıdı (İsteğe Bağlı)", wpReset: "Varsayılanı Geri Yükle", theme: "Açık Tema" },
-        en: { greeting: ["Good Night", "Good Morning", "Good Afternoon", "Good Evening"], contacts: "Contacts", statuses: "Statuses & Moods", addContact: "Add Contact..", addStatus: "Add Status..", online: "Online", msgPlaceholder: "Add message..", settings: "Settings", notif: "Notification Sounds", wp: "Wallpaper (Optional)", wpReset: "Restore Default", theme: "Light Theme" },
-        de: { greeting: ["Gute Nacht", "Guten Morgen", "Guten Tag", "Guten Abend"], contacts: "Kontakte", statuses: "Status & Stimmungen", addContact: "Kontakt hinzufügen..", addStatus: "Status hinzufügen..", online: "Online", msgPlaceholder: "Nachricht hinzufügen..", settings: "Einstellungen", notif: "Benachrichtigungstöne", wp: "Hintergrundbild", wpReset: "Standard wiederherstellen", theme: "Helles Design" }
+        en: {
+            greeting: ["Good Night", "Good Morning", "Good Afternoon", "Good Evening"],
+            contacts: "Contacts", statuses: "Statuses & Moods", addContact: "Add Contact..", addStatus: "Add Status..",
+            msgPlaceholder: "Add message..", settings: "Settings", lang: "Language", notif: "Notification Sounds", wp: "Wallpaper (Optional)",
+            wpReset: "Restore Default", theme: "Light Theme", online: "Online", offline: "Offline", sleep: "Sleep", dnd: "DND",
+            ctxPin: "Pin", ctxUnpin: "Unpin", ctxEdit: "Edit", ctxDel: "Delete for Everyone",
+            btnSave: "SAVE", btnCancel: "CANCEL", btnShare: "SHARE", btnConnect: "CONNECT", btnClose: "CLOSE",
+            phId: "Enter User ID", phStatus: "What's on your mind?", phName: "Nickname (Display Name)", loginBtn: "LOGIN",
+            callCalling: "CALLING...", callConnected: "CONNECTED", callIncTitle: "Someone is calling...",
+            callIncVideo: "Incoming Video Call", callIncAudio: "Incoming Audio Call", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "ANSWER", btnReject: "REJECT", btnScreen: "💻 SHARE SCREEN", btnHangup: "HANG UP",
+            you: "(You)", editProf: "Edit Profile", statusMode: "Status Mode", profPic: "Profile Picture",
+            fileSelect: "Choose File...", editMsgTitle: "Edit Message", delMsg: "🚫 This message was deleted",
+            edited: "(edited)", trans: "(Translated)", callEnd: "Call ended • Duration", typeWait: "someone is typing...",
+            pinnedPre: "Pinned Message"
+        },
+        tr: {
+            greeting: ["İyi Geceler", "Günaydın", "Tünaydın", "İyi Akşamlar"],
+            contacts: "Kişiler", statuses: "Durumlar & Haller", addContact: "Kişi Ekle..", addStatus: "Durum Ekle..",
+            msgPlaceholder: "Mesaj ekle..", settings: "Ayarlar", lang: "Dil", notif: "Bildirim Sesleri", wp: "Duvar Kağıdı (İsteğe Bağlı)",
+            wpReset: "Varsayılanı Geri Yükle", theme: "Açık Tema", online: "Çevrimiçi", offline: "Çevrimdışı", sleep: "Uykuda", dnd: "Rahatsız Etme",
+            ctxPin: "Sabitle", ctxUnpin: "Sabitlemeyi Kaldır", ctxEdit: "Düzenle", ctxDel: "Herkesten Sil",
+            btnSave: "KAYDET", btnCancel: "İPTAL", btnShare: "PAYLAŞ", btnConnect: "BAĞLAN", btnClose: "KAPAT",
+            phId: "ID Girin", phStatus: "Aklından ne geçiyor?", phName: "Takma Adın (Görünen İsim)", loginBtn: "GİRİŞ YAP",
+            callCalling: "ARANIYOR...", callConnected: "BAĞLANDI", callIncTitle: "Birileri arıyor...",
+            callIncVideo: "Görüntülü arama geliyor", callIncAudio: "Sesli arama geliyor", callVidStr: "Görüntülü", callAudStr: "Sesli",
+            btnAnswer: "CEVAPLA", btnReject: "REDDET", btnScreen: "💻 EKRAN PAYLAŞ", btnHangup: "KAPAT",
+            you: "(Sen)", editProf: "Profili Düzenle", statusMode: "Durum Modu", profPic: "Profil Fotoğrafı",
+            fileSelect: "Dosya Seç...", editMsgTitle: "Mesajı Düzenle", delMsg: "🚫 Bu mesaj silindi",
+            edited: "(düzenlendi)", trans: "(Çevrildi)", callEnd: "Arama bitti • Süre", typeWait: "birileri yazıyor...",
+            pinnedPre: "Sabitlenen Mesaj"
+        },
+        de: {
+            greeting: ["Gute Nacht", "Guten Morgen", "Guten Tag", "Guten Abend"], contacts: "Kontakte", statuses: "Status & Stimmungen",
+            addContact: "Kontakt hinzufügen..", addStatus: "Status hinzufügen..", msgPlaceholder: "Nachricht hinzufügen..", settings: "Einstellungen",
+            lang: "Sprache", notif: "Benachrichtigungstöne", wp: "Hintergrundbild", wpReset: "Standard", theme: "Helles Design",
+            online: "Online", offline: "Offline", sleep: "Schlafen", dnd: "Nicht stören", ctxPin: "Anheften", ctxUnpin: "Lösen",
+            ctxEdit: "Bearbeiten", ctxDel: "Für alle löschen", btnSave: "SPEICHERN", btnCancel: "ABBRECHEN", btnShare: "TEILEN",
+            btnConnect: "VERBINDEN", btnClose: "SCHLIESSEN", phId: "ID eingeben", phStatus: "Was machst du gerade?", phName: "Spitzname",
+            loginBtn: "ANMELDEN", callCalling: "ANRUFEN...", callConnected: "VERBUNDEN", callIncTitle: "Jemand ruft an...",
+            callIncVideo: "Eingehender Videoanruf", callIncAudio: "Eingehender Audioanruf", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "ANTWORTEN", btnReject: "ABLEHNEN", btnScreen: "💻 BILDSCHIRM", btnHangup: "AUFLEGEN", you: "(Du)",
+            editProf: "Profil bearbeiten", statusMode: "Status", profPic: "Profilbild", fileSelect: "Datei wählen...",
+            editMsgTitle: "Nachricht bearbeiten", delMsg: "🚫 Nachricht gelöscht", edited: "(bearbeitet)", trans: "(Übersetzt)",
+            callEnd: "Anruf beendet • Dauer", typeWait: "schreibt...", pinnedPre: "Angeheftete Nachricht"
+        },
+        es: {
+            greeting: ["Buenas Noches", "Buenos Días", "Buenas Tardes", "Buenas Noches"], contacts: "Contactos", statuses: "Estados",
+            addContact: "Añadir Contacto..", addStatus: "Añadir Estado..", msgPlaceholder: "Mensaje..", settings: "Ajustes",
+            lang: "Idioma", notif: "Sonidos", wp: "Fondo de Pantalla", wpReset: "Restaurar", theme: "Tema Claro", online: "En línea", offline: "Desconectado",
+            sleep: "Ausente", dnd: "No molestar", ctxPin: "Fijar", ctxUnpin: "Desfijar", ctxEdit: "Editar", ctxDel: "Eliminar para todos",
+            btnSave: "GUARDAR", btnCancel: "CANCELAR", btnShare: "COMPARTIR", btnConnect: "CONECTAR", btnClose: "CERRAR", phId: "ID de usuario",
+            phStatus: "¿Qué estás pensando?", phName: "Apodo", loginBtn: "ENTRAR", callCalling: "LLAMANDO...", callConnected: "CONECTADO",
+            callIncTitle: "Llamada entrante...", callIncVideo: "Videollamada", callIncAudio: "Llamada de voz", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "CONTESTAR", btnReject: "RECHAZAR", btnScreen: "💻 PANTALLA", btnHangup: "COLGAR", you: "(Tú)", editProf: "Editar Perfil",
+            statusMode: "Estado", profPic: "Foto", fileSelect: "Elegir...", editMsgTitle: "Editar Mensaje", delMsg: "🚫 Mensaje eliminado",
+            edited: "(editado)", trans: "(Traducido)", callEnd: "Llamada finalizada •", typeWait: "escribiendo...", pinnedPre: "Mensaje fijado"
+        },
+        fr: {
+            greeting: ["Bonne Nuit", "Bonjour", "Bon Après-midi", "Bonsoir"], contacts: "Contacts", statuses: "Statuts",
+            addContact: "Ajouter Contact..", addStatus: "Ajouter Statut..", msgPlaceholder: "Message..", settings: "Paramètres",
+            lang: "Langue", notif: "Sons", wp: "Fond d'écran", wpReset: "Restaurer", theme: "Thème Clair", online: "En ligne", offline: "Hors ligne",
+            sleep: "Absent", dnd: "Ne pas déranger", ctxPin: "Épingler", ctxUnpin: "Détacher", ctxEdit: "Modifier", ctxDel: "Supprimer",
+            btnSave: "ENREGISTRER", btnCancel: "ANNULER", btnShare: "PARTAGER", btnConnect: "CONNECTER", btnClose: "FERMER", phId: "Entrer ID",
+            phStatus: "À quoi pensez-vous?", phName: "Surnom", loginBtn: "CONNEXION", callCalling: "APPEL...", callConnected: "CONNECTÉ",
+            callIncTitle: "Appel entrant...", callIncVideo: "Appel vidéo", callIncAudio: "Appel vocal", callVidStr: "Vidéo", callAudStr: "Audio",
+            btnAnswer: "RÉPONDRE", btnReject: "REFUSER", btnScreen: "💻 ÉCRAN", btnHangup: "RACCROCHER", you: "(Toi)", editProf: "Profil",
+            statusMode: "Statut", profPic: "Photo", fileSelect: "Choisir...", editMsgTitle: "Modifier", delMsg: "🚫 Message supprimé",
+            edited: "(modifié)", trans: "(Traduit)", callEnd: "Appel terminé •", typeWait: "écrit...", pinnedPre: "Message épinglé"
+        },
+        ru: {
+            greeting: ["Доброй ночи", "Доброе утро", "Добрый день", "Добрый вечер"], contacts: "Контакты", statuses: "Статусы",
+            addContact: "Добавить..", addStatus: "Статус..", msgPlaceholder: "Сообщение..", settings: "Настройки", lang: "Язык", notif: "Звуки",
+            wp: "Обои", wpReset: "Сбросить", theme: "Светлая тема", online: "В сети", offline: "Не в сети", sleep: "Спит", dnd: "Не беспокоить",
+            ctxPin: "Закрепить", ctxUnpin: "Открепить", ctxEdit: "Изменить", ctxDel: "Удалить", btnSave: "СОХРАНИТЬ", btnCancel: "ОТМЕНА",
+            btnShare: "ПОДЕЛИТЬСЯ", btnConnect: "ПОДКЛЮЧИТЬ", btnClose: "ЗАКРЫТЬ", phId: "Ваш ID", phStatus: "Что нового?", phName: "Имя",
+            loginBtn: "ВОЙТИ", callCalling: "ЗВОНОК...", callConnected: "СОЕДИНЕНО", callIncTitle: "Входящий вызов...",
+            callIncVideo: "Видеозвонок", callIncAudio: "Аудиозвонок", callVidStr: "Видео", callAudStr: "Аудио",
+            btnAnswer: "ОТВЕТИТЬ", btnReject: "ОТКЛОНИТЬ", btnScreen: "💻 ЭКРАН", btnHangup: "ЗАВЕРШИТЬ", you: "(Ты)", editProf: "Профиль",
+            statusMode: "Статус", profPic: "Фото", fileSelect: "Выбрать...", editMsgTitle: "Изменить", delMsg: "🚫 Удалено",
+            edited: "(изменено)", trans: "(Переведено)", callEnd: "Звонок завершен •", typeWait: "печатает...", pinnedPre: "Закреплено"
+        },
+        it: {
+            greeting: ["Buonanotte", "Buongiorno", "Buon Pomeriggio", "Buonasera"], contacts: "Contatti", statuses: "Stati",
+            addContact: "Aggiungi Contatto..", addStatus: "Aggiungi Stato..", msgPlaceholder: "Messaggio..", settings: "Impostazioni",
+            lang: "Lingua", notif: "Suoni", wp: "Sfondo", wpReset: "Ripristina", theme: "Tema Chiaro", online: "Online", offline: "Offline",
+            sleep: "Assente", dnd: "Non disturbare", ctxPin: "Fissa", ctxUnpin: "Rimuovi", ctxEdit: "Modifica", ctxDel: "Elimina per tutti",
+            btnSave: "SALVA", btnCancel: "ANNULLA", btnShare: "CONDIVIDI", btnConnect: "CONNETTI", btnClose: "CHIUDI", phId: "Inserisci ID",
+            phStatus: "A cosa pensi?", phName: "Soprannome", loginBtn: "ACCEDI", callCalling: "CHIAMATA...", callConnected: "CONNESSO",
+            callIncTitle: "Chiamata in arrivo...", callIncVideo: "Videochiamata", callIncAudio: "Chiamata vocale", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "RISPONDI", btnReject: "RIFIUTA", btnScreen: "💻 SCHERMO", btnHangup: "RIPONERE", you: "(Tu)", editProf: "Modifica Profilo",
+            statusMode: "Stato", profPic: "Foto", fileSelect: "Scegli...", editMsgTitle: "Modifica", delMsg: "🚫 Messaggio eliminato",
+            edited: "(modificato)", trans: "(Tradotto)", callEnd: "Chiamata terminata •", typeWait: "sta scrivendo...", pinnedPre: "Fissato"
+        },
+        ja: {
+            greeting: ["おやすみ", "おはよう", "こんにちは", "こんばんは"], contacts: "連絡先", statuses: "ステータス",
+            addContact: "連絡先を追加..", addStatus: "ステータスを追加..", msgPlaceholder: "メッセージ..", settings: "設定",
+            lang: "言語", notif: "通知音", wp: "壁紙", wpReset: "デフォルトに戻す", theme: "ライトテーマ", online: "オンライン", offline: "オフライン",
+            sleep: "退席中", dnd: "応答不可", ctxPin: "ピン留め", ctxUnpin: "ピン留め解除", ctxEdit: "編集", ctxDel: "全員から削除",
+            btnSave: "保存", btnCancel: "キャンセル", btnShare: "シェア", btnConnect: "接続", btnClose: "閉じる", phId: "IDを入力",
+            phStatus: "今の気持ちは？", phName: "ニックネーム", loginBtn: "ログイン", callCalling: "発信中...", callConnected: "接続済み",
+            callIncTitle: "着信中...", callIncVideo: "ビデオ通話", callIncAudio: "音声通話", callVidStr: "ビデオ", callAudStr: "音声",
+            btnAnswer: "応答", btnReject: "拒否", btnScreen: "💻 画面共有", btnHangup: "切断", you: "(あなた)", editProf: "プロフィール編集",
+            statusMode: "ステータス", profPic: "写真", fileSelect: "選択...", editMsgTitle: "メッセージ編集", delMsg: "🚫 削除されました",
+            edited: "(編集済み)", trans: "(翻訳済み)", callEnd: "通話終了 •", typeWait: "入力中...", pinnedPre: "ピン留め"
+        },
+        zh: {
+            greeting: ["晚安", "早上好", "下午好", "晚上好"], contacts: "联系人", statuses: "状态",
+            addContact: "添加联系人..", addStatus: "添加状态..", msgPlaceholder: "添加消息..", settings: "设置",
+            lang: "语言", notif: "通知音", wp: "壁纸", wpReset: "恢复默认", theme: "浅色主题", online: "在线", offline: "离线",
+            sleep: "离开", dnd: "请勿打扰", ctxPin: "置顶", ctxUnpin: "取消置顶", ctxEdit: "编辑", ctxDel: "删除",
+            btnSave: "保存", btnCancel: "取消", btnShare: "分享", btnConnect: "连接", btnClose: "关闭", phId: "输入 ID",
+            phStatus: "在想什么？", phName: "昵称", loginBtn: "登录", callCalling: "呼叫中...", callConnected: "已连接",
+            callIncTitle: "有来电...", callIncVideo: "视频通话", callIncAudio: "语音通话", callVidStr: "视频", callAudStr: "语音",
+            btnAnswer: "接听", btnReject: "拒绝", btnScreen: "💻 屏幕共享", btnHangup: "挂断", you: "(你)", editProf: "编辑资料",
+            statusMode: "状态", profPic: "头像", fileSelect: "选择...", editMsgTitle: "编辑消息", delMsg: "🚫 已删除",
+            edited: "(已编辑)", trans: "(已翻译)", callEnd: "通话结束 •", typeWait: "正在输入...", pinnedPre: "置顶消息"
+        }
     };
-    let currentLang = localStorage.getItem('acetalk_lang') || 'tr';
+    
+    let currentLang = localStorage.getItem('acetalk_lang') || 'en';
 
     function updateGreeting() {
         const hour = new Date().getHours();
-        const d = dict[currentLang] || dict['tr'];
+        const d = dict[currentLang] || dict['en'];
         let timeIndex = 0; 
         if (hour >= 6 && hour < 12) timeIndex = 1; 
         else if (hour >= 12 && hour < 18) timeIndex = 2; 
         else if (hour >= 18 && hour <= 23) timeIndex = 3; 
 
-        const name = myProfile.name || 'Kullanıcı';
+        const name = myProfile.name || 'User';
         const titleEl = document.getElementById('t-title');
         if(titleEl) titleEl.innerText = `${d.greeting[timeIndex]}, ${name}!`;
     }
 
+    function safeInner(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
+    function safePlaceholder(id, text) { const el = document.getElementById(id); if(el) el.placeholder = text; }
+
     function changeLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('acetalk_lang', lang);
-        const d = dict[lang] || dict['tr'];
+        const d = dict[lang] || dict['en'];
         updateGreeting();
         
-        const el1 = document.getElementById('t-contacts'); if(el1) el1.innerText = d.contacts;
-        const el2 = document.getElementById('t-statuses'); if(el2) el2.innerText = d.statuses;
-        const el3 = document.getElementById('message-input'); if(el3) el3.placeholder = d.msgPlaceholder;
-        const el4 = document.getElementById('t-modal-contact'); if(el4) el4.innerText = d.addContact;
-        const el5 = document.getElementById('t-modal-status'); if(el5) el5.innerText = d.addStatus;
-        const el6 = document.getElementById('t-settings-title'); if(el6) el6.innerText = d.settings;
-        const el7 = document.getElementById('t-notif'); if(el7) el7.innerText = d.notif;
-        const el8 = document.getElementById('t-wp'); if(el8) el8.innerText = d.wp;
-        const el9 = document.getElementById('t-wp-reset'); if(el9) el9.innerText = d.wpReset;
-        const el10 = document.getElementById('t-theme'); if(el10) el10.innerText = d.theme;
+        safeInner('t-contacts', d.contacts); safeInner('t-statuses', d.statuses);
+        safePlaceholder('message-input', d.msgPlaceholder); safeInner('t-modal-contact', d.addContact);
+        safeInner('t-modal-status', d.addStatus); safeInner('t-settings-title', d.settings);
+        safeInner('t-lang', d.lang); safeInner('t-notif', d.notif); safeInner('t-wp', d.wp); safeInner('t-wp-reset', d.wpReset);
+        safeInner('t-theme', d.theme); safeInner('t-ctx-pin', d.ctxPin); safeInner('t-ctx-unpin', d.ctxUnpin);
+        safeInner('t-ctx-edit', d.ctxEdit); safeInner('t-ctx-del', d.ctxDel); safeInner('btn-save-prof', d.btnSave);
+        safeInner('btn-cancel-prof', d.btnCancel); safeInner('btn-conn-add', d.btnConnect); safeInner('btn-cancel-add', d.btnCancel);
+        safeInner('btn-share-stat', d.btnShare); safeInner('btn-cancel-stat', d.btnCancel); safeInner('btn-save-edit', d.btnSave);
+        safeInner('btn-cancel-edit', d.btnCancel); safeInner('btn-close-set', d.btnClose); safePlaceholder('setup-id', d.phId);
+        safePlaceholder('new-status-text', d.phStatus); safePlaceholder('edit-name', d.phName); safePlaceholder('new-contact-id', d.phId);
+        safeInner('t-login-btn', d.loginBtn); safeInner('btn-screen', d.btnScreen); safeInner('btn-hangup', d.btnHangup);
+        safeInner('btn-answer', d.btnAnswer); safeInner('btn-reject', d.btnReject); safeInner('t-edit-prof', d.editProf);
+        safeInner('t-status-mode', d.statusMode); safeInner('t-prof-pic', d.profPic); safeInner('t-edit-msg-title', d.editMsgTitle);
+        safeInner('t-mode-online', d.online); safeInner('t-mode-sleep', d.sleep); safeInner('t-mode-dnd', d.dnd);
+
+        const fileNames = document.querySelectorAll('#wp-file-name, #avatar-file-name');
+        fileNames.forEach(fn => { if(fn.innerText.includes('Choose') || fn.innerText.includes('Seç')) fn.innerText = d.fileSelect; });
+
         renderGrid();
+        if(activePeerId) openChat(activePeerId); 
     }
 
     function toggleTheme(cb) {
@@ -510,8 +635,9 @@
 
     function updateFileName(input, textElementId) {
         const textEl = document.getElementById(textElementId);
+        const d = dict[currentLang] || dict['en'];
         if(input.files && input.files.length > 0) { textEl.innerText = input.files[0].name; }
-        else { textEl.innerText = "Dosya Seç..."; }
+        else { textEl.innerText = d.fileSelect; }
     }
 
     function changeWallpaper(input) {
@@ -533,7 +659,8 @@
         document.body.style.backgroundImage = 'none';
         document.body.classList.remove('has-wallpaper');
         document.getElementById('wp-upload').value = '';
-        document.getElementById('wp-file-name').innerText = 'Dosya Seç...';
+        const d = dict[currentLang] || dict['en'];
+        document.getElementById('wp-file-name').innerText = d.fileSelect;
         localStorage.removeItem('acetalk_wallpaper');
     }
 
@@ -590,7 +717,7 @@
     }
 
     /* =========================================================
-       3. INITALIZATION & LOGIN (GÜVENLİ BAŞLATMA)
+       3. INITALIZATION & LOGIN
     ========================================================= */
     window.onload = () => {
         try {
@@ -629,7 +756,6 @@
                 changeLanguage(currentLang);
             }
         } catch(err) {
-            console.error("Başlangıç hatası yakalandı, sıfırlanıyor:", err);
             localStorage.removeItem('ace_myProfile');
         }
     };
@@ -639,20 +765,20 @@
         const val = document.getElementById('setup-id').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
         const errDiv = document.getElementById('setup-error');
         const sugDiv = document.getElementById('setup-suggestions');
-        const btn = document.getElementById('setup-btn');
+        const btn = document.getElementById('t-login-btn');
 
         errDiv.style.display = 'none';
         sugDiv.innerHTML = '';
 
         if(val.length < 3) {
             errDiv.style.display = 'block';
-            errDiv.innerText = "En az 3 harf/rakam olmalı!";
+            errDiv.innerText = (currentLang === 'tr') ? "En az 3 karakter olmalı!" : "At least 3 characters!";
             return;
         }
 
         errDiv.style.display = 'block';
         errDiv.style.color = "var(--skype-blue)";
-        errDiv.innerText = "Sunucuya bağlanılıyor...";
+        errDiv.innerText = (currentLang === 'tr') ? "Bağlanılıyor..." : "Connecting...";
         btn.disabled = true;
 
         const peerId = 'ace_' + val;
@@ -662,7 +788,7 @@
         connectionTimeout = setTimeout(() => {
             btn.disabled = false;
             errDiv.style.color = "var(--sos-red)";
-            errDiv.innerText = "Sunucu yanıt vermiyor. Lütfen tekrar deneyin.";
+            errDiv.innerText = "Timeout Error!";
             if (peer) { peer.destroy(); peer = null; }
         }, 10000);
 
@@ -683,7 +809,7 @@
             errDiv.style.color = "var(--sos-red)";
 
             if (err.type === 'unavailable-id') {
-                errDiv.innerText = "Bu isim alınmış! Şunları dene:";
+                errDiv.innerText = "ID Taken! Try these:";
                 const suffixes = [Math.floor(Math.random()*100), 'ace', 'TR'];
                 suffixes.forEach(s => {
                     const sBtn = document.createElement('button');
@@ -692,7 +818,7 @@
                     sBtn.onclick = () => { document.getElementById('setup-id').value = val + '_' + s; login(); };
                     sugDiv.appendChild(sBtn);
                 });
-            } else { errDiv.innerText = "Bağlantı hatası: " + err.type; }
+            } else { errDiv.innerText = "Error: " + err.type; }
             if (peer) { peer.destroy(); peer = null; }
         });
 
@@ -713,7 +839,7 @@
                 if(setupScr) setupScr.style.display = 'flex';
                 if(setupErr) {
                     setupErr.style.display = 'block';
-                    setupErr.innerText = "Bu hesap başka cihazda açık!";
+                    setupErr.innerText = "Active elsewhere!";
                 }
                 localStorage.removeItem('ace_myProfile');
             }
@@ -815,7 +941,7 @@
         if(!contactsRow || !statusesRow) return;
 
         contactsRow.innerHTML = ''; statusesRow.innerHTML = '';
-        const d = dict[currentLang];
+        const d = dict[currentLang] || dict['en'];
         const contacts = loadContacts();
 
         const onlineIds = new Set(connections.map(c => c.peer));
@@ -853,7 +979,7 @@
             const myStatusTile = document.createElement('div');
             myStatusTile.className = 'tile';
             myStatusTile.onclick = () => { const m = document.getElementById('add-status-modal'); if(m) m.style.display='flex'; };
-            myStatusTile.innerHTML = `<div class="status-content"><div class="status-name">${myProfile.name} (Sen)</div><div class="status-text">${myProfile.statusText}</div></div>`;
+            myStatusTile.innerHTML = `<div class="status-content"><div class="status-name">${myProfile.name} ${d.you}</div><div class="status-text">${myProfile.statusText}</div></div>`;
             statusesRow.appendChild(myStatusTile);
         }
 
@@ -958,14 +1084,15 @@
                     if(soundEnabled) playAudio('snd-msg');
                     let parsedRaw = data.body;
                     let parsed = data.body;
+                    const d = dict[currentLang] || dict['en'];
 
                     if (data.isEncrypted && e2eKeys[conn.peer]) {
                         try {
                             parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]);
                             parsed = parseMarkdown(parsedRaw);
-                        } catch(e) { parsed = "🔒 [Şifreli Mesaj Çözülemedi]"; parsedRaw = parsed; }
+                        } catch(e) { parsed = "🔒 [Error]"; parsedRaw = parsed; }
                     } else if (data.isEncrypted && !e2eKeys[conn.peer]) {
-                        parsed = "🔒 [E2E Anahtarı Bekleniyor]"; parsedRaw = parsed;
+                        parsed = "🔒 [E2E Key wait]"; parsedRaw = parsed;
                     } else {
                         parsed = parseMarkdown(parsedRaw);
                     }
@@ -980,8 +1107,9 @@
             else if (data.type === 'edit') {
                 (async () => {
                     let parsedRaw = data.body;
+                    const d = dict[currentLang] || dict['en'];
                     if (data.isEncrypted && e2eKeys[conn.peer]) { try { parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); } catch(e) {} }
-                    const parsed = parseMarkdown(parsedRaw) + ' <small style="font-size:9px; opacity:0.6;">(düzenlendi)</small>';
+                    const parsed = parseMarkdown(parsedRaw) + ` <small style="font-size:9px; opacity:0.6;">${d.edited}</small>`;
 
                     const contacts = loadContacts();
                     const msg = contacts[conn.peer]?.messages.find(m => m.msgId === data.msgId);
@@ -1001,10 +1129,11 @@
             }
             else if (data.type === 'delete') {
                 const contacts = loadContacts();
+                const d = dict[currentLang] || dict['en'];
                 const msg = contacts[conn.peer]?.messages.find(m => m.msgId === data.msgId);
                 if (msg) {
                     msg.isDeleted = true;
-                    msg.body = '<span style="font-style:italic; opacity:0.6;">🚫 Bu mesaj silindi</span>';
+                    msg.body = `<span style="font-style:italic; opacity:0.6;">${d.delMsg}</span>`;
 
                     if (contacts[conn.peer].pinnedMsgId === data.msgId) renderPinnedMessage();
 
@@ -1039,8 +1168,9 @@
         connections = connections.filter(c => c.peer !== peerId);
         renderGrid();
         if (activePeerId === peerId) {
+            const d = dict[currentLang] || dict['en'];
             const chatStatus = document.getElementById('current-chat-id');
-            if(chatStatus) chatStatus.innerText = `@${peerIdToName(peerId)} • Çevrimdışı`;
+            if(chatStatus) chatStatus.innerText = `@${peerIdToName(peerId)} • ${d.offline}`;
             const avatarEl = document.getElementById('current-chat-avatar');
             if(avatarEl) {
                 avatarEl.innerHTML = (peerAvatars[peerId] ? `<img src="${peerAvatars[peerId]}">` : peerIdToName(peerId).charAt(0).toUpperCase()) + `<div class="avatar-badge">${getStatusIcon(false, 'online', 16)}</div>`;
@@ -1059,6 +1189,8 @@
         const c = contacts[peerId];
         if(!c) return;
 
+        const d = dict[currentLang] || dict['en'];
+
         const displayName = c.name || peerIdToName(peerId);
         const chatName = document.getElementById('current-chat-name');
         if(chatName) chatName.innerText = displayName;
@@ -1066,7 +1198,7 @@
         const isOnline = connections.find(cn => cn.peer === peerId);
         const mode = peerStatusModes[peerId] || 'online';
         const chatStatus = document.getElementById('current-chat-id');
-        if(chatStatus) chatStatus.innerText = `@${peerIdToName(peerId)} • ${isOnline ? dict[currentLang].online : 'Çevrimdışı'}`;
+        if(chatStatus) chatStatus.innerText = `@${peerIdToName(peerId)} • ${isOnline ? d.online : d.offline}`;
 
         const avatarEl = document.getElementById('current-chat-avatar');
         if(avatarEl) {
@@ -1115,7 +1247,7 @@
     }
 
     function parseMarkdown(text) {
-        if (text === 'acetalkplanspremium0') return "Premium Kodu Girildi";
+        if (text === 'acetalkplanspremium0') return "Premium Code Active";
         return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/`(.*?)`/g, '<code>$1</code>');
     }
 
@@ -1181,7 +1313,7 @@
             }
 
             let translateBtn = (type === 'remote' && !text.includes('<img') && !text.includes('<video') && !text.includes('🚫'))
-                ? `<button class="translate-btn" onclick="translateMsg(this, 'body-${msgId}')" title="Çevir">Çevir</button>` : '';
+                ? `<button class="translate-btn" onclick="translateMsg(this, 'body-${msgId}')" title="Translate">A-Z</button>` : '';
 
             div.innerHTML = `<div class="msg-body" id="body-${msgId}">${text}</div><div class="msg-meta">${translateBtn} ${displayTime} ${ticks}</div>`;
         }
@@ -1220,10 +1352,12 @@
         if(targetConn) try { targetConn.send({type: 'typing', name: myProfile.name, state: state}); } catch(e){}
         if (state) { clearTimeout(typingTimeout); typingTimeout = setTimeout(() => notifyTyping(false), 3000); }
     }
+    
     function showTyping(name, state) {
         const ui = document.getElementById('typing-ui');
         if(!ui) return;
-        if (state) { ui.innerText = name + ' yazıyor...'; ui.style.display = 'block'; }
+        const d = dict[currentLang] || dict['en'];
+        if (state) { ui.innerText = name + ' ' + d.typeWait; ui.style.display = 'block'; }
         else { ui.style.display = 'none'; }
     }
 
@@ -1239,7 +1373,7 @@
         if (!input.files || input.files.length === 0) return;
         const file = input.files[0];
         input.value = '';
-        if (file.size / (1024 * 1024) > 50) { alert("Dosya boyutu çok büyük! (Maks 50MB)"); return; }
+        if (file.size / (1024 * 1024) > 50) { alert("Max 50MB!"); return; }
 
         const reader = new FileReader();
         reader.onload = async e => {
@@ -1251,7 +1385,7 @@
             if (isImg) {
                 mediaHtml = `<img src="${b64}" onclick="openImageViewer(this.src)" style="max-width:100%; border-radius:8px; cursor:pointer; margin-bottom:5px;">`;
             } else {
-                mediaHtml = `<div style="background:rgba(0,0,0,0.1); padding:10px; border-radius:8px;"><strong>${file.name}</strong><br><a href="${b64}" download="${file.name}" style="color:var(--status-green); font-size:12px;">⬇ İndir</a></div>`;
+                mediaHtml = `<div style="background:rgba(0,0,0,0.1); padding:10px; border-radius:8px;"><strong>${file.name}</strong><br><a href="${b64}" download="${file.name}" style="color:var(--status-green); font-size:12px;">⬇ D/L</a></div>`;
             }
             await sendSpecialMessage(mediaHtml);
         };
@@ -1290,6 +1424,7 @@
 
     async function translateMsg(btn, bodyId) {
         const bodyDiv = document.getElementById(bodyId);
+        const d = dict[currentLang] || dict['en'];
         if(!bodyDiv) return;
         const rawText = bodyDiv.innerText;
         btn.innerText = '⏳';
@@ -1298,7 +1433,7 @@
             const data = await res.json();
             let translated = '';
             data[0].forEach(item => { if(item[0]) translated += item[0]; });
-            bodyDiv.innerHTML = parseMarkdown(translated) + `<br><small style="font-size:9px; opacity:0.6;">(Çevrildi)</small>`;
+            bodyDiv.innerHTML = parseMarkdown(translated) + `<br><small style="font-size:9px; opacity:0.6;">${d.trans}</small>`;
             btn.style.display = 'none';
         } catch(e) { btn.innerText = '❌'; }
     }
@@ -1311,10 +1446,10 @@
         const contacts = loadContacts();
         const isPinned = contacts[activePeerId]?.pinnedMsgId === msgId;
 
-        const pEl = document.getElementById('ctx-pin');
-        const upEl = document.getElementById('ctx-unpin');
-        const edEl = document.getElementById('ctx-edit');
-        const delEl = document.getElementById('ctx-delete');
+        const pEl = document.getElementById('ctx-pin-container');
+        const upEl = document.getElementById('ctx-unpin-container');
+        const edEl = document.getElementById('ctx-edit-container');
+        const delEl = document.getElementById('ctx-delete-container');
 
         if(pEl) pEl.style.display = isPinned ? 'none' : 'flex';
         if(upEl) upEl.style.display = isPinned ? 'flex' : 'none';
@@ -1328,6 +1463,7 @@
             menu.style.top = e.pageY + 'px';
         }
     }
+    
     document.addEventListener('click', (e) => { 
         const menu = document.getElementById('context-menu');
         if (menu && !e.target.closest('#context-menu')) menu.style.display = 'none'; 
@@ -1357,6 +1493,7 @@
 
     function renderPinnedMessage() {
         const contacts = loadContacts();
+        const d = dict[currentLang] || dict['en'];
         const pinnedId = contacts[activePeerId]?.pinnedMsgId;
         const banner = document.getElementById('pinned-msg-banner');
         if(!banner) return;
@@ -1364,7 +1501,7 @@
         if (pinnedId) {
             const msg = contacts[activePeerId].messages.find(m => m.msgId === pinnedId);
             if (msg && !msg.isDeleted) {
-                banner.innerHTML = `<span style="font-size: 16px; margin-right: 8px;">📌</span> <b>Sabitlenen Mesaj:</b> ${msg.body} <button onclick="handleCtxUnpin()" style="float:right; background:none; border:none; color:inherit; cursor:pointer; font-weight:700; font-size:14px;">✖</button>`;
+                banner.innerHTML = `<span style="font-size: 16px; margin-right: 8px;">📌</span> <b>${d.pinnedPre}:</b> ${msg.body} <button onclick="handleCtxUnpin()" style="float:right; background:none; border:none; color:inherit; cursor:pointer; font-weight:700; font-size:14px;">✖</button>`;
                 banner.style.display = 'block';
                 return;
             }
@@ -1390,10 +1527,12 @@
         if(editModal) editModal.style.display = 'none';
 
         const contacts = loadContacts();
+        const d = dict[currentLang] || dict['en'];
         const msg = contacts[activePeerId].messages.find(m => m.msgId === ctxMsgId);
+        
         if(msg) {
             msg.rawText = newText;
-            msg.body = parseMarkdown(newText) + ' <small style="font-size:9px; opacity:0.6;">(düzenlendi)</small>';
+            msg.body = parseMarkdown(newText) + ` <small style="font-size:9px; opacity:0.6;">${d.edited}</small>`;
             saveContacts(contacts);
 
             const msgBodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`);
@@ -1414,10 +1553,12 @@
         const menu = document.getElementById('context-menu');
         if(menu) menu.style.display = 'none';
         const contacts = loadContacts();
+        const d = dict[currentLang] || dict['en'];
         const msg = contacts[activePeerId].messages.find(m => m.msgId === ctxMsgId);
+        
         if(msg) {
             msg.isDeleted = true;
-            msg.body = '<span style="font-style:italic; opacity:0.6;">🚫 Bu mesaj silindi</span>';
+            msg.body = `<span style="font-style:italic; opacity:0.6;">${d.delMsg}</span>`;
             saveContacts(contacts);
 
             const msgBodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`);
@@ -1441,7 +1582,9 @@
     function startCall(type) {
         if (!activePeerId) return;
         callActivePeerId = activePeerId;
+        const d = dict[currentLang] || dict['en'];
         const constraints = type === 'video' ? { video: true, audio: true } : { video: false, audio: true };
+        
         navigator.mediaDevices.getUserMedia(constraints).then(stream => {
             const call = peer.call(activePeerId, stream, { metadata: { type: type } });
             currentCall = call;
@@ -1456,7 +1599,8 @@
             const callOverlay = document.getElementById('call-overlay');
 
             if(callNameEl && chatNameEl) callNameEl.innerText = chatNameEl.innerText;
-            if(callStatusEl) callStatusEl.innerText = "ARANIYOR...";
+            if(callStatusEl) callStatusEl.innerText = d.callCalling;
+            
             if (type === 'video') {
                 if(callIcon) callIcon.style.display = 'none';
                 if(callVideos) callVideos.style.display = 'flex';
@@ -1473,7 +1617,7 @@
             call.on('stream', remoteStream => {
                 const sndCall = document.getElementById('snd-call');
                 if(sndCall) sndCall.pause();
-                if(callStatusEl) callStatusEl.innerText = "BAĞLANDI";
+                if(callStatusEl) callStatusEl.innerText = d.callConnected;
                 callStartTime = Date.now();
                 if (type === 'video') {
                     const remoteVid = document.getElementById('remote-video');
@@ -1493,12 +1637,13 @@
         callActivePeerId = call.peer;
         pendingCallType = (call.metadata && call.metadata.type) ? call.metadata.type : 'audio';
         
+        const d = dict[currentLang] || dict['en'];
         const incName = document.getElementById('incoming-call-name');
         const incSub = document.getElementById('incoming-call-sub');
         const incPanel = document.getElementById('incoming-call-panel');
 
         if(incName) incName.innerText = peerNames[call.peer] || peerIdToName(call.peer);
-        if(incSub) incSub.innerText = pendingCallType === 'video' ? "Görüntülü arama geliyor" : "Sesli arama geliyor";
+        if(incSub) incSub.innerText = pendingCallType === 'video' ? d.callIncVideo : d.callIncAudio;
         if(incPanel) incPanel.style.display = 'flex';
         playAudio('snd-call');
     }
@@ -1510,7 +1655,9 @@
         if(sndCall) sndCall.pause();
         if (!pendingCall) return;
 
+        const d = dict[currentLang] || dict['en'];
         const constraints = pendingCallType === 'video' ? { video: true, audio: true } : { video: false, audio: true };
+        
         navigator.mediaDevices.getUserMedia(constraints).then(stream => {
             pendingCall.answer(stream);
             currentCall = pendingCall;
@@ -1519,7 +1666,7 @@
             const callNameEl = document.getElementById('call-name');
             const callStatusEl = document.getElementById('call-status');
             if(callNameEl) callNameEl.innerText = peerNames[currentCall.peer] || peerIdToName(currentCall.peer);
-            if(callStatusEl) callStatusEl.innerText = "BAĞLANDI";
+            if(callStatusEl) callStatusEl.innerText = d.callConnected;
 
             const callIcon = document.getElementById('call-icon');
             const callVideos = document.getElementById('call-videos');
@@ -1563,7 +1710,8 @@
     }
 
     function endCall(isBroadcast = true) {
-        let typeStr = (currentCall && currentCall.metadata && currentCall.metadata.type === 'video') || pendingCallType === 'video' ? 'Görüntülü' : 'Sesli';
+        const d = dict[currentLang] || dict['en'];
+        let typeStr = (currentCall && currentCall.metadata && currentCall.metadata.type === 'video') || pendingCallType === 'video' ? d.callVidStr : d.callAudStr;
 
         if (currentCall) { currentCall.close(); currentCall = null; }
         if (pendingCall) { pendingCall.close(); pendingCall = null; }
@@ -1573,7 +1721,7 @@
             const dur = Math.floor((Date.now() - callStartTime) / 1000);
             const m = Math.floor(dur / 60).toString().padStart(2, '0');
             const s = (dur % 60).toString().padStart(2, '0');
-            addSystemMessage(`📞 ${typeStr} Arama bitti • Süre: ${m}:${s}`, callActivePeerId);
+            addSystemMessage(`📞 ${typeStr} ${d.callEnd}: ${m}:${s}`, callActivePeerId);
             callStartTime = null;
         }
 
@@ -1611,7 +1759,7 @@
                 };
             }
         } catch(e) {
-            console.warn("Ekran paylaşımı iptal edildi veya desteklenmiyor.");
+            console.warn("Screen share cancelled/unsupported.");
         }
     }
 
@@ -1641,10 +1789,10 @@
         const box = document.getElementById('chat-box');
         if(!box) return;
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const hopText = hops > 0 ? `<div style="font-size:10px; color:#ff9999;">↳ ${hops} ağ üzerinden ulaştı</div>` : '';
+        const hopText = hops > 0 ? `<div style="font-size:10px; color:#ff9999;">↳ reached via ${hops} hops</div>` : '';
         const div = document.createElement('div');
         div.className = 'msg msg-sos';
-        div.innerHTML = `<div class="sos-label">ACİL YARDIM ÇAĞRISI</div><b style="font-size:15px;">${fromName}</b>${hopText}<div class="msg-meta" style="color:#ffb3b3;">${time}</div>`;
+        div.innerHTML = `<div class="sos-label">SOS EMERGENCY</div><b style="font-size:15px;">${fromName}</b>${hopText}<div class="msg-meta" style="color:#ffb3b3;">${time}</div>`;
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
     }
