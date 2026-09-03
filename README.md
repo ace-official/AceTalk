@@ -1,4 +1,4 @@
-# 💬 AceTalk
+**# 💬 AceTalk
 
 <div align="center">
 
@@ -40,3 +40,4 @@ git clone [https://github.com/your-username/acetalk.git](https://github.com/your
 cd acetalk
 
 # Open index.html or run via a local live server
+**
