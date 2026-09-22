@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>AceTalk</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ace-official/AceTalk/main/AceTalklogoTP.png">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -29,14 +31,13 @@
         }
 
         body.light-theme {
-            --bg-base: #ffffff;
-            --text-black: #121212;
-            --grid-light: #f0f0f0;
-            --grid-dark: #cccccc;
-            --grid-accent: #e4e4e4;
-            --status-green: #00c853;
-            --bar-gray: #eeeeee;
-            --label-color: #555555;
+            --bg-base: #ffffff !important;
+            --text-black: #121212 !important;
+            --grid-light: #f0f0f0 !important;
+            --grid-dark: #cccccc !important;
+            --grid-accent: #e4e4e4 !important;
+            --bar-gray: #eeeeee !important;
+            --label-color: #555555 !important;
         }
 
         * { box-sizing: border-box; font-family: 'Ubuntu', sans-serif; border-radius: 0 !important; margin: 0; padding: 0; scrollbar-width: none; }
@@ -44,15 +45,27 @@
 
         body, html { height: 100%; width: 100%; background-color: var(--bg-base); color: var(--text-black); overflow: hidden; position: relative; transition: background-color 0.4s ease, color 0.4s ease; }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.3s ease; background: var(--bg-base); }
+        /* SCREEN TRANSITIONS */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); }
 
         body.has-wallpaper .screen { background: rgba(34, 34, 34, 0.55); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
         body.light-theme.has-wallpaper .screen { background: rgba(255, 255, 255, 0.55); }
 
-        #home-screen { transform: translateX(0); opacity: 1; z-index: 10; display: flex; flex-direction: column;}
-        #home-screen.hidden { transform: translateX(-15%); opacity: 0; pointer-events: none; }
-        #chat-screen { transform: translateX(100%); opacity: 0; z-index: 20; display: flex; flex-direction: column; pointer-events: none; }
-        #chat-screen.active { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        #home-screen { opacity: 1; z-index: 10; display: flex; flex-direction: column; transition: opacity 0.3s ease; }
+        #home-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        @keyframes chatEnterRight {
+            0% { transform: translateX(70px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes chatExitRight {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(70px); opacity: 0; }
+        }
+
+        #chat-screen { opacity: 0; z-index: 20; display: flex; flex-direction: column; pointer-events: none; transform: translateX(70px); }
+        #chat-screen.active { animation: chatEnterRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; }
+        #chat-screen.closing-right { animation: chatExitRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: none; }
 
         /* GRID */
         .home-header { padding: 30px 50px 10px; display: flex; justify-content: space-between; align-items: flex-end; flex-shrink: 0; }
@@ -75,10 +88,10 @@
 
         .main-hub-container { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 50px 40px 50px; display: flex; flex-direction: column; gap: 25px; }
         .section-label { font-size: 18px; font-weight: 700; color: var(--label-color); margin-bottom: -10px; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s; }
-        .horizontal-row { display: flex; flex-wrap: nowrap; gap: 20px; overflow-x: auto; overflow-y: hidden; align-items: flex-start; padding-bottom: 10px; }
+        .horizontal-row { display: flex; flex-wrap: nowrap; gap: 20px; overflow-x: auto; overflow-y: hidden; align-items: flex-start; padding-bottom: 15px; }
 
-        .tile { width: var(--tile-size); height: var(--tile-size); flex-shrink: 0; position: relative; cursor: pointer; background-color: var(--grid-light); overflow: hidden; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.6s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .tile:hover { transform: scale(0.985); filter: brightness(1.10); }
+        .tile { width: var(--tile-size); height: var(--tile-size); flex-shrink: 0; position: relative; cursor: pointer; background-color: var(--grid-light); overflow: hidden; transition: filter 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .tile:hover { filter: brightness(1.10); }
         .tile-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
 
         .tile-initial { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: var(--tile-font); font-weight: 700; color: var(--text-black); z-index: 1; background-color: var(--grid-light); opacity: 0.75; line-height: 1; padding-bottom: var(--tile-bottom-h); }
@@ -89,6 +102,9 @@
         .tile-add { background-color: var(--grid-accent); }
         .tile-add .tile-initial { background-color: transparent; color: var(--grid-dark); font-weight: 300; font-size: 100px; opacity: 1;}
         .tile-add .tile-bottom { background-color: var(--grid-dark); }
+        
+        .tile-archived { background-color: var(--grid-light); }
+        .tile-archived .tile-initial { font-size: 70px; background-color: var(--grid-light); opacity: 0.8;}
 
         .status-content { padding: 20px; display: flex; flex-direction: column; justify-content: flex-start; gap: 8px; height: 100%; box-sizing: border-box; position: relative; z-index: 2; }
         .status-name { font-size: 22px; font-weight: 700; color: var(--text-black); }
@@ -96,18 +112,18 @@
 
         /* CHAT */
         .chat-header { display: flex; align-items: center; padding: 15px 30px; background: transparent; border-bottom: 1px solid var(--grid-light); transition: 0.3s; z-index: 3;}
-        .back-btn { background: none; border: none; cursor: pointer; margin-right: 15px; color: var(--text-black); display: flex; align-items: center; justify-content: center; transition: transform 0.4s; }
-        .back-btn:hover { transform: translateX(-4px); }
+        .back-btn { background: none; border: none; cursor: pointer; margin-right: 15px; color: var(--text-black); display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .back-btn:hover { color: var(--skype-blue); }
         .avatar-sq { width: 44px; height: 44px; background-color: var(--grid-dark); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; margin-right: 15px; position:relative; line-height: 1;}
         .avatar-sq img { width: 100%; height: 100%; object-fit: cover; }
 
         .chat-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .chat-name { font-size: 22px; font-weight: 700; display: flex; align-items: center; }
         .chat-id-status { font-size: 13px; font-weight: 700; color: var(--grid-dark); margin-top: 2px; }
-        .chat-actions { display: flex; gap: 10px; }
+        .chat-actions { display: flex; gap: 10px; align-items: center; }
 
         .action-btn { background: var(--grid-accent); border: 1px solid var(--grid-dark); color: var(--text-black); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
-        .action-btn:hover { background: var(--skype-blue); color: white; border-color: var(--skype-blue); transform: scale(0.95); }
+        .action-btn:hover { background: var(--skype-blue); color: white; border-color: var(--skype-blue); }
         .action-btn.sos { border-color: var(--sos-red); color: var(--sos-red); }
         .action-btn.sos:hover { background: var(--sos-red); color: white; }
 
@@ -117,7 +133,7 @@
         .chat-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: transparent; position: relative; z-index: 1;}
 
         .msg { max-width: 65%; padding: 12px 16px; font-size: 15px; font-weight: 500; line-height: 1.4; position: relative; animation: msgIn 0.3s ease-out; }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .msg.local { background-color: var(--grid-dark); color: white; align-self: flex-end; border-right: 4px solid var(--skype-blue); }
         .msg.remote { background-color: var(--grid-light); color: var(--text-black); align-self: flex-start; border-left: 4px solid #bdc3c7; }
 
@@ -125,11 +141,14 @@
         body.light-theme .msg.system { background: rgba(0,0,0,0.05); }
 
         .msg-meta { font-size: 10px; margin-top: 5px; color: #999; display: flex; justify-content: flex-end; align-items: center; gap: 5px; font-weight: 700; }
-        .status-icon { color: #a1a1a1; font-size: 11px; margin-left: 4px; }
+        .status-icon { color: #a1a1a1; font-size: 11px; margin-left: 4px; display: flex; align-items: center;}
         .status-icon.seen { color: var(--skype-blue); font-weight: bold; }
 
-        .translate-btn { background: none; border: none; font-size: 11px; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; transition: 0.2s ease; margin-right: 2px; }
-        .translate-btn:hover { opacity: 1; transform: scale(1.2); color: var(--skype-blue); }
+        .translate-btn { background: none; border: none; font-size: 11px; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; transition: 0.2s ease; margin-right: 4px; display: flex; align-items: center;}
+        .translate-btn:hover { opacity: 1; color: var(--skype-blue); }
+        
+        .spin-anim { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .msg-sos { max-width: 90%; align-self: center; background: #2d0000 !important; border: 2px solid var(--sos-red) !important; color: #ff6b6b !important; padding: 14px 20px; animation: sosPulse 0.5s ease-out; }
         @keyframes sosPulse { 0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.7); } 70% { box-shadow: 0 0 0 15px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); } }
@@ -141,15 +160,52 @@
         .chat-input-wrapper input { flex: 1; border: none; outline: none; padding: 18px 15px; font-size: 16px; font-style: italic; font-weight: 500; background: transparent; color: var(--text-black); }
         .chat-input-wrapper input::placeholder { color: var(--grid-dark); }
         .typing-pulse { color: var(--skype-blue); font-weight: 700; font-size: 12px; margin-bottom: 10px; align-self: flex-start; max-width: 800px; width: 100%; display: none; }
+        
+        .mic-recording { color: var(--sos-red) !important; animation: pulseMic 1s infinite; }
+        @keyframes pulseMic { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
-        /* MODS */
-        @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(8px); }
+        /* TOAST NOTIFICATIONS */
+        #toast-container { position: fixed; bottom: 30px; right: 30px; left: auto; transform: none; z-index: 999999; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; pointer-events: none; }
+        .toast { max-width: 350px; background: var(--bg-base); border: 1px solid var(--grid-dark); color: var(--text-black); padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 0 !important; animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; display: flex; align-items: flex-start; gap: 15px; word-wrap: break-word; }
+        .toast.error { border-left: 4px solid var(--sos-red); }
+        .toast.warning { border-left: 4px solid #f1c40f; }
+        .toast.info { border-left: 4px solid var(--skype-blue); }
+        .toast.message { border-left: 4px solid var(--status-green); }
+        .toast-svg { flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+        .toast-content { display: flex; flex-direction: column; gap: 4px; }
+        .toast-title { font-weight: 700; font-size: 15px; }
+        .toast-desc { font-size: 13px; opacity: 0.8; }
+        
+        @keyframes slideInRight { 0% { opacity: 0; transform: translateX(50px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOutToastRight { 0% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(50px); } }
+
+        /* MODALS */
+        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100000; backdrop-filter: blur(8px); }
         .modal-box { background: var(--bg-base); color: var(--text-black); padding: 30px; width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--grid-light); transition: 0.3s; }
         .modal-overlay[style*="display: flex"] .modal-box { animation: popIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
         .modal-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
         .modal-input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid var(--grid-light); margin-bottom: 15px; background: var(--grid-accent); color: var(--text-black); outline:none; transition: 0.3s;}
         .modal-input:focus { border-color: var(--skype-blue); }
+
+        /* SETTINGS TABS */
+        .settings-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--grid-light); }
+        .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-black); font-size: 14px; font-weight: 700; padding: 10px; cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; border-bottom: 2px solid var(--skype-blue); margin-bottom: -2px; color: var(--skype-blue); }
+        .tab-content { display: none; flex-direction: column; }
+        .tab-content.active { display: flex; }
+
+        /* COLOR PICKER */
+        .color-picker-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+        .preset-color { width: 22px; height: 22px; border-radius: 0 !important; cursor: pointer; border: 1px solid var(--grid-dark); transition: border-color 0.2s;}
+        .preset-color:hover { border-color: var(--skype-blue); }
+        .custom-color-input { width: 30px; height: 30px; border: none; cursor: pointer; background: transparent; padding: 0; outline: none; }
+        .custom-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .custom-color-input::-webkit-color-swatch { border: 1px solid var(--grid-dark); border-radius: 0 !important; }
+
+        .gif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-height: 400px; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px; padding: 10px; }
+        .gif-item { width: 100%; height: 100px; object-fit: cover; cursor: pointer; outline: 2px solid transparent; border: none; transition: transform 0.2s, outline-color 0.2s; box-sizing: border-box; }
+        .gif-item:hover { outline-color: var(--skype-blue); transform: scale(1.05); }
 
         .status-selector { display: flex; gap: 8px; margin-bottom: 20px; }
         .status-btn { flex: 1; display:flex; align-items:center; justify-content:center; gap:5px; padding: 10px 5px; border: 1px solid var(--grid-dark); background: transparent; color: var(--text-black); cursor: pointer; font-size: 11px; font-weight: 700; transition: 0.2s; text-align: center; }
@@ -159,10 +215,13 @@
         .status-btn.dnd.active { border-color: #e74c3c; color: #e74c3c; }
 
         .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-primary { flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: none; background: var(--grid-dark); color: white; cursor: pointer; transition: 0.1s;}
-        .btn-primary:active { transform: scale(0.95); }
-        .btn-cancel { flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: 1px solid var(--grid-dark); background: transparent; color: var(--text-black); cursor: pointer; transition: 0.1s;}
-        .custom-file-upload { display: block; padding: 12px 15px; background: var(--grid-dark); color: white; cursor: pointer; font-size: 14px; font-weight: 700; border: none; transition: filter 0.2s; text-align: center; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-primary { flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: none; background: var(--grid-dark); color: white; cursor: pointer; transition: 0.2s;}
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-cancel { flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: 1px solid var(--grid-dark); background: transparent; color: var(--text-black); cursor: pointer; transition: 0.2s;}
+        .btn-cancel:hover { background: rgba(0,0,0,0.1); }
+        
+        .custom-file-upload { display: block; padding: 12px 15px; background: var(--grid-dark); color: white; cursor: pointer; font-size: 14px; font-weight: 700; border: none; transition: opacity 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .custom-file-upload:hover { opacity: 0.9; }
         .custom-file-upload input[type="file"] { display: none; }
 
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -177,9 +236,8 @@
         body.light-theme.has-wallpaper #setup-screen { background: rgba(255,255,255,0.55); }
         #setup-screen input { padding: 15px; font-size: 20px; border: 1px solid var(--grid-light); margin-bottom: 20px; width: 300px; text-align: center; outline:none; background: rgba(0,0,0,0.5); color: white; }
         #setup-screen input:focus { border-color: var(--skype-blue); }
-        #setup-screen button { padding: 15px 40px; font-size: 18px; background: var(--text-black); color: var(--bg-base); border: none; font-weight: 700; cursor: pointer; transition: transform 0.1s;}
-        #setup-screen button:active { transform: scale(0.96); }
-        #setup-error { color: #ff5252; font-weight: 700; margin-bottom: 10px; display: none; text-align: center; }
+        #setup-screen button { padding: 15px 40px; font-size: 18px; background: var(--text-black); color: var(--bg-base); border: none; font-weight: 700; cursor: pointer; transition: opacity 0.2s;}
+        #setup-screen button:hover { opacity: 0.9; }
 
         #call-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18, 18, 18, 0.95); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; backdrop-filter: blur(10px); }
         #call-videos { display: none; width: 100%; max-width: 800px; position: relative; margin-top: 20px; align-items: center; justify-content: center; }
@@ -187,22 +245,31 @@
         #local-video { position: absolute; bottom: 15px; right: 15px; width: 140px; border: 2px solid var(--skype-blue); background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         #incoming-call-panel { position: fixed; bottom: 30px; right: 30px; background: var(--bg-base); border: 2px solid var(--status-green); padding: 20px; z-index: 10001; display: none; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: var(--text-black); }
 
-        /* LEFT MENU */
-        @keyframes menuPop { 0% { opacity: 0; transform: scale(0.9) translateY(-10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-        #context-menu { position: fixed; display: none; background: var(--grid-accent); border: 1px solid var(--grid-dark); z-index: 25000; flex-direction: column; min-width: 170px; color: var(--text-black); box-shadow: 0 5px 25px rgba(0,0,0,0.4); transform-origin: top left; animation: menuPop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);}
+        /* INCOMING REQUEST PANEL */
+        #incoming-request-panel { position: fixed; bottom: 30px; right: 30px; background: var(--bg-base); border: 2px solid var(--skype-blue); padding: 20px; z-index: 10001; display: none; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: var(--text-black); }
+
+        /* CONTEXT & DROPDOWN MENUS */
+        @keyframes menuPop { 0% { opacity: 0; transform: translateY(-5px); } 100% { opacity: 1; transform: translateY(0); } }
+        #context-menu, #chat-options-menu { position: absolute; display: none; background: var(--grid-accent); border: 1px solid var(--grid-dark); z-index: 25000; flex-direction: column; min-width: 170px; color: var(--text-black); box-shadow: 0 5px 25px rgba(0,0,0,0.4); animation: menuPop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);}
         .ctx-item { padding: 12px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700; transition: background 0.2s;}
         .ctx-item:hover { background: var(--grid-dark); }
         .ctx-item.danger { color: var(--sos-red); }
         .ctx-item.danger:hover { background: rgba(231,76,60,0.15); }
 
+        /* ARCHIVED LIST MODAL */
+        .archived-list-item { padding: 15px; background: var(--grid-accent); display: flex; align-items: center; gap: 15px; cursor: pointer; transition: background 0.2s; margin-bottom: 8px; border: 1px solid var(--grid-light); }
+        .archived-list-item:hover { background: var(--grid-dark); }
+        .archived-list-item img { width: 40px; height: 40px; object-fit: cover; }
+        .archived-list-item .initial { width: 40px; height: 40px; background: var(--grid-light); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+
         #image-viewer { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
 
-        /* MOBİLE MOD */
+        /* MOBILE FIXES */
         @media (max-width: 768px) {
-            :root { --tile-size: 160px; --tile-font: 60px; --tile-bottom-h: 40px; --tile-bottom-font: 14px; }
+            :root { --tile-size: 260px; --tile-font: 100px; --tile-bottom-h: 70px; --tile-bottom-font: 20px; }
             .home-header { padding: 20px 20px 10px; }
             .main-hub-container { padding: 10px 20px 20px 20px; }
-            .horizontal-row { gap: 15px; }
+            .horizontal-row { gap: 15px; padding-bottom: 20px; }
             .chat-header { padding: 10px 15px; }
             .chat-body { padding: 15px; }
             .msg { max-width: 85%; font-size: 14px; }
@@ -210,6 +277,10 @@
             #setup-screen input { width: 80%; }
             .modal-box { width: 90%; padding: 20px; }
             .home-title { font-size: 24px; }
+            .status-name { font-size: 26px; }
+            .status-text { font-size: 19px; }
+            #toast-container { bottom: 20px; right: 20px; left: 20px; align-items: center; }
+            .toast { max-width: 100%; width: 100%; }
         }
     </style>
 </head>
@@ -219,29 +290,59 @@
     <audio id="snd-call" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
     <audio id="snd-sos" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
+    <div id="toast-container"></div>
+
+    <!-- Incoming Request Panel -->
+    <div id="incoming-request-panel">
+        <div>
+            <div id="req-msg" style="font-size: 16px; font-weight: 700; margin-bottom: 5px;">Name wants to connect...</div>
+            <div style="font-size: 12px; color: var(--grid-dark); font-weight: 700;" id="req-sub">Connection Request</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="acceptReq()" id="btn-req-accept" style="flex:1; background:var(--skype-blue); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">ACCEPT</button>
+            <button onclick="rejectReq()" id="btn-req-reject" style="flex:1; background:var(--call-red); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">REJECT</button>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
     <div id="context-menu">
-        <div class="ctx-item" id="ctx-pin-container" onclick="handleCtxPin()">📌 <span id="t-ctx-pin">Pin</span></div>
-        <div class="ctx-item" id="ctx-unpin-container" onclick="handleCtxUnpin()" style="display:none;">📍 <span id="t-ctx-unpin">Unpin</span></div>
-        <div class="ctx-item" id="ctx-edit-container" onclick="handleCtxEdit()">✏️ <span id="t-ctx-edit">Edit</span></div>
-        <div class="ctx-item danger" id="ctx-delete-container" onclick="handleCtxDelete()">🗑️ <span id="t-ctx-del">Delete for Everyone</span></div>
+        <div class="ctx-item" id="ctx-pin-container" onclick="handleCtxPin()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.5l-2.5-3.5V5a2 2 0 0 0-2-2H9.5a2 2 0 0 0-2 2v7L5 15.5V17z"></path></svg>
+            <span id="t-ctx-pin">Pin</span>
+        </div>
+        <div class="ctx-item" id="ctx-unpin-container" onclick="handleCtxUnpin()" style="display:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.5l-2.5-3.5V5a2 2 0 0 0-2-2H9.5a2 2 0 0 0-2 2v7L5 15.5V17z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+            <span id="t-ctx-unpin">Unpin</span>
+        </div>
+        <div class="ctx-item" id="ctx-edit-container" onclick="handleCtxEdit()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span id="t-ctx-edit">Edit</span>
+        </div>
+        <div class="ctx-item danger" id="ctx-delete-container" onclick="handleCtxDelete()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span id="t-ctx-del">Delete for Everyone</span>
+        </div>
     </div>
 
     <div id="image-viewer">
-        <button onclick="closeImageViewer()" style="position:absolute; top:25px; right:25px; color:white; background:none; border:none; cursor:pointer; font-size: 30px;">✖</button>
+        <button onclick="closeImageViewer()" style="position:absolute; top:25px; right:25px; color:white; background:none; border:none; cursor:pointer;">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         <img id="image-viewer-img" src="" style="max-width:90%; max-height:90%; object-fit:contain;">
     </div>
 
+    <!-- Login Screen -->
     <div id="setup-screen">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 40px;">
             <img src="https://raw.githubusercontent.com/ace-official/AceTalk/main/AceTalklogoTP.png" alt="AceTalk Logo" style="height: 60px; object-fit: contain;">
             <h1 style="font-size: 48px; margin: 0; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">AceTalk</h1>
         </div>
-        <div id="setup-error"></div>
         <div id="setup-suggestions" style="margin-bottom: 20px;"></div>
         <input type="text" id="setup-id" placeholder="Enter ID" onkeypress="if(event.key==='Enter') login()">
         <button onclick="login()" id="t-login-btn">LOGIN</button>
     </div>
 
+    <!-- Main Home Screen -->
     <div id="home-screen" class="screen">
         <div class="home-header">
             <div class="home-title-area">
@@ -272,6 +373,7 @@
         </div>
     </div>
 
+    <!-- Chat Screen -->
     <div id="chat-screen" class="screen" id="drop-zone">
         <div class="chat-header">
             <button class="back-btn" onclick="goBackToGrid()">
@@ -292,6 +394,23 @@
                 <button class="action-btn" title="Video Call" onclick="startCall('video')">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14"></rect></svg>
                 </button>
+                
+                <div style="position: relative;" class="chat-options-container">
+                    <button class="action-btn" title="More Options" onclick="toggleChatOptions()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="19" r="2.5"/></svg>
+                    </button>
+                    <div id="chat-options-menu" style="right: 0; top: 55px; display: none;">
+                        <div class="ctx-item" onclick="toggleArchiveContact()" id="btn-archive-contact">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                            <span id="t-archive-btn">Archive</span>
+                        </div>
+                        <div class="ctx-item danger" onclick="promptDeleteContact()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <span id="t-del-contact-btn">Delete Contact</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         <div id="pinned-msg-banner"></div>
@@ -304,6 +423,14 @@
                 </button>
                 <input type="file" id="media-input" accept="*/*" style="display:none" onchange="handleMedia(this)">
 
+                <button class="icon-btn" onclick="openGifModal()" title="GIF" style="margin-left: 5px;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M7 12h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H7v6z"></path><path d="M14 7h-2v6h2"></path><path d="M17 7h3"></path><path d="M17 10h2"></path></svg>
+                </button>
+                
+                <button class="icon-btn" id="mic-btn" onclick="toggleRecording()" title="Voice Message" style="margin-left: 5px;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+
                 <input type="text" id="message-input" placeholder="Add message.." onkeypress="if(event.key==='Enter') sendMessage()" oninput="notifyTyping()">
 
                 <button class="icon-btn" onclick="sendMessage()" title="Send" style="margin-right: 10px; color: var(--skype-blue);">
@@ -313,47 +440,146 @@
         </div>
     </div>
 
+    <!-- Archived Contacts Modal -->
+    <div class="modal-overlay" id="archived-modal">
+        <div class="modal-box" style="width: 450px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                <div class="modal-title" style="margin:0;" id="t-archived-title">Archived Contacts</div>
+                <button onclick="document.getElementById('archived-modal').style.display='none'" style="background:none; border:none; color:var(--text-black); cursor:pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div id="archived-list" style="max-height: 400px; overflow-y: auto; display:flex; flex-direction:column;">
+            </div>
+        </div>
+    </div>
+
+    <!-- GIF Modal -->
+    <div class="modal-overlay" id="gif-modal">
+        <div class="modal-box" style="width: 450px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                <div class="modal-title" style="margin:0;">GIF</div>
+                <button onclick="document.getElementById('gif-modal').style.display='none'" style="background:none; border:none; color:var(--text-black); cursor:pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <input type="text" id="gif-search-input" oninput="filterGifs()" class="modal-input" placeholder="Search GIF..." style="margin-bottom:15px; width:100%; box-sizing:border-box;">
+            <div class="gif-grid" id="gif-container"></div>
+        </div>
+    </div>
+
+    <!-- Donate Modal -->
+    <div class="modal-overlay" id="donate-modal" style="z-index: 100005;">
+        <div class="modal-box" style="text-align: center;">
+            <div class="modal-title" id="t-donate-title">Donate</div>
+            <img src="https://raw.githubusercontent.com/ace-official/AceTalk/main/AceTalkDonateTON.jpeg" alt="Donate QR" style="width: 100%; max-width: 250px; border-radius: 12px; margin-bottom: 15px; border: 2px solid var(--grid-dark); background-color: #ffffff; padding: 12px; box-sizing: border-box;">
+            <p style="font-size: 14px; color: var(--label-color); margin-bottom: 20px;" id="t-donate-text">Thanks for your support! 🚀</p>
+            <button class="btn-primary" style="width:100%;" onclick="document.getElementById('donate-modal').style.display='none'" id="btn-close-donate">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="info-modal" style="z-index: 100005;">
+        <div class="modal-box" style="text-align: center;">
+            <div class="modal-title" id="t-info-title" style="margin-bottom: 15px;">Info</div>
+            <p style="font-size: 14px; color: var(--text-black); margin-bottom: 20px; line-height: 1.5; text-align: left;" id="t-info-text">
+                AceTalk is a P2P messaging service made by ACE. No information is saved or will be saved. Since it is open source, its codes, logo, etc. can be used anytime. No rights are reserved. You can access all resources via Github.
+            </p>
+            <button class="btn-primary" style="width:100%;" onclick="document.getElementById('info-modal').style.display='none'" id="btn-close-info">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-box">
-            <div class="modal-title" id="t-settings-title">Settings</div>
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                <span style="font-size: 16px; font-weight: 700;" id="t-lang">Language</span>
-                <select class="lang-select" id="lang-picker" onchange="changeLanguage(this.value)" style="padding: 4px 8px; margin: 0;">
-                    <option value="en">🇬🇧 English</option>
-                    <option value="tr">🇹🇷 Türkçe</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="ru">🇷🇺 Русский</option>
-                    <option value="it">🇮🇹 Italiano</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="zh">🇨🇳 中文</option>
-                </select>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                <span style="font-size: 16px; font-weight: 700;" id="t-theme">Light Theme</span>
-                <label class="toggle-switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme(this)"><span class="slider"></span></label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="modal-title" id="t-settings-title" style="margin-bottom: 0;">Settings</div>
+                <!-- Info Button -->
+                <button onclick="document.getElementById('info-modal').style.display='flex'" class="icon-btn" style="color: var(--text-black);" title="Info">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </button>
             </div>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-                <span style="font-size: 16px; font-weight: 700;" id="t-notif">Notification Sounds</span>
-                <label class="toggle-switch"><input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"><span class="slider"></span></label>
+            <!-- Settings Tabs -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" id="tab-btn-gen" onclick="switchSettingsTab('gen')">General</button>
+                <button class="tab-btn" id="tab-btn-cust" onclick="switchSettingsTab('cust')">Customization</button>
             </div>
 
-            <div style="font-size: 16px; font-weight: 700; margin-bottom: 10px;" id="t-wp">Wallpaper (Optional)</div>
-            <label class="custom-file-upload">
-                <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(this)">
-                <span id="wp-file-name">Choose File...</span>
-            </label>
-            <button class="btn-cancel" style="width:100%; margin-bottom: 15px;" onclick="resetWallpaper()" id="t-wp-reset">Restore Default</button>
+            <!-- General Tab -->
+            <div id="tab-gen" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span style="font-size: 16px; font-weight: 700;" id="t-lang">Language</span>
+                    <select class="lang-select" id="lang-picker" onchange="changeLanguage(this.value)" style="padding: 4px 8px; margin: 0;">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="tr">🇹🇷 Türkçe</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="zh">🇨🇳 中文</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <span style="font-size: 16px; font-weight: 700;" id="t-notif">Notification Sounds</span>
+                    <label class="toggle-switch"><input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"><span class="slider"></span></label>
+                </div>
+
+                <button class="btn-primary" style="width: 100%; margin-bottom: 15px; background: var(--skype-blue); color: white;" onclick="document.getElementById('donate-modal').style.display='flex'" id="t-donate-btn">Donate</button>
+
+                <button class="btn-cancel" style="width: 100%; margin-bottom: 15px; border-color: var(--sos-red); color: var(--sos-red);" onclick="deleteAccount()" id="t-delete-acc">Delete Account</button>
+            </div>
+
+            <!-- Customization Tab -->
+            <div id="tab-cust" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span style="font-size: 16px; font-weight: 700;" id="t-theme">Light Theme</span>
+                    <label class="toggle-switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme(this)"><span class="slider"></span></label>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;">
+                    <span style="font-size: 16px; font-weight: 700;" id="t-bg-color">Background Color</span>
+                    <div class="color-picker-wrapper">
+                        <div class="preset-color" style="background:#222222;" onclick="changeBgColor('#222222')"></div>
+                        <div class="preset-color" style="background:#000000;" onclick="changeBgColor('#000000')"></div>
+                        <div class="preset-color" style="background:#ffffff;" onclick="changeBgColor('#ffffff')"></div>
+                        <div class="preset-color" style="background:#0a192f;" onclick="changeBgColor('#0a192f')"></div>
+                        <input type="color" id="bg-color-picker" class="custom-color-input" onchange="changeBgColor(this.value)" value="#222222">
+                    </div>
+                </div>
+
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 10px;" id="t-wp">Wallpaper (Optional)</div>
+                
+                <!-- Fixed Symmetrical Layout for Wallpaper Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <label class="custom-file-upload" style="margin: 0; width: 100%;">
+                        <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(this)">
+                        <span id="wp-file-name">Choose File...</span>
+                    </label>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-cancel" style="flex: 1; margin: 0;" onclick="resetWallpaper()" id="t-wp-reset">Default WP</button>
+                        <button class="btn-cancel" style="flex: 1; margin: 0;" onclick="resetBgColor()" id="t-color-reset">Stock Color</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-btns">
                 <button class="btn-primary" id="btn-close-set" onclick="document.getElementById('settings-modal').style.display='none'">CLOSE</button>
             </div>
         </div>
     </div>
 
+    <!-- Profile Edit Modal -->
     <div class="modal-overlay" id="profile-modal">
         <div class="modal-box">
             <div class="modal-title" id="t-edit-prof">Edit Profile</div>
@@ -373,10 +599,14 @@
             </div>
 
             <div style="font-size: 12px; margin-bottom: 5px;" id="t-prof-pic">Profile Picture</div>
-            <label class="custom-file-upload">
-                <input type="file" id="edit-avatar" accept="image/*" onchange="updateFileName(this, 'avatar-file-name')">
-                <span id="avatar-file-name">Choose File...</span>
-            </label>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <label class="custom-file-upload" style="flex:1; margin-bottom:0;">
+                    <input type="file" id="edit-avatar" accept="image/*" onchange="updateFileName(this, 'avatar-file-name')">
+                    <span id="avatar-file-name">Choose File...</span>
+                </label>
+                <button class="btn-cancel" onclick="resetProfilePic()" id="t-reset-avatar" style="flex:1;">Remove Photo</button>
+            </div>
+            
             <div class="modal-btns">
                 <button class="btn-primary" id="btn-save-prof" onclick="saveProfile()">SAVE</button>
                 <button class="btn-cancel" id="btn-cancel-prof" onclick="document.getElementById('profile-modal').style.display='none'">CANCEL</button>
@@ -384,6 +614,7 @@
         </div>
     </div>
 
+    <!-- Add Contact Modal -->
     <div class="modal-overlay" id="add-contact-modal">
         <div class="modal-box">
             <div class="modal-title" id="t-modal-contact">Add Contact..</div>
@@ -395,6 +626,7 @@
         </div>
     </div>
 
+    <!-- Add Status Modal -->
     <div class="modal-overlay" id="add-status-modal">
         <div class="modal-box">
             <div class="modal-title" id="t-modal-status">Add Status..</div>
@@ -406,6 +638,7 @@
         </div>
     </div>
 
+    <!-- Edit Message Modal -->
     <div id="edit-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="t-edit-msg-title">Edit Message</div>
@@ -417,35 +650,41 @@
         </div>
     </div>
 
-    <div id="call-overlay">
-        <div id="call-icon" style="margin-bottom: 25px; color: var(--status-green);">
-            <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="currentColor" stroke-width="2" style="border-radius: 50%;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-        </div>
-        <h2 id="call-name" style="margin:0; font-size:32px; font-weight: 700;">Name</h2>
-        <p id="call-status" style="color:#aaa; letter-spacing:2px; font-weight: 700;">CALLING...</p>
-        <div id="call-videos">
-            <video id="remote-video" autoplay playsinline></video>
-            <video id="local-video" autoplay muted playsinline></video>
-            <audio id="remote-audio" autoplay></audio>
-        </div>
-        <div style="display:flex; gap: 20px; margin-top: 40px;">
-            <button onclick="shareScreen()" id="btn-screen" style="background: var(--skype-blue); color: white; border: none; padding: 16px 30px; font-weight: bold; cursor: pointer; display: none;">💻 SHARE SCREEN</button>
-            <button onclick="endCall()" id="btn-hangup" style="background: var(--call-red); color: white; border: none; padding: 16px 50px; font-weight: bold; cursor: pointer;">HANG UP</button>
-        </div>
-    </div>
-
-    <div id="incoming-call-panel">
-        <div>
-            <div id="incoming-call-name" style="font-size: 18px; font-weight: 700;">Someone is calling...</div>
-            <div id="incoming-call-sub" style="font-size: 12px; color: var(--grid-dark); font-weight: 700;">Incoming Call</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="answerCall()" id="btn-answer" style="flex:1; background:var(--status-green); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">ANSWER</button>
-            <button onclick="rejectCall()" id="btn-reject" style="flex:1; background:var(--call-red); color:white; border:none; padding:10px; font-weight:700; cursor:pointer;">REJECT</button>
-        </div>
-    </div>
-
 <script>
+    /* =========================================================
+       0. TOAST & ALERTS
+    ========================================================= */
+    function showToast(title, desc='', type='info', duration=4500) {
+        const container = document.getElementById('toast-container');
+        if(!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let svgIcon = '';
+        if (type === 'error') {
+            svgIcon = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--sos-red)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        } else if (type === 'warning') {
+            svgIcon = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#f1c40f" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        } else if (type === 'message') {
+            svgIcon = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--status-green)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+        } else {
+            svgIcon = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--skype-blue)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+        }
+        
+        let contentHtml = `<div class="toast-title">${title}</div>`;
+        if (desc) contentHtml += `<div class="toast-desc">${desc}</div>`;
+
+        toast.innerHTML = `<div class="toast-svg">${svgIcon}</div><div class="toast-content">${contentHtml}</div>`;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'fadeOutToastRight 0.3s forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
     /* =========================================================
        1. THEME AND LANGUAGE DICTIONARY
     ========================================================= */
@@ -454,23 +693,37 @@
             greeting: ["Good Night", "Good Morning", "Good Afternoon", "Good Evening"],
             contacts: "Contacts", statuses: "Statuses & Moods", addContact: "Add Contact..", addStatus: "Add Status..",
             msgPlaceholder: "Add message..", settings: "Settings", lang: "Language", notif: "Notification Sounds", wp: "Wallpaper (Optional)",
-            wpReset: "Restore Default", theme: "Light Theme", online: "Online", offline: "Offline", sleep: "Sleep", dnd: "DND",
-            ctxPin: "Pin", ctxUnpin: "Unpin", ctxEdit: "Edit", ctxDel: "Delete for Everyone",
+            wpReset: "Default WP", theme: "Light Theme", online: "Online", offline: "Offline", sleep: "Sleep", dnd: "DND",
+            ctxPin: "Pin", ctxUnpin: "Unpin", ctxEdit: "Edit", ctxDel: "Delete",
             btnSave: "SAVE", btnCancel: "CANCEL", btnShare: "SHARE", btnConnect: "CONNECT", btnClose: "CLOSE",
             phId: "Enter User ID", phStatus: "What's on your mind?", phName: "Nickname (Display Name)", loginBtn: "LOGIN",
             callCalling: "CALLING...", callConnected: "CONNECTED", callIncTitle: "Someone is calling...",
             callIncVideo: "Incoming Video Call", callIncAudio: "Incoming Audio Call", callVidStr: "Video", callAudStr: "Audio",
             btnAnswer: "ANSWER", btnReject: "REJECT", btnScreen: "💻 SHARE SCREEN", btnHangup: "HANG UP",
             you: "(You)", editProf: "Edit Profile", statusMode: "Status Mode", profPic: "Profile Picture",
-            fileSelect: "Choose File...", editMsgTitle: "Edit Message", delMsg: "🚫 This message was deleted",
-            edited: "(edited)", trans: "(Translated)", callEnd: "Call ended • Duration", typeWait: "someone is typing...",
-            pinnedPre: "Pinned Message"
+            fileSelect: "Choose File...", editMsgTitle: "Edit Message", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> This message was deleted",
+            edited: "(edited)", trans: "(Translated)", callEnd: "Call ended • Duration", typeWait: "is typing...",
+            pinnedPre: "Pinned Message", bgColor: "Background Color", deleteAcc: "Delete Account",
+            tabGen: "General", tabCust: "Customization", colorReset: "Stock Color", noGif: "There is nothing to show here",
+            callRejected: "Call Rejected", sosWait: "Wait for SOS", micError: "Microphone/Camera access denied!", sizeError: "Max 50MB allowed!",
+            donateBtn: "Donate", donateTitle: "Donate", donateText: "Thanks for your support!",
+            userNotFound: "User Not Found", userNotFoundDesc: "The user ID you entered does not exist or is offline.",
+            wantsToConnect: "wants to connect with you.", reqSent: "Connection request sent!",
+            reqAccepted: "Request Accepted", acceptedDesc: "accepted your connection request.",
+            reqRejected: "Request Rejected", reqRejectedDesc: "The user rejected your connection request.",
+            accept: "ACCEPT", reject: "REJECT", connReqSub: "Connection Request",
+            connecting: "Connecting to server...", invalidId: "Invalid ID", timeoutErr: "Connection timeout!",
+            delContactConfirm: "Are you sure you want to delete this contact and all chat history?", deleted: "Contact Deleted",
+            archive: "Archive", unarchive: "Unarchive", archivedFolder: "Archived", archivedContacts: "Archived Contacts", delContact: "Delete Contact",
+            infoTitle: "Info", infoText: "AceTalk is a P2P messaging service made by ACE. No information is saved or will be saved. Since it is open source, its codes, logo, etc. can be used anytime. No rights are reserved. You can access all resources via Github.",
+            resetAvatar: "Remove Photo", contactCount: "Contacts"
         },
         tr: {
             greeting: ["İyi Geceler", "Günaydın", "Tünaydın", "İyi Akşamlar"],
             contacts: "Kişiler", statuses: "Durumlar & Haller", addContact: "Kişi Ekle..", addStatus: "Durum Ekle..",
             msgPlaceholder: "Mesaj ekle..", settings: "Ayarlar", lang: "Dil", notif: "Bildirim Sesleri", wp: "Duvar Kağıdı (İsteğe Bağlı)",
-            wpReset: "Varsayılanı Geri Yükle", theme: "Açık Tema", online: "Çevrimiçi", offline: "Çevrimdışı", sleep: "Uykuda", dnd: "Rahatsız Etme",
+            wpReset: "Varsayılan", theme: "Açık Tema", online: "Çevrimiçi", offline: "Çevrimdışı", sleep: "Uykuda", dnd: "Rahatsız Etme",
             ctxPin: "Sabitle", ctxUnpin: "Sabitlemeyi Kaldır", ctxEdit: "Düzenle", ctxDel: "Herkesten Sil",
             btnSave: "KAYDET", btnCancel: "İPTAL", btnShare: "PAYLAŞ", btnConnect: "BAĞLAN", btnClose: "KAPAT",
             phId: "ID Girin", phStatus: "Aklından ne geçiyor?", phName: "Takma Adın (Görünen İsim)", loginBtn: "GİRİŞ YAP",
@@ -478,95 +731,226 @@
             callIncVideo: "Görüntülü arama geliyor", callIncAudio: "Sesli arama geliyor", callVidStr: "Görüntülü", callAudStr: "Sesli",
             btnAnswer: "CEVAPLA", btnReject: "REDDET", btnScreen: "💻 EKRAN PAYLAŞ", btnHangup: "KAPAT",
             you: "(Sen)", editProf: "Profili Düzenle", statusMode: "Durum Modu", profPic: "Profil Fotoğrafı",
-            fileSelect: "Dosya Seç...", editMsgTitle: "Mesajı Düzenle", delMsg: "🚫 Bu mesaj silindi",
-            edited: "(düzenlendi)", trans: "(Çevrildi)", callEnd: "Arama bitti • Süre", typeWait: "birileri yazıyor...",
-            pinnedPre: "Sabitlenen Mesaj"
+            fileSelect: "Dosya Seç...", editMsgTitle: "Mesajı Düzenle", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Bu mesaj silindi",
+            edited: "(düzenlendi)", trans: "(Çevrildi)", callEnd: "Arama bitti • Süre", typeWait: "yazıyor...",
+            pinnedPre: "Sabitlenen Mesaj", bgColor: "Arka Plan Rengi", deleteAcc: "Hesabı Sil",
+            tabGen: "Genel", tabCust: "Özelleştirme", colorReset: "Stok Renk", noGif: "Burada gösterilecek bişey yok",
+            callRejected: "Arama Reddedildi", sosWait: "SOS için bekle", micError: "Kamera/Mikrofon izni gerekli!", sizeError: "Maksimum 50MB gönderebilirsin!",
+            donateBtn: "Bağış Yap", donateTitle: "Bağış", donateText: "Desteğin için teşekkürler!",
+            userNotFound: "Kişi Bulunamadı", userNotFoundDesc: "Girdiğin kullanıcı ID'si sistemde bulunamadı veya şu an çevrimdışı.",
+            wantsToConnect: "sana bağlanmak istiyor.", reqSent: "Bağlantı isteği gönderildi!",
+            reqAccepted: "İstek Kabul Edildi", acceptedDesc: "bağlantı isteğini kabul etti.",
+            reqRejected: "İstek Reddedildi", reqRejectedDesc: "Karşı taraf bağlantı isteğini reddetti.",
+            accept: "KABUL ET", reject: "REDDET", connReqSub: "Bağlantı İsteği",
+            connecting: "Sunucuya bağlanılıyor...", invalidId: "Geçersiz ID", timeoutErr: "Bağlantı zaman aşımına uğradı.",
+            delContactConfirm: "Bu kişiyi ve tüm mesaj geçmişini silmek istediğine emin misin?", deleted: "Kişi Silindi",
+            archive: "Arşivle", unarchive: "Arşivden Çıkar", archivedFolder: "Arşivlenmişler", archivedContacts: "Arşivlenmiş Kişiler", delContact: "Kişiyi Sil",
+            infoTitle: "Bilgi", infoText: "AceTalk ACE tarafından yapılmış, P2P mesajlaşma hizmetidir. Hiç bir bilgi kaydedilmez, kaydedilmeyecektir. Açık kaynak olduğu için istendiği zaman kodları, logosu vb kullanıla bilir. Hiç bir hak saklanılmıyordur. Github üzerinden tüm kaynaklar ulaşa bilirsiniz.",
+            resetAvatar: "Fotoğrafı Kaldır", contactCount: "Kişi"
         },
         de: {
-            greeting: ["Gute Nacht", "Guten Morgen", "Guten Tag", "Guten Abend"], contacts: "Kontakte", statuses: "Status & Stimmungen",
-            addContact: "Kontakt hinzufügen..", addStatus: "Status hinzufügen..", msgPlaceholder: "Nachricht hinzufügen..", settings: "Einstellungen",
-            lang: "Sprache", notif: "Benachrichtigungstöne", wp: "Hintergrundbild", wpReset: "Standard", theme: "Helles Design",
-            online: "Online", offline: "Offline", sleep: "Schlafen", dnd: "Nicht stören", ctxPin: "Anheften", ctxUnpin: "Lösen",
-            ctxEdit: "Bearbeiten", ctxDel: "Für alle löschen", btnSave: "SPEICHERN", btnCancel: "ABBRECHEN", btnShare: "TEILEN",
-            btnConnect: "VERBINDEN", btnClose: "SCHLIESSEN", phId: "ID eingeben", phStatus: "Was machst du gerade?", phName: "Spitzname",
-            loginBtn: "ANMELDEN", callCalling: "ANRUFEN...", callConnected: "VERBUNDEN", callIncTitle: "Jemand ruft an...",
+            greeting: ["Gute Nacht", "Guten Morgen", "Guten Tag", "Guten Abend"],
+            contacts: "Kontakte", statuses: "Status & Stimmungen", addContact: "Kontakt hinzufügen..", addStatus: "Status hinzufügen..",
+            msgPlaceholder: "Nachricht hinzufügen..", settings: "Einstellungen", lang: "Sprache", notif: "Benachrichtigungstöne", wp: "Hintergrundbild",
+            wpReset: "Standard-Hintergrund", theme: "Helles Design", online: "Online", offline: "Offline", sleep: "Schlafen", dnd: "Bitte nicht stören",
+            ctxPin: "Anheften", ctxUnpin: "Lösen", ctxEdit: "Bearbeiten", ctxDel: "Löschen",
+            btnSave: "SPEICHERN", btnCancel: "ABBRECHEN", btnShare: "TEILEN", btnConnect: "VERBINDEN", btnClose: "SCHLIEßEN",
+            phId: "Benutzer-ID eingeben", phStatus: "Was machst du gerade?", phName: "Spitzname", loginBtn: "ANMELDEN",
+            callCalling: "ANRUF...", callConnected: "VERBUNDEN", callIncTitle: "Jemand ruft an...",
             callIncVideo: "Eingehender Videoanruf", callIncAudio: "Eingehender Audioanruf", callVidStr: "Video", callAudStr: "Audio",
-            btnAnswer: "ANTWORTEN", btnReject: "ABLEHNEN", btnScreen: "💻 BILDSCHIRM", btnHangup: "AUFLEGEN", you: "(Du)",
-            editProf: "Profil bearbeiten", statusMode: "Status", profPic: "Profilbild", fileSelect: "Datei wählen...",
-            editMsgTitle: "Nachricht bearbeiten", delMsg: "🚫 Nachricht gelöscht", edited: "(bearbeitet)", trans: "(Übersetzt)",
-            callEnd: "Anruf beendet • Dauer", typeWait: "schreibt...", pinnedPre: "Angeheftete Nachricht"
+            btnAnswer: "ANTWORTEN", btnReject: "ABLEHNEN", btnScreen: "💻 BILDSCHIRM TEILEN", btnHangup: "AUFLEGEN",
+            you: "(Du)", editProf: "Profil bearbeiten", statusMode: "Status-Modus", profPic: "Profilbild",
+            fileSelect: "Datei auswählen...", editMsgTitle: "Nachricht bearbeiten", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Diese Nachricht wurde gelöscht",
+            edited: "(bearbeitet)", trans: "(Übersetzt)", callEnd: "Anruf beendet • Dauer", typeWait: "schreibt...",
+            pinnedPre: "Angeheftete Nachricht", bgColor: "Hintergrundfarbe", deleteAcc: "Konto löschen",
+            tabGen: "Allgemein", tabCust: "Anpassung", colorReset: "Standardfarbe", noGif: "Hier gibt es nichts zu sehen",
+            callRejected: "Anruf abgelehnt", sosWait: "Warten auf SOS", micError: "Mikrofon-/Kamerazugriff verweigert!", sizeError: "Max. 50 MB erlaubt!",
+            donateBtn: "Spenden", donateTitle: "Spenden", donateText: "Danke für deine Unterstützung!",
+            userNotFound: "Benutzer nicht gefunden", userNotFoundDesc: "Die eingegebene ID existiert nicht oder ist offline.",
+            wantsToConnect: "möchte sich verbinden.", reqSent: "Verbindungsanfrage gesendet!",
+            reqAccepted: "Anfrage akzeptiert", acceptedDesc: "hat deine Anfrage akzeptiert.",
+            reqRejected: "Anfrage abgelehnt", reqRejectedDesc: "Der Benutzer hat deine Anfrage abgelehnt.",
+            accept: "AKZEPTIEREN", reject: "ABLEHNEN", connReqSub: "Verbindungsanfrage",
+            connecting: "Verbinde zum Server...", invalidId: "Ungültige ID", timeoutErr: "Zeitüberschreitung der Verbindung!",
+            delContactConfirm: "Bist du sicher, dass du diesen Kontakt und den gesamten Chat-Verlauf löschen möchtest?", deleted: "Kontakt gelöscht",
+            archive: "Archivieren", unarchive: "Aus dem Archiv holen", archivedFolder: "Archiviert", archivedContacts: "Archivierte Kontakte", delContact: "Kontakt löschen",
+            infoTitle: "Info", infoText: "AceTalk ist ein P2P-Messaging-Dienst von ACE. Es werden keine Daten gespeichert.", resetAvatar: "Foto entfernen", contactCount: "Kontakte"
         },
         es: {
-            greeting: ["Buenas Noches", "Buenos Días", "Buenas Tardes", "Buenas Noches"], contacts: "Contactos", statuses: "Estados",
-            addContact: "Añadir Contacto..", addStatus: "Añadir Estado..", msgPlaceholder: "Mensaje..", settings: "Ajustes",
-            lang: "Idioma", notif: "Sonidos", wp: "Fondo de Pantalla", wpReset: "Restaurar", theme: "Tema Claro", online: "En línea", offline: "Desconectado",
-            sleep: "Ausente", dnd: "No molestar", ctxPin: "Fijar", ctxUnpin: "Desfijar", ctxEdit: "Editar", ctxDel: "Eliminar para todos",
-            btnSave: "GUARDAR", btnCancel: "CANCELAR", btnShare: "COMPARTIR", btnConnect: "CONECTAR", btnClose: "CERRAR", phId: "ID de usuario",
-            phStatus: "¿Qué estás pensando?", phName: "Apodo", loginBtn: "ENTRAR", callCalling: "LLAMANDO...", callConnected: "CONECTADO",
-            callIncTitle: "Llamada entrante...", callIncVideo: "Videollamada", callIncAudio: "Llamada de voz", callVidStr: "Video", callAudStr: "Audio",
-            btnAnswer: "CONTESTAR", btnReject: "RECHAZAR", btnScreen: "💻 PANTALLA", btnHangup: "COLGAR", you: "(Tú)", editProf: "Editar Perfil",
-            statusMode: "Estado", profPic: "Foto", fileSelect: "Elegir...", editMsgTitle: "Editar Mensaje", delMsg: "🚫 Mensaje eliminado",
-            edited: "(editado)", trans: "(Traducido)", callEnd: "Llamada finalizada •", typeWait: "escribiendo...", pinnedPre: "Mensaje fijado"
+            greeting: ["Buenas Noches", "Buenos Días", "Buenas Tardes", "Buenas Noches"],
+            contacts: "Contactos", statuses: "Estados", addContact: "Añadir Contacto..", addStatus: "Añadir Estado..",
+            msgPlaceholder: "Añadir mensaje..", settings: "Ajustes", lang: "Idioma", notif: "Sonidos de Notificación", wp: "Fondo de Pantalla",
+            wpReset: "Fondo por Defecto", theme: "Tema Claro", online: "En línea", offline: "Desconectado", sleep: "Ausente", dnd: "No Molestar",
+            ctxPin: "Fijar", ctxUnpin: "Desfijar", ctxEdit: "Editar", ctxDel: "Borrar",
+            btnSave: "GUARDAR", btnCancel: "CANCELAR", btnShare: "COMPARTIR", btnConnect: "CONECTAR", btnClose: "CERRAR",
+            phId: "Introducir ID de Usuario", phStatus: "¿Qué estás pensando?", phName: "Apodo", loginBtn: "INICIAR SESIÓN",
+            callCalling: "LLAMANDO...", callConnected: "CONECTADO", callIncTitle: "Alguien está llamando...",
+            callIncVideo: "Llamada de Video Entrante", callIncAudio: "Llamada de Audio Entrante", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "RESPONDER", btnReject: "RECHAZAR", btnScreen: "💻 COMPARTIR PANTALLA", btnHangup: "COLGAR",
+            you: "(Tú)", editProf: "Editar Perfil", statusMode: "Modo de Estado", profPic: "Foto de Perfil",
+            fileSelect: "Elegir Archivo...", editMsgTitle: "Editar Mensaje", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Este mensaje fue eliminado",
+            edited: "(editado)", trans: "(Traducido)", callEnd: "Llamada finalizada • Duración", typeWait: "está escribiendo...",
+            pinnedPre: "Mensaje Fijado", bgColor: "Color de Fondo", deleteAcc: "Eliminar Cuenta",
+            tabGen: "General", tabCust: "Personalización", colorReset: "Color por Defecto", noGif: "No hay nada que mostrar",
+            callRejected: "Llamada Rechazada", sosWait: "Esperar SOS", micError: "¡Acceso a micrófono/cámara denegado!", sizeError: "¡Máx. 50 MB permitidos!",
+            donateBtn: "Donar", donateTitle: "Donar", donateText: "¡Gracias por tu apoyo!",
+            userNotFound: "Usuario No Encontrado", userNotFoundDesc: "El ID que introdujiste no existe o está desconectado.",
+            wantsToConnect: "quiere conectarse contigo.", reqSent: "¡Solicitud enviada!",
+            reqAccepted: "Solicitud Aceptada", acceptedDesc: "aceptó tu solicitud.",
+            reqRejected: "Solicitud Rechazada", reqRejectedDesc: "El usuario rechazó tu solicitud.",
+            accept: "ACEPTAR", reject: "RECHAZAR", connReqSub: "Solicitud de Conexión",
+            connecting: "Conectando al servidor...", invalidId: "ID Inválido", timeoutErr: "¡Tiempo de espera agotado!",
+            delContactConfirm: "¿Estás seguro de que deseas eliminar este contacto y todo el historial?", deleted: "Contacto Eliminado",
+            archive: "Archivar", unarchive: "Desarchivar", archivedFolder: "Archivado", archivedContacts: "Contactos Archivados", delContact: "Eliminar Contacto",
+            infoTitle: "Info", infoText: "AceTalk es un servicio de mensajería P2P de ACE. No se guardan datos.", resetAvatar: "Eliminar Foto", contactCount: "Contactos"
         },
         fr: {
-            greeting: ["Bonne Nuit", "Bonjour", "Bon Après-midi", "Bonsoir"], contacts: "Contacts", statuses: "Statuts",
-            addContact: "Ajouter Contact..", addStatus: "Ajouter Statut..", msgPlaceholder: "Message..", settings: "Paramètres",
-            lang: "Langue", notif: "Sons", wp: "Fond d'écran", wpReset: "Restaurer", theme: "Thème Clair", online: "En ligne", offline: "Hors ligne",
-            sleep: "Absent", dnd: "Ne pas déranger", ctxPin: "Épingler", ctxUnpin: "Détacher", ctxEdit: "Modifier", ctxDel: "Supprimer",
-            btnSave: "ENREGISTRER", btnCancel: "ANNULER", btnShare: "PARTAGER", btnConnect: "CONNECTER", btnClose: "FERMER", phId: "Entrer ID",
-            phStatus: "À quoi pensez-vous?", phName: "Surnom", loginBtn: "CONNEXION", callCalling: "APPEL...", callConnected: "CONNECTÉ",
-            callIncTitle: "Appel entrant...", callIncVideo: "Appel vidéo", callIncAudio: "Appel vocal", callVidStr: "Vidéo", callAudStr: "Audio",
-            btnAnswer: "RÉPONDRE", btnReject: "REFUSER", btnScreen: "💻 ÉCRAN", btnHangup: "RACCROCHER", you: "(Toi)", editProf: "Profil",
-            statusMode: "Statut", profPic: "Photo", fileSelect: "Choisir...", editMsgTitle: "Modifier", delMsg: "🚫 Message supprimé",
-            edited: "(modifié)", trans: "(Traduit)", callEnd: "Appel terminé •", typeWait: "écrit...", pinnedPre: "Message épinglé"
+            greeting: ["Bonne Nuit", "Bonjour", "Bon Après-midi", "Bonsoir"],
+            contacts: "Contacts", statuses: "Statuts", addContact: "Ajouter un Contact..", addStatus: "Ajouter un Statut..",
+            msgPlaceholder: "Ajouter un message..", settings: "Paramètres", lang: "Langue", notif: "Sons de Notification", wp: "Fond d'écran",
+            wpReset: "Fond par Défaut", theme: "Thème Clair", online: "En ligne", offline: "Hors ligne", sleep: "Absent", dnd: "Ne Pas Déranger",
+            ctxPin: "Épingler", ctxUnpin: "Désépingler", ctxEdit: "Modifier", ctxDel: "Supprimer",
+            btnSave: "ENREGISTRER", btnCancel: "ANNULER", btnShare: "PARTAGER", btnConnect: "CONNECTER", btnClose: "FERMER",
+            phId: "Entrer l'ID Utilisateur", phStatus: "À quoi pensez-vous?", phName: "Surnom", loginBtn: "SE CONNECTER",
+            callCalling: "APPEL...", callConnected: "CONNECTÉ", callIncTitle: "Quelqu'un appelle...",
+            callIncVideo: "Appel Vidéo Entrant", callIncAudio: "Appel Audio Entrant", callVidStr: "Vidéo", callAudStr: "Audio",
+            btnAnswer: "RÉPONDRE", btnReject: "REJETER", btnScreen: "💻 PARTAGER L'ÉCRAN", btnHangup: "RACCROCHER",
+            you: "(Toi)", editProf: "Modifier le Profil", statusMode: "Mode de Statut", profPic: "Photo de Profil",
+            fileSelect: "Choisir un Fichier...", editMsgTitle: "Modifier le Message", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Ce message a été supprimé",
+            edited: "(modifié)", trans: "(Traduit)", callEnd: "Appel terminé • Durée", typeWait: "est en train d'écrire...",
+            pinnedPre: "Message Épinglé", bgColor: "Couleur de Fond", deleteAcc: "Supprimer le Compte",
+            tabGen: "Général", tabCust: "Personnalisation", colorReset: "Couleur par Défaut", noGif: "Il n'y a rien à afficher",
+            callRejected: "Appel Rejeté", sosWait: "Attendez SOS", micError: "Accès au micro/caméra refusé!", sizeError: "Max 50 Mo autorisés!",
+            donateBtn: "Faire un don", donateTitle: "Faire un don", donateText: "Merci pour votre soutien!",
+            userNotFound: "Utilisateur Introuvable", userNotFoundDesc: "L'ID que vous avez entré n'existe pas ou est hors ligne.",
+            wantsToConnect: "veut se connecter.", reqSent: "Demande de connexion envoyée!",
+            reqAccepted: "Demande Acceptée", acceptedDesc: "a accepté votre demande.",
+            reqRejected: "Demande Rejetée", reqRejectedDesc: "L'utilisateur a rejeté votre demande.",
+            accept: "ACCEPTER", reject: "REJETER", connReqSub: "Demande de Connexion",
+            connecting: "Connexion au serveur...", invalidId: "ID Invalide", timeoutErr: "Délai de connexion dépassé!",
+            delContactConfirm: "Êtes-vous sûr de vouloir supprimer ce contact et tout l'historique?", deleted: "Contact Supprimé",
+            archive: "Archiver", unarchive: "Désarchiver", archivedFolder: "Archivé", archivedContacts: "Contacts Archivés", delContact: "Supprimer le Contact",
+            infoTitle: "Info", infoText: "AceTalk est un service de messagerie P2P par ACE. Aucune donnée n'est conservée.", resetAvatar: "Supprimer la photo", contactCount: "Contacts"
         },
         ru: {
-            greeting: ["Доброй ночи", "Доброе утро", "Добрый день", "Добрый вечер"], contacts: "Контакты", statuses: "Статусы",
-            addContact: "Добавить..", addStatus: "Статус..", msgPlaceholder: "Сообщение..", settings: "Настройки", lang: "Язык", notif: "Звуки",
-            wp: "Обои", wpReset: "Сбросить", theme: "Светлая тема", online: "В сети", offline: "Не в сети", sleep: "Спит", dnd: "Не беспокоить",
-            ctxPin: "Закрепить", ctxUnpin: "Открепить", ctxEdit: "Изменить", ctxDel: "Удалить", btnSave: "СОХРАНИТЬ", btnCancel: "ОТМЕНА",
-            btnShare: "ПОДЕЛИТЬСЯ", btnConnect: "ПОДКЛЮЧИТЬ", btnClose: "ЗАКРЫТЬ", phId: "Ваш ID", phStatus: "Что нового?", phName: "Имя",
-            loginBtn: "ВОЙТИ", callCalling: "ЗВОНОК...", callConnected: "СОЕДИНЕНО", callIncTitle: "Входящий вызов...",
-            callIncVideo: "Видеозвонок", callIncAudio: "Аудиозвонок", callVidStr: "Видео", callAudStr: "Аудио",
-            btnAnswer: "ОТВЕТИТЬ", btnReject: "ОТКЛОНИТЬ", btnScreen: "💻 ЭКРАН", btnHangup: "ЗАВЕРШИТЬ", you: "(Ты)", editProf: "Профиль",
-            statusMode: "Статус", profPic: "Фото", fileSelect: "Выбрать...", editMsgTitle: "Изменить", delMsg: "🚫 Удалено",
-            edited: "(изменено)", trans: "(Переведено)", callEnd: "Звонок завершен •", typeWait: "печатает...", pinnedPre: "Закреплено"
+            greeting: ["Доброй ночи", "Доброе утро", "Добрый день", "Добрый вечер"],
+            contacts: "Контакты", statuses: "Статусы", addContact: "Добавить контакт..", addStatus: "Добавить статус..",
+            msgPlaceholder: "Введите сообщение..", settings: "Настройки", lang: "Язык", notif: "Звуки уведомлений", wp: "Обои",
+            wpReset: "Обои по умолчанию", theme: "Светлая тема", online: "В сети", offline: "Не в сети", sleep: "Сплю", dnd: "Не беспокоить",
+            ctxPin: "Закрепить", ctxUnpin: "Открепить", ctxEdit: "Редактировать", ctxDel: "Удалить",
+            btnSave: "СОХРАНИТЬ", btnCancel: "ОТМЕНА", btnShare: "ПОДЕЛИТЬСЯ", btnConnect: "ПОДКЛЮЧИТЬСЯ", btnClose: "ЗАКРЫТЬ",
+            phId: "Введите ID", phStatus: "О чём думаете?", phName: "Никнейм", loginBtn: "ВОЙТИ",
+            callCalling: "ЗВОНОК...", callConnected: "ПОДКЛЮЧЕНО", callIncTitle: "Входящий звонок...",
+            callIncVideo: "Входящий видеовызов", callIncAudio: "Входящий аудиовызов", callVidStr: "Видео", callAudStr: "Аудио",
+            btnAnswer: "ОТВЕТИТЬ", btnReject: "ОТКЛОНИТЬ", btnScreen: "💻 ПОКАЗАТЬ ЭКРАН", btnHangup: "ЗАВЕРШИТЬ",
+            you: "(Вы)", editProf: "Редактировать профиль", statusMode: "Статус", profPic: "Фото профиля",
+            fileSelect: "Выберите файл...", editMsgTitle: "Редактировать сообщение", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Это сообщение было удалено",
+            edited: "(изменено)", trans: "(Переведено)", callEnd: "Звонок завершён • Длительность", typeWait: "печатает...",
+            pinnedPre: "Закреплённое", bgColor: "Цвет фона", deleteAcc: "Удалить аккаунт",
+            tabGen: "Общие", tabCust: "Внешний вид", colorReset: "Цвет по умолчанию", noGif: "Здесь нечего показывать",
+            callRejected: "Звонок отклонён", sosWait: "Подождите SOS", micError: "Нет доступа к микрофону/камере!", sizeError: "Максимум 50 МБ!",
+            donateBtn: "Пожертвовать", donateTitle: "Пожертвование", donateText: "Спасибо за поддержку!",
+            userNotFound: "Пользователь не найден", userNotFoundDesc: "Такого ID нет или он не в сети.",
+            wantsToConnect: "хочет подключиться.", reqSent: "Запрос отправлен!",
+            reqAccepted: "Запрос принят", acceptedDesc: "принял ваш запрос.",
+            reqRejected: "Запрос отклонён", reqRejectedDesc: "Пользователь отклонил запрос.",
+            accept: "ПРИНЯТЬ", reject: "ОТКЛОНИТЬ", connReqSub: "Запрос на подключение",
+            connecting: "Подключение к серверу...", invalidId: "Неверный ID", timeoutErr: "Тайм-аут подключения!",
+            delContactConfirm: "Удалить этого пользователя и историю переписки?", deleted: "Контакт удалён",
+            archive: "В архив", unarchive: "Из архива", archivedFolder: "Архив", archivedContacts: "Архивные контакты", delContact: "Удалить контакт",
+            infoTitle: "Информация", infoText: "AceTalk — это P2P мессенджер от ACE. Данные не сохраняются.", resetAvatar: "Удалить фото", contactCount: "Контакты"
         },
         it: {
-            greeting: ["Buonanotte", "Buongiorno", "Buon Pomeriggio", "Buonasera"], contacts: "Contatti", statuses: "Stati",
-            addContact: "Aggiungi Contatto..", addStatus: "Aggiungi Stato..", msgPlaceholder: "Messaggio..", settings: "Impostazioni",
-            lang: "Lingua", notif: "Suoni", wp: "Sfondo", wpReset: "Ripristina", theme: "Tema Chiaro", online: "Online", offline: "Offline",
-            sleep: "Assente", dnd: "Non disturbare", ctxPin: "Fissa", ctxUnpin: "Rimuovi", ctxEdit: "Modifica", ctxDel: "Elimina per tutti",
-            btnSave: "SALVA", btnCancel: "ANNULLA", btnShare: "CONDIVIDI", btnConnect: "CONNETTI", btnClose: "CHIUDI", phId: "Inserisci ID",
-            phStatus: "A cosa pensi?", phName: "Soprannome", loginBtn: "ACCEDI", callCalling: "CHIAMATA...", callConnected: "CONNESSO",
-            callIncTitle: "Chiamata in arrivo...", callIncVideo: "Videochiamata", callIncAudio: "Chiamata vocale", callVidStr: "Video", callAudStr: "Audio",
-            btnAnswer: "RISPONDI", btnReject: "RIFIUTA", btnScreen: "💻 SCHERMO", btnHangup: "RIPONERE", you: "(Tu)", editProf: "Modifica Profilo",
-            statusMode: "Stato", profPic: "Foto", fileSelect: "Scegli...", editMsgTitle: "Modifica", delMsg: "🚫 Messaggio eliminato",
-            edited: "(modificato)", trans: "(Tradotto)", callEnd: "Chiamata terminata •", typeWait: "sta scrivendo...", pinnedPre: "Fissato"
+            greeting: ["Buonanotte", "Buongiorno", "Buon pomeriggio", "Buonasera"],
+            contacts: "Contatti", statuses: "Stati", addContact: "Aggiungi Contatto..", addStatus: "Aggiungi Stato..",
+            msgPlaceholder: "Aggiungi messaggio..", settings: "Impostazioni", lang: "Lingua", notif: "Suoni di Notifica", wp: "Sfondo",
+            wpReset: "Sfondo Predefinito", theme: "Tema Chiaro", online: "In linea", offline: "Non in linea", sleep: "Assente", dnd: "Non disturbare",
+            ctxPin: "Fissa", ctxUnpin: "Rimuovi", ctxEdit: "Modifica", ctxDel: "Elimina",
+            btnSave: "SALVA", btnCancel: "ANNULLA", btnShare: "CONDIVIDI", btnConnect: "CONNETTI", btnClose: "CHIUDI",
+            phId: "Inserisci ID Utente", phStatus: "A cosa stai pensando?", phName: "Soprannome", loginBtn: "ACCEDI",
+            callCalling: "CHIAMATA...", callConnected: "CONNESSO", callIncTitle: "Qualcuno sta chiamando...",
+            callIncVideo: "Chiamata Video in Arrivo", callIncAudio: "Chiamata Audio in Arrivo", callVidStr: "Video", callAudStr: "Audio",
+            btnAnswer: "RISPONDI", btnReject: "RIFIUTA", btnScreen: "💻 CONDIVIDI SCHERMO", btnHangup: "RIATTACCA",
+            you: "(Tu)", editProf: "Modifica Profilo", statusMode: "Modalità Stato", profPic: "Immagine del Profilo",
+            fileSelect: "Scegli File...", editMsgTitle: "Modifica Messaggio", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> Questo messaggio è stato eliminato",
+            edited: "(modificato)", trans: "(Tradotto)", callEnd: "Chiamata terminata • Durata", typeWait: "sta scrivendo...",
+            pinnedPre: "Messaggio Fissato", bgColor: "Colore di Sfondo", deleteAcc: "Elimina Account",
+            tabGen: "Generale", tabCust: "Personalizzazione", colorReset: "Colore di Base", noGif: "Non c'è niente da mostrare",
+            callRejected: "Chiamata Rifiutata", sosWait: "Attendi SOS", micError: "Accesso al microfono/fotocamera negato!", sizeError: "Max 50 MB consentiti!",
+            donateBtn: "Dona", donateTitle: "Dona", donateText: "Grazie per il tuo supporto!",
+            userNotFound: "Utente Non Trovato", userNotFoundDesc: "L'ID inserito non esiste o è offline.",
+            wantsToConnect: "vuole connettersi.", reqSent: "Richiesta di connessione inviata!",
+            reqAccepted: "Richiesta Accettata", acceptedDesc: "ha accettato la tua richiesta.",
+            reqRejected: "Richiesta Rifiutata", reqRejectedDesc: "L'utente ha rifiutato la tua richiesta.",
+            accept: "ACCETTA", reject: "RIFIUTA", connReqSub: "Richiesta di Connessione",
+            connecting: "Connessione al server...", invalidId: "ID Non Valido", timeoutErr: "Timeout di connessione!",
+            delContactConfirm: "Sei sicuro di voler eliminare questo contatto e tutta la cronologia?", deleted: "Contatto Eliminato",
+            archive: "Archivia", unarchive: "Estrai", archivedFolder: "Archiviati", archivedContacts: "Contatti Archiviati", delContact: "Elimina Contatto",
+            infoTitle: "Info", infoText: "AceTalk è un servizio di messaggistica P2P di ACE. Nessun dato viene conservato.", resetAvatar: "Rimuovi foto", contactCount: "Contatti"
         },
         ja: {
-            greeting: ["おやすみ", "おはよう", "こんにちは", "こんばんは"], contacts: "連絡先", statuses: "ステータス",
-            addContact: "連絡先を追加..", addStatus: "ステータスを追加..", msgPlaceholder: "メッセージ..", settings: "設定",
-            lang: "言語", notif: "通知音", wp: "壁紙", wpReset: "デフォルトに戻す", theme: "ライトテーマ", online: "オンライン", offline: "オフライン",
-            sleep: "退席中", dnd: "応答不可", ctxPin: "ピン留め", ctxUnpin: "ピン留め解除", ctxEdit: "編集", ctxDel: "全員から削除",
-            btnSave: "保存", btnCancel: "キャンセル", btnShare: "シェア", btnConnect: "接続", btnClose: "閉じる", phId: "IDを入力",
-            phStatus: "今の気持ちは？", phName: "ニックネーム", loginBtn: "ログイン", callCalling: "発信中...", callConnected: "接続済み",
-            callIncTitle: "着信中...", callIncVideo: "ビデオ通話", callIncAudio: "音声通話", callVidStr: "ビデオ", callAudStr: "音声",
-            btnAnswer: "応答", btnReject: "拒否", btnScreen: "💻 画面共有", btnHangup: "切断", you: "(あなた)", editProf: "プロフィール編集",
-            statusMode: "ステータス", profPic: "写真", fileSelect: "選択...", editMsgTitle: "メッセージ編集", delMsg: "🚫 削除されました",
-            edited: "(編集済み)", trans: "(翻訳済み)", callEnd: "通話終了 •", typeWait: "入力中...", pinnedPre: "ピン留め"
+            greeting: ["おやすみ", "おはよう", "こんにちは", "こんばんは"],
+            contacts: "連絡先", statuses: "ステータス", addContact: "連絡先を追加..", addStatus: "ステータスを追加..",
+            msgPlaceholder: "メッセージを追加..", settings: "設定", lang: "言語", notif: "通知音", wp: "壁紙",
+            wpReset: "デフォルト壁紙", theme: "ライトテーマ", online: "オンライン", offline: "オフライン", sleep: "睡眠中", dnd: "応答不可",
+            ctxPin: "ピン留め", ctxUnpin: "ピン留め解除", ctxEdit: "編集", ctxDel: "削除",
+            btnSave: "保存", btnCancel: "キャンセル", btnShare: "共有", btnConnect: "接続", btnClose: "閉じる",
+            phId: "ユーザーIDを入力", phStatus: "今何してる？", phName: "ニックネーム", loginBtn: "ログイン",
+            callCalling: "発信中...", callConnected: "接続完了", callIncTitle: "着信中...",
+            callIncVideo: "ビデオ通話の着信", callIncAudio: "音声通話の着信", callVidStr: "ビデオ", callAudStr: "音声",
+            btnAnswer: "応答", btnReject: "拒否", btnScreen: "💻 画面共有", btnHangup: "切断",
+            you: "(あなた)", editProf: "プロフィール編集", statusMode: "ステータスモード", profPic: "プロフィール画像",
+            fileSelect: "ファイルを選択...", editMsgTitle: "メッセージを編集", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> このメッセージは削除されました",
+            edited: "(編集済み)", trans: "(翻訳済み)", callEnd: "通話終了 • 通話時間", typeWait: "入力中...",
+            pinnedPre: "固定されたメッセージ", bgColor: "背景色", deleteAcc: "アカウント削除",
+            tabGen: "一般", tabCust: "カスタマイズ", colorReset: "デフォルト色", noGif: "表示するものがありません",
+            callRejected: "通話が拒否されました", sosWait: "SOSを待機中", micError: "マイク/カメラのアクセスが拒否されました！", sizeError: "最大50MBまで！",
+            donateBtn: "寄付する", donateTitle: "寄付", donateText: "サポートありがとうございます！",
+            userNotFound: "ユーザーが見つかりません", userNotFoundDesc: "入力したIDが存在しないか、オフラインです。",
+            wantsToConnect: "が接続を求めています。", reqSent: "接続リクエストを送信しました！",
+            reqAccepted: "リクエスト承認", acceptedDesc: "がリクエストを承認しました。",
+            reqRejected: "リクエスト拒否", reqRejectedDesc: "ユーザーがリクエストを拒否しました。",
+            accept: "承認", reject: "拒否", connReqSub: "接続リクエスト",
+            connecting: "サーバーに接続中...", invalidId: "無効なID", timeoutErr: "接続タイムアウト！",
+            delContactConfirm: "この連絡先とすべての履歴を削除してもよろしいですか？", deleted: "連絡先を削除しました",
+            archive: "アーカイブ", unarchive: "元に戻す", archivedFolder: "アーカイブ済み", archivedContacts: "アーカイブされた連絡先", delContact: "連絡先を削除",
+            infoTitle: "情報", infoText: "AceTalkはACEによるP2Pメッセージングサービスです。データは保存されません。", resetAvatar: "写真を削除", contactCount: "連絡先"
         },
         zh: {
-            greeting: ["晚安", "早上好", "下午好", "晚上好"], contacts: "联系人", statuses: "状态",
-            addContact: "添加联系人..", addStatus: "添加状态..", msgPlaceholder: "添加消息..", settings: "设置",
-            lang: "语言", notif: "通知音", wp: "壁纸", wpReset: "恢复默认", theme: "浅色主题", online: "在线", offline: "离线",
-            sleep: "离开", dnd: "请勿打扰", ctxPin: "置顶", ctxUnpin: "取消置顶", ctxEdit: "编辑", ctxDel: "删除",
-            btnSave: "保存", btnCancel: "取消", btnShare: "分享", btnConnect: "连接", btnClose: "关闭", phId: "输入 ID",
-            phStatus: "在想什么？", phName: "昵称", loginBtn: "登录", callCalling: "呼叫中...", callConnected: "已连接",
-            callIncTitle: "有来电...", callIncVideo: "视频通话", callIncAudio: "语音通话", callVidStr: "视频", callAudStr: "语音",
-            btnAnswer: "接听", btnReject: "拒绝", btnScreen: "💻 屏幕共享", btnHangup: "挂断", you: "(你)", editProf: "编辑资料",
-            statusMode: "状态", profPic: "头像", fileSelect: "选择...", editMsgTitle: "编辑消息", delMsg: "🚫 已删除",
-            edited: "(已编辑)", trans: "(已翻译)", callEnd: "通话结束 •", typeWait: "正在输入...", pinnedPre: "置顶消息"
+            greeting: ["晚安", "早上好", "下午好", "晚上好"],
+            contacts: "联系人", statuses: "状态", addContact: "添加联系人..", addStatus: "添加状态..",
+            msgPlaceholder: "输入消息..", settings: "设置", lang: "语言", notif: "通知提示音", wp: "壁纸",
+            wpReset: "默认壁纸", theme: "浅色主题", online: "在线", offline: "离线", sleep: "离开", dnd: "请勿打扰",
+            ctxPin: "置顶", ctxUnpin: "取消置顶", ctxEdit: "编辑", ctxDel: "删除",
+            btnSave: "保存", btnCancel: "取消", btnShare: "分享", btnConnect: "连接", btnClose: "关闭",
+            phId: "输入用户 ID", phStatus: "你在想什么？", phName: "昵称", loginBtn: "登录",
+            callCalling: "呼叫中...", callConnected: "已连接", callIncTitle: "有人来电...",
+            callIncVideo: "视频来电", callIncAudio: "语音来电", callVidStr: "视频", callAudStr: "语音",
+            btnAnswer: "接听", btnReject: "拒绝", btnScreen: "💻 共享屏幕", btnHangup: "挂断",
+            you: "(你)", editProf: "编辑个人资料", statusMode: "状态模式", profPic: "头像",
+            fileSelect: "选择文件...", editMsgTitle: "编辑消息", 
+            delMsg: "<svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle; margin-right:4px;'><circle cx='12' cy='12' r='10'></circle><line x1='4.93' y1='4.93' x2='19.07' y2='19.07'></line></svg> 此消息已被删除",
+            edited: "(已编辑)", trans: "(已翻译)", callEnd: "通话结束 • 时长", typeWait: "正在输入...",
+            pinnedPre: "置顶消息", bgColor: "背景颜色", deleteAcc: "删除账号",
+            tabGen: "常规", tabCust: "个性化", colorReset: "默认颜色", noGif: "这里没有内容",
+            callRejected: "通话已拒绝", sosWait: "等待 SOS", micError: "麦克风/摄像头权限被拒绝！", sizeError: "最大允许 50MB！",
+            donateBtn: "捐赠", donateTitle: "捐赠", donateText: "感谢你的支持！",
+            userNotFound: "未找到用户", userNotFoundDesc: "你输入的 ID 不存在或处于离线状态。",
+            wantsToConnect: "想要与你连接。", reqSent: "连接请求已发送！",
+            reqAccepted: "请求已接受", acceptedDesc: "接受了你的请求。",
+            reqRejected: "请求被拒绝", reqRejectedDesc: "用户拒绝了你的请求。",
+            accept: "接受", reject: "拒绝", connReqSub: "连接请求",
+            connecting: "正在连接服务器...", invalidId: "无效的 ID", timeoutErr: "连接超时！",
+            delContactConfirm: "确定要删除此联系人及所有聊天记录吗？", deleted: "联系人已删除",
+            archive: "归档", unarchive: "取消归档", archivedFolder: "已归档", archivedContacts: "已归档联系人", delContact: "删除联系人",
+            infoTitle: "信息", infoText: "AceTalk 是由 ACE 开发的 P2P 消息服务。不会保存任何数据。", resetAvatar: "移除照片", contactCount: "联系人"
         }
     };
     
@@ -585,8 +969,8 @@
         if(titleEl) titleEl.innerText = `${d.greeting[timeIndex]}, ${name}!`;
     }
 
-    function safeInner(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
-    function safePlaceholder(id, text) { const el = document.getElementById(id); if(el) el.placeholder = text; }
+    function safeInner(id, text) { const el = document.getElementById(id); if(el && text) el.innerText = text; }
+    function safePlaceholder(id, text) { const el = document.getElementById(id); if(el && text) el.placeholder = text; }
 
     function changeLanguage(lang) {
         currentLang = lang;
@@ -608,17 +992,45 @@
         safeInner('btn-answer', d.btnAnswer); safeInner('btn-reject', d.btnReject); safeInner('t-edit-prof', d.editProf);
         safeInner('t-status-mode', d.statusMode); safeInner('t-prof-pic', d.profPic); safeInner('t-edit-msg-title', d.editMsgTitle);
         safeInner('t-mode-online', d.online); safeInner('t-mode-sleep', d.sleep); safeInner('t-mode-dnd', d.dnd);
+        safeInner('t-bg-color', d.bgColor); safeInner('t-delete-acc', d.deleteAcc);
+        safeInner('tab-btn-gen', d.tabGen); safeInner('tab-btn-cust', d.tabCust); safeInner('t-color-reset', d.colorReset);
+        safePlaceholder('gif-search-input', "Search GIF...");
+        safeInner('t-donate-btn', d.donateBtn); safeInner('t-donate-title', d.donateTitle); safeInner('t-donate-text', d.donateText);
+        safeInner('btn-close-donate', d.btnClose);
+        safeInner('btn-req-accept', d.accept); safeInner('btn-req-reject', d.reject); safeInner('req-sub', d.connReqSub);
+        safeInner('t-archived-title', d.archivedContacts);
+        safeInner('t-del-contact-btn', d.delContact);
+        safeInner('t-archive-btn', d.archive);
+        safeInner('t-reset-avatar', d.resetAvatar);
+        safeInner('t-info-title', d.infoTitle); safeInner('t-info-text', d.infoText); safeInner('btn-close-info', d.btnClose);
 
         const fileNames = document.querySelectorAll('#wp-file-name, #avatar-file-name');
-        fileNames.forEach(fn => { if(fn.innerText.includes('Choose') || fn.innerText.includes('Seç')) fn.innerText = d.fileSelect; });
+        fileNames.forEach(fn => { 
+            // File names placeholders fallback
+            if(fn.innerText.includes('Choose') || fn.innerText.includes('Seç') || fn.innerText.includes('Wählen') || fn.innerText.includes('Elegir') || fn.innerText.includes('Choisir') || fn.innerText.includes('Выберите') || fn.innerText.includes('Scegli') || fn.innerText.includes('ファイル') || fn.innerText.includes('选择')) {
+                fn.innerText = d.fileSelect; 
+            }
+        });
 
         renderGrid();
         if(activePeerId) openChat(activePeerId); 
     }
 
     function toggleTheme(cb) {
-        if(cb.checked) { document.body.classList.add('light-theme'); localStorage.setItem('acetalk_theme', 'light');}
-        else { document.body.classList.remove('light-theme'); localStorage.removeItem('acetalk_theme'); }
+        if(cb.checked) { 
+            document.body.classList.add('light-theme'); 
+            localStorage.setItem('acetalk_theme', 'light');
+            document.body.style.removeProperty('--bg-base');
+        } else { 
+            document.body.classList.remove('light-theme'); 
+            localStorage.removeItem('acetalk_theme'); 
+            const savedBg = localStorage.getItem('acetalk_bgcolor');
+            if(savedBg) {
+                document.body.style.setProperty('--bg-base', savedBg);
+            } else {
+                document.body.style.removeProperty('--bg-base');
+            }
+        }
     }
 
     let soundEnabled = localStorage.getItem('acetalk_sound') === 'true';
@@ -664,6 +1076,16 @@
         localStorage.removeItem('acetalk_wallpaper');
     }
 
+    function switchSettingsTab(tabName) {
+        document.getElementById('tab-gen').classList.remove('active');
+        document.getElementById('tab-cust').classList.remove('active');
+        document.getElementById('tab-btn-gen').classList.remove('active');
+        document.getElementById('tab-btn-cust').classList.remove('active');
+
+        document.getElementById('tab-' + tabName).classList.add('active');
+        document.getElementById('tab-btn-' + tabName).classList.add('active');
+    }
+
     /* =========================================================
        2. BACKEND & PEERJS STATE
     ========================================================= */
@@ -673,16 +1095,22 @@
     let peerAvatars = {};
     let peerStatusModes = {};
     let e2eKeys = {};
+    
+    let pendingOutbound = new Set();
+    let pendingInbound = {};
 
     let myProfile = { id: '', name: '', avatarB64: null, statusText: '', statusMode: 'online' };
 
     function loadContacts() { try { return JSON.parse(localStorage.getItem('acetalk_contacts') || '{}'); } catch { return {}; } }
     function saveContacts(contacts) { localStorage.setItem('acetalk_contacts', JSON.stringify(contacts)); }
     function saveMyProfile() { localStorage.setItem('ace_myProfile', JSON.stringify(myProfile)); }
+    
+    function loadE2EKeys() { try { return JSON.parse(localStorage.getItem('ace_e2e_keys') || '{}'); } catch { return {}; } }
+    function saveE2EKeys(keysObj) { localStorage.setItem('ace_e2e_keys', JSON.stringify(keysObj)); }
 
     function upsertContact(peerId, name, message, statusText = null) {
         const contacts = loadContacts();
-        if (!contacts[peerId]) contacts[peerId] = { name: name || peerIdToName(peerId), textStatus: '', messages: [] };
+        if (!contacts[peerId]) contacts[peerId] = { name: name || peerIdToName(peerId), textStatus: '', messages: [], isArchived: false };
         if (name) contacts[peerId].name = name;
         if (statusText !== null) contacts[peerId].textStatus = statusText;
         if (message) {
@@ -721,12 +1149,21 @@
     ========================================================= */
     window.onload = () => {
         try {
+            const savedBg = localStorage.getItem('acetalk_bgcolor');
+            if(savedBg) {
+                document.body.style.setProperty('--bg-base', savedBg);
+                const picker = document.getElementById('bg-color-picker');
+                if(picker) picker.value = savedBg;
+            }
+
             const langPicker = document.getElementById('lang-picker');
             if(langPicker) langPicker.value = currentLang;
 
             if(localStorage.getItem('acetalk_theme') === 'light') {
                 const themeToggle = document.getElementById('theme-toggle');
-                if(themeToggle) themeToggle.click();
+                if(themeToggle) themeToggle.checked = true;
+                document.body.classList.add('light-theme');
+                document.body.style.removeProperty('--bg-base'); 
             }
 
             const wp = localStorage.getItem('acetalk_wallpaper');
@@ -736,6 +1173,8 @@
                 document.body.style.backgroundPosition = 'center';
                 document.body.classList.add('has-wallpaper');
             }
+
+            filterGifs(); 
 
             const savedProfile = localStorage.getItem('ace_myProfile');
             if (savedProfile) {
@@ -762,24 +1201,29 @@
 
     let connectionTimeout;
     function login() {
-        const val = document.getElementById('setup-id').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-        const errDiv = document.getElementById('setup-error');
+        const rawVal = document.getElementById('setup-id').value.trim();
+        const val = rawVal.toLowerCase().replace(/[^a-z0-9_]/g, '');
         const sugDiv = document.getElementById('setup-suggestions');
         const btn = document.getElementById('t-login-btn');
-
-        errDiv.style.display = 'none';
         sugDiv.innerHTML = '';
+        const d = dict[currentLang] || dict['en'];
 
-        if(val.length < 3) {
-            errDiv.style.display = 'block';
-            errDiv.innerText = (currentLang === 'tr') ? "En az 3 karakter olmalı!" : "At least 3 characters!";
+        if (val === 'test') {
+            showToast(d.invalidId, "This ID is reserved for testing!", "error");
             return;
         }
 
-        errDiv.style.display = 'block';
-        errDiv.style.color = "var(--skype-blue)";
-        errDiv.innerText = (currentLang === 'tr') ? "Bağlanılıyor..." : "Connecting...";
+        if(val.length < 3) {
+            showToast(d.invalidId, "At least 3 characters required!", "error");
+            return;
+        }
+
+        showToast(d.connecting, "", "info");
         btn.disabled = true;
+
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
 
         const peerId = 'ace_' + val;
         if (peer) { try { peer.destroy(); } catch(e){} }
@@ -787,15 +1231,14 @@
 
         connectionTimeout = setTimeout(() => {
             btn.disabled = false;
-            errDiv.style.color = "var(--sos-red)";
-            errDiv.innerText = "Timeout Error!";
+            showToast(d.timeoutErr, "", "error");
             if (peer) { peer.destroy(); peer = null; }
         }, 10000);
 
         peer.on('open', id => {
             clearTimeout(connectionTimeout);
             myProfile.id = '@' + val;
-            myProfile.name = val;
+            myProfile.name = rawVal;
             myProfile.statusMode = 'online';
             saveMyProfile();
 
@@ -803,25 +1246,7 @@
             setupAfterLogin();
         });
 
-        peer.on('error', err => {
-            clearTimeout(connectionTimeout);
-            btn.disabled = false;
-            errDiv.style.color = "var(--sos-red)";
-
-            if (err.type === 'unavailable-id') {
-                errDiv.innerText = "ID Taken! Try these:";
-                const suffixes = [Math.floor(Math.random()*100), 'ace', 'TR'];
-                suffixes.forEach(s => {
-                    const sBtn = document.createElement('button');
-                    sBtn.innerText = val + '_' + s;
-                    sBtn.style.cssText = "background:var(--grid-dark); border:none; color:white; padding:8px 12px; margin:2px; cursor:pointer; font-weight:700;";
-                    sBtn.onclick = () => { document.getElementById('setup-id').value = val + '_' + s; login(); };
-                    sugDiv.appendChild(sBtn);
-                });
-            } else { errDiv.innerText = "Error: " + err.type; }
-            if (peer) { peer.destroy(); peer = null; }
-        });
-
+        peer.on('error', handlePeerError);
         peer.on('connection', conn => setupConn(conn));
         peer.on('call', handleIncomingCall);
     }
@@ -832,30 +1257,188 @@
         peer = new Peer(peerId, { host: '0.peerjs.com', port: 443, secure: true, pingInterval: 10000 });
 
         peer.on('open', id => { setupAfterLogin(); });
-        peer.on('error', err => {
-            if (err.type === 'unavailable-id') {
-                const setupScr = document.getElementById('setup-screen');
-                const setupErr = document.getElementById('setup-error');
-                if(setupScr) setupScr.style.display = 'flex';
-                if(setupErr) {
-                    setupErr.style.display = 'block';
-                    setupErr.innerText = "Active elsewhere!";
-                }
-                localStorage.removeItem('ace_myProfile');
-            }
-        });
+        peer.on('error', handlePeerError);
         peer.on('connection', conn => setupConn(conn));
         peer.on('call', handleIncomingCall);
     }
+    
+    function handlePeerError(err) {
+        if(connectionTimeout) clearTimeout(connectionTimeout);
+        const btn = document.getElementById('t-login-btn');
+        if(btn) btn.disabled = false;
+
+        const d = dict[currentLang] || dict['en'];
+
+        if (err.type === 'unavailable-id') {
+            const setupScr = document.getElementById('setup-screen');
+            if(setupScr && setupScr.style.display === 'none') {
+                setupScr.style.display = 'flex';
+                localStorage.removeItem('ace_myProfile');
+            }
+            showToast("ID in use!", "This username is active elsewhere.", "warning");
+        } else if (err.type === 'peer-unavailable') {
+            if (pendingOutbound.size > 0) {
+                showToast(d.userNotFound, d.userNotFoundDesc, "error");
+                pendingOutbound.clear();
+            }
+        } else {
+            showToast("Error", err.type, "error");
+        }
+    }
 
     function setupAfterLogin() {
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+
         updateProfileUI();
         renderGrid();
 
         const savedContacts = loadContacts();
         Object.keys(savedContacts).forEach(pid => {
+            if (pid === 'ace_test') return;
             if(pid !== peer.id && !connections.find(c => c.peer === pid)) setupConn(peer.connect(pid));
         });
+
+        setInterval(() => {
+            const contacts = loadContacts();
+            connections.forEach(c => {
+                if (contacts[c.peer] || c.peer === 'ace_test') {
+                    try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } 
+                    catch(e){}
+                }
+            });
+        }, 10000);
+    }
+
+    /* =========================================================
+       3.5 CONNECTION REQUESTS
+    ========================================================= */
+    function showIncomingRequest(peerId, name) {
+        const d = dict[currentLang] || dict['en'];
+        const panel = document.getElementById('incoming-request-panel');
+        const msgEl = document.getElementById('req-msg');
+        msgEl.innerText = `${name} ${d.wantsToConnect}`;
+        panel.setAttribute('data-peer', peerId);
+        panel.style.display = 'flex';
+        playAudio('snd-msg');
+    }
+
+    function checkNextRequest() {
+        const keys = Object.keys(pendingInbound);
+        if (keys.length > 0) {
+            const k = keys[0];
+            showIncomingRequest(k, pendingInbound[k].name);
+        }
+    }
+
+    function acceptReq() {
+        const panel = document.getElementById('incoming-request-panel');
+        const peerId = panel.getAttribute('data-peer');
+        panel.style.display = 'none';
+
+        if (pendingInbound[peerId]) {
+            const { name, conn, data } = pendingInbound[peerId];
+            
+            peerNames[conn.peer] = data.name;
+            if(data.avatar) peerAvatars[conn.peer] = data.avatar;
+            if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
+            upsertContact(conn.peer, data.name, null, data.textStatus);
+            
+            conn.send({type: 'request_accepted', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}});
+            
+            let keysObj = loadE2EKeys();
+            if (peer && peer.id < conn.peer && window.crypto && crypto.subtle) {
+                generateE2EKey().then(key => {
+                    e2eKeys[conn.peer] = key;
+                    exportKey(key).then(jwk => { 
+                        keysObj[conn.peer] = jwk;
+                        saveE2EKeys(keysObj);
+                        conn.send({type: 'e2e_key', jwk: jwk}); 
+                    });
+                });
+            }
+            
+            delete pendingInbound[peerId];
+        }
+        checkNextRequest();
+    }
+
+    function rejectReq() {
+        const panel = document.getElementById('incoming-request-panel');
+        const peerId = panel.getAttribute('data-peer');
+        panel.style.display = 'none';
+
+        if (pendingInbound[peerId]) {
+            const { conn } = pendingInbound[peerId];
+            conn.send({type: 'request_rejected'});
+            setTimeout(() => { 
+                try { conn.close(); } catch(e){} 
+                connections = connections.filter(c => c.peer !== peerId);
+            }, 500);
+            delete pendingInbound[peerId];
+        }
+        checkNextRequest();
+    }
+
+    /* DELETE & ARCHIVE */
+    function toggleChatOptions() {
+        const menu = document.getElementById('chat-options-menu');
+        const d = dict[currentLang] || dict['en'];
+        
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            const contacts = loadContacts();
+            const isArch = contacts[activePeerId] && contacts[activePeerId].isArchived;
+            const btnText = document.getElementById('t-archive-btn');
+            if(btnText) btnText.innerText = isArch ? d.unarchive : d.archive;
+            
+            menu.style.display = 'flex';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+    
+    function toggleArchiveContact() {
+        if (!activePeerId || activePeerId === 'ace_test') return;
+        const contacts = loadContacts();
+        if (contacts[activePeerId]) {
+            contacts[activePeerId].isArchived = !contacts[activePeerId].isArchived;
+            saveContacts(contacts);
+            
+            const menu = document.getElementById('chat-options-menu');
+            if(menu) menu.style.display = 'none';
+            
+            renderGrid();
+        }
+    }
+
+    function promptDeleteContact() {
+        if (!activePeerId || activePeerId === 'ace_test') return;
+        const d = dict[currentLang] || dict['en'];
+        
+        if (confirm(d.delContactConfirm)) {
+            const contacts = loadContacts();
+            delete contacts[activePeerId];
+            saveContacts(contacts);
+            
+            let keysObj = loadE2EKeys();
+            delete keysObj[activePeerId];
+            saveE2EKeys(keysObj);
+            
+            connections.forEach(c => { 
+                if(c.peer === activePeerId) {
+                    try { c.send({type: 'offline'}); } catch(e) {}
+                    setTimeout(() => c.close(), 200);
+                }
+            });
+            connections = connections.filter(c => c.peer !== activePeerId);
+            
+            const menu = document.getElementById('chat-options-menu');
+            if(menu) menu.style.display = 'none';
+            
+            goBackToGrid();
+            showToast(d.deleted, "", "info");
+        }
     }
 
     /* =========================================================
@@ -875,6 +1458,23 @@
         selectStatusMode(myProfile.statusMode || 'online');
         const profileModal = document.getElementById('profile-modal');
         if(profileModal) profileModal.style.display='flex';
+    }
+
+    function resetProfilePic() {
+        myProfile.avatarB64 = null;
+        const fileInput = document.getElementById('edit-avatar');
+        if (fileInput) {
+            fileInput.value = '';
+            updateFileName(fileInput, 'avatar-file-name');
+        }
+        saveMyProfile();
+        updateProfileUI();
+        renderGrid();
+        
+        connections.forEach(c => { 
+            try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } 
+            catch(e){} 
+        });
     }
 
     function getStatusIcon(isOnline, mode, size=16) {
@@ -904,8 +1504,6 @@
             const badge = `<div class="avatar-badge">${getStatusIcon(true, myProfile.statusMode, 16)}</div>`;
             avatarEl.innerHTML = imgHtml + badge;
         }
-
-        connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} });
     }
 
     function saveProfile() {
@@ -924,6 +1522,7 @@
                 renderGrid();
                 const pModal = document.getElementById('profile-modal');
                 if(pModal) pModal.style.display = 'none';
+                connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} });
             };
             reader.readAsDataURL(fileInput.files[0]);
         } else {
@@ -932,6 +1531,7 @@
             renderGrid();
             const pModal = document.getElementById('profile-modal');
             if(pModal) pModal.style.display = 'none';
+            connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} });
         }
     }
 
@@ -945,16 +1545,19 @@
         const contacts = loadContacts();
 
         const onlineIds = new Set(connections.map(c => c.peer));
-        const keys = Object.keys(contacts).sort((a, b) => {
-            const ao = onlineIds.has(a), bo = onlineIds.has(b);
+        
+        const activeKeys = Object.keys(contacts).filter(k => !contacts[k].isArchived).sort((a, b) => {
+            const ao = (a === 'ace_test' || onlineIds.has(a)), bo = (b === 'ace_test' || onlineIds.has(b));
             if (ao !== bo) return ao ? -1 : 1;
             return 0;
         });
+        
+        const archivedKeys = Object.keys(contacts).filter(k => contacts[k].isArchived);
 
-        keys.forEach(peerId => {
+        activeKeys.forEach(peerId => {
             const c = contacts[peerId];
-            const isOnline = onlineIds.has(peerId);
-            const mode = peerStatusModes[peerId] || 'online';
+            const isOnline = (peerId === 'ace_test') ? true : onlineIds.has(peerId);
+            const mode = (peerId === 'ace_test') ? 'online' : (peerStatusModes[peerId] || 'online');
             const displayName = c.name || peerIdToName(peerId);
 
             const tile = document.createElement('div');
@@ -974,6 +1577,15 @@
         addTile.onclick = () => { const m = document.getElementById('add-contact-modal'); if(m) m.style.display='flex'; };
         addTile.innerHTML = `<div class="tile-initial">+</div><div class="tile-bottom"><div class="tile-name">${d.addContact}</div></div>`;
         contactsRow.appendChild(addTile);
+        
+        if (archivedKeys.length > 0) {
+            const archTile = document.createElement('div');
+            archTile.className = 'tile tile-archived';
+            archTile.onclick = openArchivedModal;
+            const svgBoxIcon = `<svg viewBox="0 0 24 24" width="70" height="70" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>`;
+            archTile.innerHTML = `<div class="tile-initial">${svgBoxIcon}</div><div class="tile-bottom"><div class="tile-name">${d.archivedFolder}</div><div class="tile-sub">${archivedKeys.length} ${d.contactCount}</div></div>`;
+            contactsRow.appendChild(archTile);
+        }
 
         if (myProfile.statusText && myProfile.statusText.trim() !== '') {
             const myStatusTile = document.createElement('div');
@@ -983,7 +1595,7 @@
             statusesRow.appendChild(myStatusTile);
         }
 
-        keys.forEach(peerId => {
+        Object.keys(contacts).forEach(peerId => {
             const c = contacts[peerId];
             if (c.textStatus && c.textStatus.trim() !== '' && c.textStatus !== 'AceTalk kullanıyor ✨') {
                 const sTile = document.createElement('div');
@@ -999,21 +1611,60 @@
         addStatusTile.innerHTML = `<div class="tile-initial">+</div><div class="tile-bottom"><div class="tile-name">${d.addStatus}</div></div>`;
         statusesRow.appendChild(addStatusTile);
     }
+    
+    function openArchivedModal() {
+        const list = document.getElementById('archived-list');
+        list.innerHTML = '';
+        const contacts = loadContacts();
+        const archivedKeys = Object.keys(contacts).filter(k => contacts[k].isArchived);
+        
+        archivedKeys.forEach(pid => {
+            const c = contacts[pid];
+            const dName = c.name || peerIdToName(pid);
+            const el = document.createElement('div');
+            el.className = 'archived-list-item';
+            el.onclick = () => { document.getElementById('archived-modal').style.display = 'none'; openChat(pid); };
+            const avatar = peerAvatars[pid] ? `<img src="${peerAvatars[pid]}">` : `<div class="initial">${dName.charAt(0).toUpperCase()}</div>`;
+            el.innerHTML = `${avatar}<div style="flex:1;font-weight:bold;">${dName}</div><div style="opacity:0.5;font-size:12px;">@${peerIdToName(pid)}</div>`;
+            list.appendChild(el);
+        });
+        
+        document.getElementById('archived-modal').style.display = 'flex';
+    }
 
     function addContact() {
         const contactInput = document.getElementById('new-contact-id');
-        let id = contactInput ? contactInput.value.trim().toLowerCase().replace(/[^a-z0-9_@]/g, '') : '';
-        if(id) {
-            id = id.replace('@', '');
-            const pid = 'ace_' + id;
-            if (!connections.find(c => c.peer === pid)) {
-                setupConn(peer.connect(pid));
-                peerNames[pid] = id;
-                upsertContact(pid, id);
+        const rawVal = contactInput ? contactInput.value.trim() : '';
+        const val = rawVal.toLowerCase().replace(/[^a-z0-9_@]/g, '').replace('@', '');
+        const d = dict[currentLang] || dict['en'];
+        
+        if(val) {
+            if (val === 'test') {
+                const pid = 'ace_test';
+                const displayName = 'Test';
+                upsertContact(pid, displayName, null, "Test Mode Active!");
+                if(contactInput) contactInput.value = '';
+                const modal = document.getElementById('add-contact-modal');
+                if(modal) modal.style.display = 'none';
+                showToast("System", "Test contact added!", "info");
+                return;
             }
+
+            const pid = 'ace_' + val;
+            
+            if (loadContacts()[pid]) {
+                showToast("Already Added", "This contact is already in your list.", "info");
+                return;
+            }
+            
+            pendingOutbound.add(pid);
+            setupConn(peer.connect(pid));
+
             if(contactInput) contactInput.value = '';
             const modal = document.getElementById('add-contact-modal');
             if(modal) modal.style.display = 'none';
+            
+            showToast("Request", d.reqSent, "info");
         }
     }
 
@@ -1032,67 +1683,155 @@
     }
 
     /* =========================================================
-       5. PEERJS
+       5. PEERJS CONNECTION
     ========================================================= */
     function setupConn(conn) {
         conn.on('open', () => {
             if (!connections.find(c => c.peer === conn.peer)) {
                 connections.push(conn);
-                conn.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode});
-                upsertContact(conn.peer, peerNames[conn.peer] || null);
 
-                if (peer && peer.id < conn.peer && window.crypto && crypto.subtle) {
-                    generateE2EKey().then(key => {
-                        e2eKeys[conn.peer] = key;
-                        exportKey(key).then(jwk => { conn.send({type: 'e2e_key', jwk: jwk}); });
-                    });
-                }
+                const isKnown = !!loadContacts()[conn.peer] || conn.peer === 'ace_test';
+                const isOutbound = pendingOutbound.has(conn.peer);
 
-                const contacts = loadContacts();
-                if (contacts[conn.peer]) {
-                    const pendingMsgs = contacts[conn.peer].messages.filter(m => m.type === 'local' && m.status === 'sent');
-                    pendingMsgs.forEach(async m => {
-                        if (e2eKeys[conn.peer]) {
-                            const encryptedBody = await encryptMsg(m.rawText || m.body, e2eKeys[conn.peer]);
-                            conn.send({type: 'msg', name: myProfile.name, body: encryptedBody, time: m.time, msgId: m.msgId, isEncrypted: true});
-                        } else {
-                            conn.send({type: 'msg', name: myProfile.name, body: m.rawText || m.body, time: m.time, msgId: m.msgId});
+                if (isOutbound) {
+                    conn.send({type: 'connection_request', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}});
+                } else if (isKnown) {
+                    conn.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode});
+
+                    let keysObj = loadE2EKeys();
+                    if (keysObj[conn.peer]) {
+                        importKey(keysObj[conn.peer]).then(k => { e2eKeys[conn.peer] = k; });
+                        conn.send({type: 'e2e_key', jwk: keysObj[conn.peer]}); 
+                    } else if (peer && peer.id < conn.peer && window.crypto && crypto.subtle) {
+                        generateE2EKey().then(key => {
+                            e2eKeys[conn.peer] = key;
+                            exportKey(key).then(jwk => { 
+                                keysObj[conn.peer] = jwk;
+                                saveE2EKeys(keysObj);
+                                conn.send({type: 'e2e_key', jwk: jwk}); 
+                            });
+                        });
+                    }
+
+                    setTimeout(() => {
+                        const contacts = loadContacts();
+                        if (contacts[conn.peer]) {
+                            const pendingMsgs = contacts[conn.peer].messages.filter(m => m.type === 'local' && m.status === 'sent');
+                            pendingMsgs.forEach(async m => {
+                                let k = e2eKeys[conn.peer];
+                                if (k) {
+                                    const encryptedBody = await encryptMsg(m.rawText || m.body, k);
+                                    conn.send({type: 'msg', name: myProfile.name, body: encryptedBody, time: m.time, msgId: m.msgId, isEncrypted: true});
+                                } else {
+                                    conn.send({type: 'msg', name: myProfile.name, body: m.rawText || m.body, time: m.time, msgId: m.msgId});
+                                }
+                            });
                         }
-                    });
+                    }, 500);
                 }
             }
         });
 
         conn.on('data', data => {
-            if (data.type === 'profile') {
-                peerNames[conn.peer] = data.name;
-                if(data.avatar) peerAvatars[conn.peer] = data.avatar;
-                if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
-                let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus;
-                upsertContact(conn.peer, data.name, null, cleanStatus);
-                if(activePeerId === conn.peer) openChat(conn.peer);
+            const isKnownContact = !!loadContacts()[conn.peer] || conn.peer === 'ace_test';
+
+            if (data.type === 'connection_request') {
+                if (isKnownContact) {
+                    conn.send({type: 'request_accepted', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}});
+                } else {
+                    pendingInbound[conn.peer] = { name: data.profile.name, conn: conn, data: data.profile };
+                    if (document.getElementById('incoming-request-panel').style.display !== 'flex') {
+                        showIncomingRequest(conn.peer, data.profile.name);
+                    }
+                }
+                return;
             }
-            else if (data.type === 'text_status') {
+
+            if (data.type === 'request_accepted') {
+                if (pendingOutbound.has(conn.peer)) {
+                    pendingOutbound.delete(conn.peer);
+                    upsertContact(conn.peer, data.profile.name, null, data.profile.textStatus);
+                    peerNames[conn.peer] = data.profile.name;
+                    if(data.profile.avatar) peerAvatars[conn.peer] = data.profile.avatar;
+                    if(data.profile.statusMode) peerStatusModes[conn.peer] = data.profile.statusMode;
+                    
+                    const d = dict[currentLang] || dict['en'];
+                    showToast(d.reqAccepted, data.profile.name + " " + d.acceptedDesc, "info");
+                    renderGrid();
+                    
+                    let keysObj = loadE2EKeys();
+                    if (peer && peer.id < conn.peer && window.crypto && crypto.subtle) {
+                        generateE2EKey().then(key => {
+                            e2eKeys[conn.peer] = key;
+                            exportKey(key).then(jwk => { 
+                                keysObj[conn.peer] = jwk;
+                                saveE2EKeys(keysObj);
+                                conn.send({type: 'e2e_key', jwk: jwk}); 
+                            });
+                        });
+                    }
+                }
+                return;
+            }
+
+            if (data.type === 'request_rejected') {
+                const d = dict[currentLang] || dict['en'];
+                showToast(d.reqRejected, d.reqRejectedDesc, "error");
+                pendingOutbound.delete(conn.peer);
+                return;
+            }
+
+            if (data.type === 'profile') {
+                if (isKnownContact) {
+                    peerNames[conn.peer] = data.name;
+                    if(data.avatar) peerAvatars[conn.peer] = data.avatar;
+                    if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
+                    let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus;
+                    upsertContact(conn.peer, data.name, null, cleanStatus);
+
+                    if(activePeerId === conn.peer) {
+                        const avatarEl = document.getElementById('current-chat-avatar');
+                        if(avatarEl) {
+                            const imgHtml = peerAvatars[conn.peer] ? `<img src="${peerAvatars[conn.peer]}">` : (data.name || peerIdToName(conn.peer)).charAt(0).toUpperCase();
+                            avatarEl.innerHTML = imgHtml + `<div class="avatar-badge">${getStatusIcon(true, data.statusMode, 16)}</div>`;
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (!isKnownContact) return;
+
+            if (data.type === 'text_status') {
                 let cleanStatus = data.text === 'AceTalk kullanıyor ✨' ? '' : data.text;
                 upsertContact(conn.peer, null, null, cleanStatus);
             }
             else if (data.type === 'e2e_key') {
-                importKey(data.jwk).then(key => { e2eKeys[conn.peer] = key; }).catch(e => console.error("E2E Hatası"));
+                let keysObj = loadE2EKeys();
+                if (!keysObj[conn.peer] || conn.peer < peer.id) {
+                    keysObj[conn.peer] = data.jwk;
+                    saveE2EKeys(keysObj);
+                    importKey(data.jwk).then(key => { 
+                        e2eKeys[conn.peer] = key; 
+                        if(activePeerId === conn.peer) openChat(conn.peer); 
+                    }).catch(e => console.error("E2E Error"));
+                }
             }
             else if (data.type === 'msg') {
                 (async () => {
                     if(soundEnabled) playAudio('snd-msg');
                     let parsedRaw = data.body;
                     let parsed = data.body;
-                    const d = dict[currentLang] || dict['en'];
+                    
+                    const lockSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
 
                     if (data.isEncrypted && e2eKeys[conn.peer]) {
                         try {
                             parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]);
                             parsed = parseMarkdown(parsedRaw);
-                        } catch(e) { parsed = "🔒 [Error]"; parsedRaw = parsed; }
+                        } catch(e) { parsed = `${lockSvg} [Error]`; parsedRaw = data.body; }
                     } else if (data.isEncrypted && !e2eKeys[conn.peer]) {
-                        parsed = "🔒 [E2E Key wait]"; parsedRaw = parsed;
+                        parsed = `${lockSvg} [E2E Key wait]`; parsedRaw = data.body;
                     } else {
                         parsed = parseMarkdown(parsedRaw);
                     }
@@ -1102,6 +1841,23 @@
 
                     if (activePeerId === conn.peer) { addMessage(parsed, 'remote', data.time, true, isSeen ? 'seen' : 'delivered', data.msgId); }
                     if (isSeen) { conn.send({type: 'seen', msgId: data.msgId}); } else { conn.send({type: 'delivered', msgId: data.msgId}); }
+                    
+                    if (!isSeen) {
+                        const senderName = peerNames[conn.peer] || peerIdToName(conn.peer);
+                        let notifText = typeof parsedRaw === 'string' && parsedRaw.length > 40 ? parsedRaw.substring(0, 40) + '...' : (typeof parsedRaw === 'string' ? parsedRaw : '📷 Media');
+                        if (notifText.includes('<img') || notifText.includes('<audio') || notifText.includes('<video')) notifText = "📷 Sent Media";
+
+                        if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+                            new Notification("AceTalk: " + senderName, { 
+                                body: notifText, 
+                                icon: peerAvatars[conn.peer] || 'https://raw.githubusercontent.com/ace-official/AceTalk/main/AceTalklogoTP.png' 
+                            });
+                        }
+                        
+                        if (document.visibilityState === 'visible') {
+                            showToast(senderName, notifText, 'message');
+                        }
+                    }
                 })();
             }
             else if (data.type === 'edit') {
@@ -1159,6 +1915,14 @@
                 }
                 if (currentCall) { endCall(false); }
             }
+            else if (data.type === 'call_rejected') {
+                const d = dict[currentLang] || dict['en'];
+                const phoneSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`;
+                addSystemMessage(`${phoneSvg} ${d.callRejected}`, conn.peer);
+                if (currentCall) { currentCall.close(); currentCall = null; }
+                const callOverlay = document.getElementById('call-overlay');
+                if (callOverlay) callOverlay.style.display = 'none';
+            }
         });
 
         conn.on('close', () => handlePeerDisconnect(conn.peer));
@@ -1179,7 +1943,7 @@
     }
 
     /* =========================================================
-       6. CHAT Uİ
+       6. CHAT UI
     ========================================================= */
     let activePeerId = null;
 
@@ -1188,6 +1952,9 @@
         const contacts = loadContacts();
         const c = contacts[peerId];
         if(!c) return;
+        
+        const menu = document.getElementById('chat-options-menu');
+        if(menu) menu.style.display = 'none';
 
         const d = dict[currentLang] || dict['en'];
 
@@ -1195,8 +1962,8 @@
         const chatName = document.getElementById('current-chat-name');
         if(chatName) chatName.innerText = displayName;
 
-        const isOnline = connections.find(cn => cn.peer === peerId);
-        const mode = peerStatusModes[peerId] || 'online';
+        const isOnline = (peerId === 'ace_test') ? true : connections.find(cn => cn.peer === peerId);
+        const mode = (peerId === 'ace_test') ? 'online' : (peerStatusModes[peerId] || 'online');
         const chatStatus = document.getElementById('current-chat-id');
         if(chatStatus) chatStatus.innerText = `@${peerIdToName(peerId)} • ${isOnline ? d.online : d.offline}`;
 
@@ -1210,8 +1977,17 @@
         if(box) box.innerHTML = '';
 
         let hasUnseen = false;
-        c.messages.forEach(m => {
+        c.messages.forEach(async m => {
             if (m.type === 'remote' && m.status !== 'seen') { m.status = 'seen'; hasUnseen = true; }
+            
+            if (m.rawText && typeof m.rawText === 'object' && m.rawText.iv && e2eKeys[peerId]) {
+                try {
+                    const decrypted = await decryptMsg(m.rawText, e2eKeys[peerId]);
+                    m.rawText = decrypted;
+                    m.body = parseMarkdown(decrypted);
+                } catch(e) {}
+            }
+
             addMessage(m.body, m.type, m.time, false, m.status, m.msgId);
         });
 
@@ -1229,7 +2005,10 @@
         const homeScr = document.getElementById('home-screen');
         const chatScr = document.getElementById('chat-screen');
         if(homeScr) homeScr.classList.add('hidden');
-        if(chatScr) chatScr.classList.add('active');
+        if(chatScr) {
+            chatScr.classList.remove('closing-right');
+            chatScr.classList.add('active');
+        }
         setTimeout(() => { 
             if(box) box.scrollTop = box.scrollHeight; 
             const msgInput = document.getElementById('message-input');
@@ -1241,7 +2020,11 @@
         activePeerId = null;
         const chatScr = document.getElementById('chat-screen');
         const homeScr = document.getElementById('home-screen');
-        if(chatScr) chatScr.classList.remove('active');
+        
+        if(chatScr) {
+            chatScr.classList.remove('active');
+            chatScr.classList.add('closing-right');
+        }
         if(homeScr) homeScr.classList.remove('hidden');
         renderGrid();
     }
@@ -1279,6 +2062,23 @@
         input.value = '';
         notifyTyping(false);
 
+        if (activePeerId === 'ace_test') {
+            setTimeout(() => {
+                if(soundEnabled) playAudio('snd-msg');
+                const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const replyMsgId = Date.now().toString();
+                const replyText = `[Test Reply] Received "${rawBody}"!`;
+                
+                updateMsgStatus('ace_test', msgId, 'seen');
+                upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' });
+                
+                if (activePeerId === 'ace_test') {
+                    addMessage(replyText, 'remote', replyTime, true, 'seen', replyMsgId);
+                }
+            }, 1000);
+            return;
+        }
+
         const targets = connections.filter(c => c.peer === activePeerId);
         for (let c of targets) {
             if (e2eKeys[c.peer]) {
@@ -1307,13 +2107,16 @@
         } else {
             let ticks = '';
             if (type === 'local') {
-                let tickHtml = status === 'sent' ? '✔' : '✔✔';
+                const checkSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                const dcheckSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 6 7 17 2 12"></polyline><polyline points="22 10 11 21 6 16" style="stroke:currentColor"></polyline></svg>`;
+                
+                let tickHtml = status === 'sent' ? checkSvg : dcheckSvg;
                 let tickClass = status === 'seen' ? 'status-icon seen' : 'status-icon';
                 ticks = `<span id="status-${msgId}" class="${tickClass}">${tickHtml}</span>`;
             }
 
-            let translateBtn = (type === 'remote' && !text.includes('<img') && !text.includes('<video') && !text.includes('🚫'))
-                ? `<button class="translate-btn" onclick="translateMsg(this, 'body-${msgId}')" title="Translate">A-Z</button>` : '';
+            const transIcon = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"></path><path d="M4 14l6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="M22 22l-5-10-5 10"></path><path d="M14 18h6"></path></svg>`;
+            let translateBtn = (type === 'remote') ? `<button class="translate-btn" onclick="translateMsg(this, 'body-${msgId}')" title="Translate">${transIcon}</button>` : '';
 
             div.innerHTML = `<div class="msg-body" id="body-${msgId}">${text}</div><div class="msg-meta">${translateBtn} ${displayTime} ${ticks}</div>`;
         }
@@ -1336,7 +2139,12 @@
                         changed = true;
                         if (activePeerId === peerId) {
                             const el = document.getElementById('status-' + m.msgId);
-                            if (el) { el.innerHTML = m.status === 'sent' ? '✔' : '✔✔'; el.className = m.status === 'seen' ? 'status-icon seen' : 'status-icon'; }
+                            if (el) { 
+                                const checkSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                                const dcheckSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 6 7 17 2 12"></polyline><polyline points="22 10 11 21 6 16" style="stroke:currentColor"></polyline></svg>`;
+                                el.innerHTML = m.status === 'sent' ? checkSvg : dcheckSvg; 
+                                el.className = m.status === 'seen' ? 'status-icon seen' : 'status-icon'; 
+                            }
                         }
                     }
                 }
@@ -1348,6 +2156,7 @@
     let typingTimeout;
     function notifyTyping(state = true) {
         if (!activePeerId) return;
+        if (activePeerId === 'ace_test') return;
         const targetConn = connections.find(c => c.peer === activePeerId);
         if(targetConn) try { targetConn.send({type: 'typing', name: myProfile.name, state: state}); } catch(e){}
         if (state) { clearTimeout(typingTimeout); typingTimeout = setTimeout(() => notifyTyping(false), 3000); }
@@ -1367,13 +2176,79 @@
     }
 
     /* =========================================================
-       7. MEDIA
+       7. MEDIA, GIF PICKER & VOICE MSG
     ========================================================= */
+    const defaultGifs = [
+        { url: "https://media.giphy.com/media/jpbnoe3UIa8TU8LM13/giphy.gif", tags: "cat jam dance music animal" },
+        { url: "https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif", tags: "cat popcat funny animal" },
+        { url: "https://media.giphy.com/media/ASd0Ukj0y3qMM/giphy.gif", tags: "hello hi wave cute" },
+        { url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", tags: "yes nod agree ok" },
+        { url: "https://media.giphy.com/media/gnE4FFhtFoLTMm2YI5/giphy.gif", tags: "no nope disagree headshake" },
+        { url: "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif", tags: "ok okay thumbs up" },
+        { url: "https://media.giphy.com/media/ZqlvCTNHpqrio/giphy.gif", tags: "haha laugh funny lol" },
+        { url: "https://media.giphy.com/media/L95W4wv8nnb9K/giphy.gif", tags: "sad cry tears crying" },
+        { url: "https://media.giphy.com/media/VIOkcgpsnA2Zy/giphy.gif", tags: "bruh seriously sigh facepalm" },
+        { url: "https://media.giphy.com/media/TwYP72KtO8YQQ4SNVN/giphy.gif", tags: "sus suspicious hmm" },
+        { url: "https://media.giphy.com/media/14qb1Uhf40ndw4/giphy.gif", tags: "dance dog funny animal happy" },
+        { url: "https://media.giphy.com/media/udmx3pgdiD7tm/giphy.gif", tags: "wow amaze shock surprise" },
+        { url: "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif", tags: "cat cute heart love" },
+        { url: "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif", tags: "cat typing computer hacker work" },
+        { url: "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", tags: "dog bye goodbye" },
+        { url: "https://media.giphy.com/media/26AHONQ79FdWZhAI0/giphy.gif", tags: "cool sunglasses deal with it" },
+        { url: "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif", tags: "homer simpson thinking hmm" },
+        { url: "https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif", tags: "excited happy yes oh my god" },
+        { url: "https://media.giphy.com/media/B37cYPCruqwwg/giphy.gif", tags: "facepalm fail stupid" },
+        { url: "https://media.giphy.com/media/11ISwbgCxEzMyY/giphy.gif", tags: "angry rage mad grr" },
+        { url: "https://media.giphy.com/media/aLdiZJNCxWSUU/giphy.gif", tags: "waiting impatient skeleton" },
+        { url: "https://media.giphy.com/media/26tP4gFBQewkLnMv6/giphy.gif", tags: "thank you thanks grateful" },
+        { url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", tags: "mind blown explosion woah" },
+        { url: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif", tags: "tired sleepy yawn" },
+        { url: "https://media.giphy.com/media/wMvESGxZ0CkdDOUIi0/giphy.gif", tags: "party celebrate fun yay" },
+        { url: "https://media.giphy.com/media/tIeCLkB8geYtW/giphy.gif", tags: "cheers drink toast" },
+        { url: "https://media.giphy.com/media/10UeedrT5MIfPG/giphy.gif", tags: "peace out leave goodbye" }
+    ];
+
+    function filterGifs() {
+        const term = document.getElementById('gif-search-input') ? document.getElementById('gif-search-input').value.toLowerCase() : '';
+        const container = document.getElementById('gif-container');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        const filtered = defaultGifs.filter(gif => gif.tags.includes(term) || term === '');
+        
+        if(filtered.length === 0) {
+            const d = dict[currentLang] || dict['en'];
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--label-color); padding: 20px; font-weight:700;">${d.noGif}</div>`;
+            return;
+        }
+
+        filtered.forEach(gif => {
+            const img = document.createElement('img');
+            img.src = gif.url;
+            img.className = 'gif-item';
+            img.onclick = () => {
+                sendSpecialMessage(`<img src="${gif.url}" onclick="openImageViewer(this.src)" style="max-width:100%; border-radius:8px; cursor:pointer; margin-bottom:5px;">`);
+                document.getElementById('gif-modal').style.display = 'none';
+            };
+            container.appendChild(img);
+        });
+    }
+
+    function openGifModal() {
+        const modal = document.getElementById('gif-modal');
+        if(modal) {
+            modal.style.display = 'flex';
+            filterGifs();
+        }
+    }
+
     function handleMedia(input) {
         if (!input.files || input.files.length === 0) return;
         const file = input.files[0];
         input.value = '';
-        if (file.size / (1024 * 1024) > 50) { alert("Max 50MB!"); return; }
+        
+        const d = dict[currentLang] || dict['en'];
+        if (file.size / (1024 * 1024) > 50) { showToast("File Too Large", d.sizeError || "Max 50MB!", "error"); return; }
 
         const reader = new FileReader();
         reader.onload = async e => {
@@ -1392,6 +2267,42 @@
         reader.readAsDataURL(file);
     }
 
+    /* VOICE MSG */
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    async function toggleRecording() {
+        const d = dict[currentLang] || dict['en'];
+        if (isRecording) {
+            if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            isRecording = false;
+            document.getElementById('mic-btn').classList.remove('mic-recording');
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result;
+                        sendSpecialMessage(`<audio controls src="${base64Audio}" style="max-width:200px; height:40px; border-radius:30px;"></audio>`);
+                    };
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('mic-btn').classList.add('mic-recording');
+            } catch (err) { 
+                showToast("Access Denied", d.micError || "Microphone access denied!", "error"); 
+            }
+        }
+    }
+
     async function sendSpecialMessage(content) {
         if (!activePeerId) return;
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1399,6 +2310,19 @@
 
         upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', rawText: content, body: content, time: time, msgId: msgId, status: 'sent' });
         addMessage(content, 'local', time, true, 'sent', msgId);
+
+        if (activePeerId === 'ace_test') {
+            setTimeout(() => {
+                if(soundEnabled) playAudio('snd-msg');
+                const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const replyMsgId = Date.now().toString();
+                const replyText = `[Test Reply] Media/Special content received successfully!`;
+                updateMsgStatus('ace_test', msgId, 'seen');
+                upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' });
+                if (activePeerId === 'ace_test') addMessage(replyText, 'remote', replyTime, true, 'seen', replyMsgId);
+            }, 1000);
+            return;
+        }
 
         const targets = connections.filter(c => c.peer === activePeerId);
         for (let c of targets) {
@@ -1427,7 +2351,9 @@
         const d = dict[currentLang] || dict['en'];
         if(!bodyDiv) return;
         const rawText = bodyDiv.innerText;
-        btn.innerText = '⏳';
+        
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="spin-anim"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        
         try {
             const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + currentLang + '&dt=t&q=' + encodeURIComponent(rawText));
             const data = await res.json();
@@ -1435,7 +2361,9 @@
             data[0].forEach(item => { if(item[0]) translated += item[0]; });
             bodyDiv.innerHTML = parseMarkdown(translated) + `<br><small style="font-size:9px; opacity:0.6;">${d.trans}</small>`;
             btn.style.display = 'none';
-        } catch(e) { btn.innerText = '❌'; }
+        } catch(e) { 
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; 
+        }
     }
 
     let ctxMsgId = null; let ctxMsgType = null;
@@ -1467,6 +2395,9 @@
     document.addEventListener('click', (e) => { 
         const menu = document.getElementById('context-menu');
         if (menu && !e.target.closest('#context-menu')) menu.style.display = 'none'; 
+        
+        const chatMenu = document.getElementById('chat-options-menu');
+        if (chatMenu && !e.target.closest('.chat-options-container')) chatMenu.style.display = 'none';
     });
 
     function handleCtxPin() {
@@ -1501,7 +2432,9 @@
         if (pinnedId) {
             const msg = contacts[activePeerId].messages.find(m => m.msgId === pinnedId);
             if (msg && !msg.isDeleted) {
-                banner.innerHTML = `<span style="font-size: 16px; margin-right: 8px;">📌</span> <b>${d.pinnedPre}:</b> ${msg.body} <button onclick="handleCtxUnpin()" style="float:right; background:none; border:none; color:inherit; cursor:pointer; font-weight:700; font-size:14px;">✖</button>`;
+                const pinSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.5l-2.5-3.5V5a2 2 0 0 0-2-2H9.5a2 2 0 0 0-2 2v7L5 15.5V17z"></path></svg>`;
+                const closeSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                banner.innerHTML = `${pinSvg} <b>${d.pinnedPre}:</b> ${msg.body} <button onclick="handleCtxUnpin()" style="float:right; background:none; border:none; color:inherit; cursor:pointer; margin-top:2px;">${closeSvg}</button>`;
                 banner.style.display = 'block';
                 return;
             }
@@ -1539,6 +2472,8 @@
             if(msgBodyEl) msgBodyEl.innerHTML = msg.body;
             if (contacts[activePeerId].pinnedMsgId === ctxMsgId) renderPinnedMessage();
 
+            if (activePeerId === 'ace_test') return;
+
             const targets = connections.filter(c => c.peer === activePeerId);
             for (let c of targets) {
                 if (e2eKeys[c.peer]) {
@@ -1565,12 +2500,14 @@
             if(msgBodyEl) msgBodyEl.innerHTML = msg.body;
             if (contacts[activePeerId].pinnedMsgId === ctxMsgId) renderPinnedMessage();
 
+            if (activePeerId === 'ace_test') return;
+
             connections.filter(c => c.peer === activePeerId).forEach(c => c.send({type: 'delete', msgId: ctxMsgId}));
         }
     }
 
     /* =========================================================
-       8. CALLS AND SCREEN MİRRORİNG
+       8. CALLS AND SCREEN MIRRORING
     ========================================================= */
     let currentCall = null;
     let pendingCall = null;
@@ -1581,8 +2518,14 @@
 
     function startCall(type) {
         if (!activePeerId) return;
-        callActivePeerId = activePeerId;
         const d = dict[currentLang] || dict['en'];
+        
+        if (activePeerId === 'ace_test') {
+            showToast('Warning', "Simulated calling not supported for test contact!", "warning");
+            return;
+        }
+
+        callActivePeerId = activePeerId;
         const constraints = type === 'video' ? { video: true, audio: true } : { video: false, audio: true };
         
         navigator.mediaDevices.getUserMedia(constraints).then(stream => {
@@ -1629,7 +2572,7 @@
             });
             call.on('close', () => endCall());
             call.on('error', () => endCall());
-        }).catch(() => alert("Kamera/Mikrofon izni gerekli!"));
+        }).catch(() => showToast('Access Error', d.micError || "Microphone/Camera access required!", "error"));
     }
 
     function handleIncomingCall(call) {
@@ -1698,7 +2641,7 @@
             });
             currentCall.on('close', () => endCall());
             currentCall.on('error', () => endCall());
-        });
+        }).catch(() => showToast('Access Error', d.micError || "Microphone/Camera access required!", "error"));
     }
 
     function rejectCall() {
@@ -1706,7 +2649,21 @@
         if(incPanel) incPanel.style.display = 'none';
         const sndCall = document.getElementById('snd-call');
         if(sndCall) sndCall.pause();
-        if (pendingCall) { pendingCall.close(); pendingCall = null; }
+        
+        if (pendingCall) { 
+            const d = dict[currentLang] || dict['en'];
+            const phoneSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`;
+            addSystemMessage(`${phoneSvg} ${d.callRejected}`, pendingCall.peer);
+            
+            connections.forEach(c => { 
+                if(c.peer === pendingCall.peer) {
+                    try { c.send({type: 'call_rejected'}); } catch(e){} 
+                } 
+            });
+            
+            pendingCall.close(); 
+            pendingCall = null; 
+        }
     }
 
     function endCall(isBroadcast = true) {
@@ -1721,7 +2678,8 @@
             const dur = Math.floor((Date.now() - callStartTime) / 1000);
             const m = Math.floor(dur / 60).toString().padStart(2, '0');
             const s = (dur % 60).toString().padStart(2, '0');
-            addSystemMessage(`📞 ${typeStr} ${d.callEnd}: ${m}:${s}`, callActivePeerId);
+            const phoneSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`;
+            addSystemMessage(`${phoneSvg} ${typeStr} ${d.callEnd}: ${m}:${s}`, callActivePeerId);
             callStartTime = null;
         }
 
@@ -1764,11 +2722,72 @@
     }
 
     /* =========================================================
-       9. SOS 
+       9. CUSTOMIZATION
     ========================================================= */
+    function isColorLight(color) {
+        let hex = color.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 155; 
+    }
+
+    function changeBgColor(color) {
+        document.body.style.setProperty('--bg-base', color); 
+        localStorage.setItem('acetalk_bgcolor', color);
+        
+        const picker = document.getElementById('bg-color-picker');
+        if(picker) picker.value = color;
+
+        const themeToggle = document.getElementById('theme-toggle');
+        if (isColorLight(color)) {
+            document.body.classList.add('light-theme');
+            localStorage.setItem('acetalk_theme', 'light');
+            document.body.style.removeProperty('--bg-base');
+            if(themeToggle) themeToggle.checked = true;
+        } else {
+            document.body.classList.remove('light-theme');
+            localStorage.removeItem('acetalk_theme');
+            if(themeToggle) themeToggle.checked = false;
+        }
+    }
+
+    function resetBgColor() {
+        changeBgColor('#222222');
+    }
+
+    function deleteAccount() {
+        const msg = currentLang === 'tr' 
+            ? "Hesabını ve tüm verilerini silmek istediğine emin misin? Bu işlem geri alınamaz." 
+            : "Are you sure you want to delete your account and all data? This cannot be undone.";
+            
+        if(confirm(msg)) {
+            localStorage.clear();
+            if(peer) { try { peer.destroy(); } catch(e){} }
+            location.reload(); 
+        }
+    }
+
+    /* =========================================================
+       10. SOS 
+    ========================================================= */
+    let lastSOSTime = 0;
     const seenSOS = new Set();
+    
     function sendSOS() {
         if (!activePeerId) return;
+        
+        const now = Date.now();
+        if (now - lastSOSTime < 300000) { 
+            const left = Math.ceil((300000 - (now - lastSOSTime)) / 60000);
+            const d = dict[currentLang] || dict['en'];
+            showToast("SOS Alert", `${d.sosWait}: ${left} min`, "warning");
+            return;
+        }
+        lastSOSTime = now;
+
         const sosId = myProfile.id + '_' + Date.now();
         const sosPacket = { type: 'sos', id: sosId, fromId: myProfile.id, fromName: myProfile.name, ttl: 5, hopCount: 0 };
         seenSOS.add(sosId);
