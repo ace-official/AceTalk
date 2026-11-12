@@ -563,7 +563,10 @@
         .recent-x:hover { color: var(--skype-blue); }
         .drawer-pane { flex: 1; min-height: 0; overflow-y: auto; }
         .drawer-pane[hidden] { display: none; }
-        #pane-todo, #pane-news { padding: 16px 18px; }
+        #pane-todo, #pane-news, #pane-add, #pane-settings { padding: 16px 18px; }
+        #pane-settings #t-settings-title, #pane-add #t-modal-contact, #pane-settings > .modal-btns { display: none; }
+        #pane-settings > div:first-child { margin-bottom: 8px !important; justify-content: flex-end !important; }
+        #pane-add .modal-input { margin-bottom: 12px; }
         .drawer-pane .hx-label { display: none; }
         .drawer-pane .todo-box { background: transparent; box-shadow: none; padding: 0; min-height: 0; }
         .drawer-pane .news-cards { grid-template-columns: minmax(0, 1fr); }
@@ -581,7 +584,7 @@
         .recent-badge { background: var(--status-green); color: #111; font-weight: 700; min-width: 22px; padding: 1px 6px; text-align: center; font-size: 12px; }
         .recent-empty { padding: 22px 18px; font-size: 15px; color: var(--label-color); }
         body.qeo-theme .ace-rail, body.qeo-theme .ace-drawer { background: rgba(30, 30, 30, 0.6) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-        @media (min-width: 769px) { #home-screen { padding-left: 64px; } .header-right > .user-corner { display: none; } #settings-modal button[title="Info"] { display: none; } }
+        @media (min-width: 769px) { #home-screen { padding-left: 64px; } .header-right > .user-corner { display: none; } #settings-modal button[title="Info"], #pane-settings button[title="Info"] { display: none; } #pane-settings > div:first-child { display: none !important; } }
         @media (max-width: 768px) {
             .ace-rail { top: auto; bottom: 0; left: 0; right: 0; width: auto; flex-direction: row; border-right: 0; border-top: 1px solid var(--grid-dark); box-shadow: 0 -4px 16px rgba(0,0,0,.2); padding: 0 0 env(safe-area-inset-bottom); }
             .rail-logo, .rail-spacer, .rail-extra { display: none; }
@@ -589,6 +592,7 @@
             .rail-btn.on { border-top-color: var(--skype-blue); }
             .rail-badge { right: calc(50% - 24px); }
             .main-hub-container { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+            #toast-container { bottom: calc(72px + env(safe-area-inset-bottom)); }
             .ace-drawer { top: auto; left: 0; right: 0; width: auto; height: 72vh; bottom: calc(57px + env(safe-area-inset-bottom)); padding-top: 0; border-right: 0; border-top: 1px solid var(--grid-dark); box-shadow: 0 -10px 30px rgba(0,0,0,.35); transform: translateY(calc(100% + 80px)); }
             .ace-drawer.open { transform: none; }
         }
@@ -607,6 +611,74 @@
         .scr-credit { position: absolute; right: max(20px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 1; pointer-events: none; color: #fff; font-size: 12px; font-weight: 300; opacity: .75; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
         @media (max-width: 768px) { .scr-clock { left: 20px; bottom: 28px; } .scr-time { font-size: clamp(56px, 18vw, 96px); } .scr-credit { top: 44px; bottom: auto; right: 12px; } }
         @media (prefers-reduced-motion: reduce) { .scr-slide.zoom { animation: none; } .scr-slide { transition: none; } }
+        /* Dahlia: several statuses, stacked like papers */
+        .tile.status-tile { overflow: visible; }
+        .tile.status-tile:hover { filter: none; box-shadow: inset 0 0 0 999px rgba(255,255,255,.04), 0 4px 15px rgba(0,0,0,0.15); }
+        .tile.status-tile:focus-visible { outline: 2px solid var(--skype-blue); outline-offset: 2px; }
+        .tile.status-tile .status-content { overflow: hidden; }
+        .tile.status-tile .status-text { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+        .tile.status-tile.stacked { margin-right: 12px; }
+        #statuses-row { padding-bottom: 24px; }
+        .tile.status-tile.stacked::before, .tile.status-tile.stack3::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grid-dark); box-shadow: 0 4px 12px rgba(0,0,0,.18); pointer-events: none; }
+        .tile.status-tile.stacked::before { transform: translate(11px, 6px) rotate(3deg); }
+        .tile.status-tile.stack3::after { z-index: -2; background: var(--grid-accent); border: 1px solid var(--grid-dark); transform: translate(5px, 11px) rotate(-2.5deg); }
+        body.qeo-theme .tile.status-tile.stacked { backdrop-filter: none; -webkit-backdrop-filter: none; }
+        body.qeo-theme .tile.status-tile.stacked::before, body.qeo-theme .tile.status-tile.stack3::after { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+        .status-count { position: absolute; top: 10px; right: 10px; z-index: 3; background: var(--skype-blue); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; }
+        .status-count.inline { position: static; }
+        .status-box { width: min(440px, calc(100vw - 32px)); }
+        .sv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .sv-head .modal-title { margin: 0; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .sv-list { display: flex; flex-direction: column; max-height: 55vh; overflow-y: auto; margin-bottom: 6px; }
+        .sv-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--grid-light); }
+        .sv-body { flex: 1; min-width: 0; }
+        .sv-text { font-size: 16px; line-height: 1.45; overflow-wrap: anywhere; }
+        .sv-time { font-size: 12px; color: var(--label-color); margin-top: 4px; }
+        .sv-del { flex: none; width: 36px; height: 36px; display: grid; place-items: center; background: none; border: 1px solid var(--grid-dark); color: var(--sos-red); cursor: pointer; }
+        .sv-del:hover, .sv-del:focus-visible { background: var(--sos-red); color: #fff; border-color: var(--sos-red); outline: none; }
+        /* Dahlia: install as an app */
+        .install-help { font-size: 12px; line-height: 1.5; color: var(--label-color); margin: -6px 0 15px; }
+        .install-help[hidden], #install-btn[hidden] { display: none; }
+        /* Dahlia reactions */
+        .rx-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+        .msg.local .rx-bar { justify-content: flex-end; }
+        .rx-badge { background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.15); color: inherit; font: inherit; font-size: 13px; line-height: 1; padding: 3px 7px; cursor: pointer; }
+        .rx-badge.mine { border-color: var(--skype-blue); background: rgba(0,175,240,.18); }
+        body.light-theme .msg.remote .rx-badge { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.15); }
+        .ctx-rx { display: flex; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--grid-dark); }
+        .ctx-rx[hidden] { display: none; }
+        .ctx-rx button { background: none; border: 0; font-size: 20px; padding: 4px 5px; cursor: pointer; line-height: 1; transition: transform .1s; }
+        .ctx-rx button:hover, .ctx-rx button:focus-visible { transform: scale(1.2); outline: none; }
+        .ctx-rx button.on { background: var(--grid-dark); }
+        @media (hover: none) { .msg { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }
+        /* Dahlia QR */
+        #setup-screen button.setup-qr { margin-top: 14px; padding: 11px 22px; font-size: 15px; background: transparent; color: var(--text-black); border: 1px solid var(--grid-dark); display: inline-flex; align-items: center; gap: 10px; }
+        #setup-screen button.setup-qr:hover, #setup-screen button.setup-qr:focus-visible { border-color: var(--skype-blue); outline: none; }
+        .qr-sec { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+        .qr-or { text-align: center; color: var(--label-color); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+        .qr-scan-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+        .qr-mine { background: var(--grid-accent); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+        .qr-mine:empty { display: none; }
+        .qr-mine-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--label-color); align-self: flex-start; }
+        .qr-canvas { background: #fff; image-rendering: pixelated; max-width: 100%; height: auto; }
+        .qr-mine-id { font-weight: 700; font-size: 16px; }
+        .qr-note { font-size: 12px; line-height: 1.5; color: var(--label-color); margin: 0 0 12px; }
+        .qr-scan { position: fixed; inset: 0; z-index: 100010; background: #000; color: #fff; }
+        .qr-scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .qr-frame { position: absolute; left: 50%; top: 42%; width: min(64vw, 300px); aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid rgba(255,255,255,.9); box-shadow: 0 0 0 100vmax rgba(0,0,0,.45); }
+        .qr-scan.nocam .qr-frame { display: none; }
+        .qr-bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 16px max(18px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; align-items: center; background: linear-gradient(to top, rgba(0,0,0,.85), transparent); text-align: center; }
+        .qr-scan.nocam .qr-bar { top: 0; justify-content: center; background: none; }
+        .qr-cap { font-size: 16px; font-weight: 700; max-width: 520px; line-height: 1.4; }
+        .qr-acts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .qr-btn { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.3); padding: 11px 16px; font: inherit; font-weight: 700; cursor: pointer; }
+        .qr-btn:hover, .qr-btn:focus-within { background: rgba(255,255,255,.24); }
+        .move-box { width: min(380px, calc(100vw - 32px)); text-align: center; }
+        .move-box .qr-canvas { margin: 6px auto 10px; display: block; }
+        .move-box .btn-cancel { width: 100%; }
+        .move-count { font-variant-numeric: tabular-nums; color: var(--label-color); font-size: 13px; margin-bottom: 8px; }
+        .move-status { font-size: 15px; line-height: 1.5; margin: 0 0 16px; }
+        .sec-ok { color: var(--status-green) !important; font-weight: 700; }
         /* Dahlia emoji picker */
         .emoji-btn.on { color: var(--skype-blue); opacity: 1; }
         .emoji-panel { width: 100%; max-width: 800px; margin-bottom: 10px; background: var(--grid-accent); color: var(--text-black); border: 1px solid var(--grid-dark); border-top: 4px solid #f1c40f; box-shadow: 0 8px 24px rgba(0,0,0,.25); display: flex; flex-direction: column; }
@@ -640,6 +712,11 @@
     </div>
 
     <div id="context-menu">
+        <div class="ctx-rx" id="ctx-rx-row"></div>
+        <div class="ctx-item" id="ctx-copy-container" onclick="handleCtxCopy()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="t-ctx-copy">Copy</span>
+        </div>
         <div class="ctx-item" id="ctx-pin-container" onclick="handleCtxPin()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.5l-2.5-3.5V5a2 2 0 0 0-2-2H9.5a2 2 0 0 0-2 2v7L5 15.5V17z"></path></svg>
             <span id="t-ctx-pin">Pin</span>
@@ -722,6 +799,8 @@
                 <div class="drawer-pane" id="pane-recent"><div class="recent-list" id="recent-list"></div></div>
                 <div class="drawer-pane" id="pane-todo" hidden></div>
                 <div class="drawer-pane" id="pane-news" hidden></div>
+                <div class="drawer-pane" id="pane-add" hidden></div>
+                <div class="drawer-pane" id="pane-settings" hidden></div>
             </aside>
 
             <div class="home-extras">
@@ -734,9 +813,7 @@
                         <form class="todo-form" id="todo-form" autocomplete="off">
                             <span class="todo-plus" aria-hidden="true">+</span>
                             <input id="todo-input" maxlength="200" placeholder="Add a task">
-                            <button type="button" class="todo-when-btn" id="todo-when-btn" title="Remind"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2 2M5 3 2 6M22 6l-3-3"></path></svg></button>
                         </form>
-                        <div class="todo-when-wrap" id="todo-when-wrap" hidden><input type="datetime-local" id="todo-when" aria-label="Reminder time"></div>
                     </div>
                 </section>
                 <section class="hx-col hx-news" aria-labelledby="t-news">
@@ -942,7 +1019,13 @@
                     <span id="t-notif">Notification Sounds</span>
                     <label class="toggle-switch"><input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"><span class="slider"></span></label>
                 </div>
+                <div class="setting-row" id="install-row">
+                    <span id="t-install">Use as an app</span>
+                    <button type="button" class="btn-cancel" id="install-btn" style="padding: 6px 12px; margin: 0; width: auto; flex: none;" hidden>Install</button>
+                </div>
+                <p class="install-help" id="install-help" hidden></p>
                 <button class="btn-primary" style="width: 100%; margin-bottom: 15px; background: var(--skype-blue); color: white;" onclick="document.getElementById('donate-modal').style.display='flex'" id="t-donate-btn">Donate</button>
+                <button type="button" class="btn-cancel" style="width: 100%; margin-bottom: 15px;" id="move-acc-btn">Move account to another device</button>
                 <button class="btn-cancel" style="width: 100%; margin-bottom: 15px; border-color: var(--sos-red); color: var(--sos-red);" onclick="deleteAccount()" id="t-delete-acc">Delete Account</button>
             </div>
 
@@ -1148,10 +1231,19 @@
     });
 
     /* ---------- packet validation ---------- */
-    const PACKET_TYPES = ['connection_request','request_accepted','request_rejected','profile','text_status','msg','edit','delete','seen','delivered','typing','sos','offline','cancel_call','call_rejected'];
+    const PACKET_TYPES = ['connection_request','request_accepted','request_rejected','profile','text_status','msg','edit','delete','seen','delivered','typing','sos','offline','cancel_call','call_rejected','reaction'];
+    // Dahlia: a person can share several statuses; each one is { id, text, at }
+    // Dahlia: a reaction is one emoji (flags, skin tones and joined emoji allowed), nothing else
+    const EMOJI_RE = /^[\p{Extended_Pictographic}\p{Emoji_Component}\u200d\ufe0f]{1,16}$/u;
+    const cleanEmoji = e => (typeof e === 'string' && e.length <= 16 && EMOJI_RE.test(e) && /\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]/u.test(e)) ? e : '';
+    function cleanStatuses(v) {
+        if (!Array.isArray(v)) return null;
+        return v.slice(0, 10).map(x => (x && typeof x === 'object' && typeof x.id === 'string' && MSGID_RE.test(x.id))
+            ? { id: x.id, text: cleanText(x.text, 140), at: Number.isFinite(+x.at) ? Math.max(0, Math.min(+x.at, Date.now() + 86400000)) : 0 } : null).filter(x => x && x.text);
+    }
     function cleanProfile(p) {
         if (!p || typeof p !== 'object') return { name: '', textStatus: '', statusMode: 'online', avatar: null };
-        return { name: cleanText(p.name, 40), textStatus: cleanText(p.textStatus, 140), statusMode: STATUS_MODES.includes(p.statusMode) ? p.statusMode : 'online', avatar: safeAvatar(p.avatar) };
+        return { name: cleanText(p.name, 40), textStatus: cleanText(p.textStatus, 140), statusMode: STATUS_MODES.includes(p.statusMode) ? p.statusMode : 'online', avatar: safeAvatar(p.avatar), statuses: cleanStatuses(p.statuses) };
     }
     function cleanEncBody(b) {
         if (typeof b === 'string') return b.slice(0, 80e6);
@@ -1166,11 +1258,12 @@
         if ('name' in p) out.name = cleanText(p.name, 40);
         switch (p.type) {
             case 'connection_request': case 'request_accepted': out.profile = cleanProfile(p.profile); break;
-            case 'profile': { const c = cleanProfile(p); out.name = c.name; out.textStatus = c.textStatus; out.statusMode = c.statusMode; out.avatar = c.avatar; break; }
-            case 'text_status': out.text = cleanText(p.text, 140); out.textStatus = cleanText(p.textStatus, 140); break;
+            case 'profile': { const c = cleanProfile(p); out.name = c.name; out.textStatus = c.textStatus; out.statusMode = c.statusMode; out.avatar = c.avatar; out.statuses = c.statuses; break; }
+            case 'text_status': out.text = cleanText(p.text, 140); out.textStatus = cleanText(p.textStatus, 140); out.statuses = cleanStatuses(p.statuses); break;
             case 'msg': case 'edit': { const b = cleanEncBody(p.body); if (b === null) return null; out.body = b; out.isEncrypted = !!p.isEncrypted; out.kind = p.kind === 'html' ? 'html' : 'text'; if (!out.msgId) return null; break; }
             case 'delete': case 'seen': case 'delivered': if (!out.msgId) return null; break;
             case 'typing': out.state = !!p.state; break;
+            case 'reaction': if (!out.msgId) return null; out.emoji = cleanEmoji(p.emoji); out.on = !!p.on && !!out.emoji; break;
             case 'cancel_call': case 'call_rejected': out.reason = ['busy', 'noanswer', 'hangup', 'cancel'].includes(p.reason) ? p.reason : ''; break;
             case 'sos': if (typeof p.id !== 'string' || !MSGID_RE.test(p.id)) return null; out.id = p.id; out.fromId = cleanText(p.fromId, 40); out.fromName = cleanText(p.fromName, 40);
                 out.ttl = Math.max(0, Math.min(5, parseInt(p.ttl) || 0)); out.hopCount = Math.max(0, Math.min(10, parseInt(p.hopCount) || 0)); break;
@@ -1248,6 +1341,7 @@
         conn._rawSend = rawSend;
         conn.send = packet => {
             if (conn._blocked || !packet) return;
+            if (window.__decoratePacket) packet = __decoratePacket(packet);
             if (!conn._aes) { conn._queue.push(packet); return; }
             conn._tx = conn._tx.then(async () => {
                 const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -1278,6 +1372,7 @@
                         try { conn.close(); } catch (e) {}
                         return;
                     }
+                    if (window.__checkExpectedKey && !(await __checkExpectedKey(conn.peer, raw.pub))) { conn._blocked = true; try { conn.close(); } catch (e) {} return; }
                     const id = await getIdentity();
                     conn._pub = raw.pub;
                     conn._aes = await deriveSessionKey(id, raw.pub, peer ? peer.id : '', conn.peer);
@@ -1298,6 +1393,7 @@
                 if (!clean) return;
                 maybePin(conn);
                 appData.forEach(h => { try { h(clean); } catch (e) { console.error(e); } });
+                if (window.__afterPacket) { try { __afterPacket(conn.peer, clean); } catch (e) { console.error(e); } }
             }).catch(e => console.error(e));
         });
         rawOn('close', () => { if (secureConns[conn.peer] === conn) delete secureConns[conn.peer]; });
@@ -1339,6 +1435,7 @@
             const lbl = document.createElement('div'); lbl.className = 'sec-label'; lbl.textContent = secT('safety'); box.appendChild(lbl);
             const num = document.createElement('div'); num.className = 'sec-number'; num.textContent = await safetyNumber(id.pub, theirPub); box.appendChild(num);
             const p = document.createElement('p'); p.textContent = secT('safetyHelp'); box.appendChild(p);
+            if (window.__isVerified && __isVerified(pid, theirPub)) { const v = document.createElement('p'); v.className = 'sec-ok'; v.textContent = '✓ ' + __verifiedText(); box.appendChild(v); }
         } else {
             const p = document.createElement('p'); p.textContent = secT('notConnected'); box.appendChild(p);
         }
@@ -1417,7 +1514,7 @@
                 cb.onchange = () => { item.done = cb.checked; saveTodos(); renderTodos(); };
                 const lab = el('label', 'todo-text', item.text); lab.htmlFor = cb.id;
                 li.append(cb, lab);
-                if (item.remindAt && !item.done) {
+                if (false && item.remindAt && !item.done) {
                     const due = el('span', 'todo-due' + (item.remindAt < Date.now() ? ' late' : ''), '⏰ ' + fmtWhen(item.remindAt));
                     li.append(due);
                 }
@@ -1445,11 +1542,11 @@
         function checkReminders(startup) {
             let changed = false;
             todos.forEach(item => {
-                if (item.done || !item.remindAt || item.notified || item.remindAt > Date.now()) return;
+                if (true || item.done || !item.remindAt || item.notified || item.remindAt > Date.now()) return;
                 item.notified = true; changed = true;
                 const late = Date.now() - item.remindAt > 120000;
                 showToast(late ? t('missed') : t('reminder'), item.text, late ? 'warning' : 'info', 10000);
-                try { if ('Notification' in window && Notification.permission === 'granted' && (document.visibilityState !== 'visible' || startup)) new Notification('AceTalk · ' + t('reminder'), { body: item.text, icon: 'icon-192.png' }); } catch (e) {}
+                try { if ('Notification' in window && Notification.permission === 'granted' && (document.visibilityState !== 'visible' || startup)) new Notification('AceTalk · ' + t('reminder'), { body: item.text, icon: 'acetalk-icon-192.png' }); } catch (e) {}
             });
             if (changed) { saveTodos(); renderTodos(); }
         }
@@ -1935,9 +2032,15 @@
     /* ================= AceTalk 3.4 Dahlia: icon rail + sliding panel (recent chats, to-do, news) ================= */
     (function () {
         const $r = id => document.getElementById(id);
-        const PANES = ['recent', 'todo', 'news'];
+        const PANES = ['recent', 'todo', 'news', 'add', 'settings'];
         let pane = null;
-        const label = k => k === 'recent' ? (window.__recentTitle || 'Recent chats') : ((($r(k === 'todo' ? 't-todo' : 't-news') || {}).textContent) || '');
+        const label = k => {
+            const d = (typeof dict !== 'undefined' && (dict[currentLang] || dict.en)) || {};
+            if (k === 'recent') return window.__recentTitle || 'Recent chats';
+            if (k === 'add') return String(d.addContact || 'Add contact').replace(/\.+$/, '');
+            if (k === 'settings') return d.settings || 'Settings';
+            return (($r(k === 'todo' ? 't-todo' : 't-news') || {}).textContent) || '';
+        };
         function setPane(k) {
             const d = $r('recent-drawer'), sc = $r('recent-scrim'); if (!d) return;
             pane = k; const open = !!k;
@@ -1949,6 +2052,8 @@
             });
             if (open) {
                 if (k === 'recent' && window.renderRecentChats) renderRecentChats();
+                if (k === 'add' && window.matchMedia && matchMedia('(pointer: fine)').matches) { const i = $r('new-contact-id'); if (i) setTimeout(() => i.focus(), 50); }
+                if (window.__onPane) { try { __onPane(k); } catch (e) {} }
                 const t = $r('drawer-title'); if (t) t.textContent = label(k);
                 const tot = $r('recent-total'); if (tot) tot.style.display = k === 'recent' ? '' : 'none';
             }
@@ -1979,6 +2084,13 @@
             if (todo && $r('pane-todo')) $r('pane-todo').append(todo);
             if (news && $r('pane-news')) $r('pane-news').append(news);
             const ex = document.querySelector('.home-extras'); if (ex && !ex.children.length) ex.remove();
+            // Settings and Add contact live in panels too: their windows' contents move in, the empty windows stay hidden
+            [['settings-modal', 'pane-settings'], ['add-contact-modal', 'pane-add']].forEach(([from, to]) => {
+                const box = document.querySelector('#' + from + ' > .modal-box'), pane = $r(to); if (box && pane) pane.append(...box.childNodes);
+            });
+            const cancelAdd = $r('btn-cancel-add'); if (cancelAdd) cancelAdd.onclick = () => setPane(null);
+            const origAddContact = window.addContact;
+            if (origAddContact) window.addContact = function () { const r = origAddContact.apply(this, arguments); const i = $r('new-contact-id'); if (i && !i.value) setPane(null); return r; };
             const d = $r('recent-drawer'); if (d) d.inert = true;
             PANES.forEach(n => { const b = $r('rail-' + n); if (b) b.onclick = () => setPane(pane === n ? null : n); });
             const sc = $r('recent-scrim'); if (sc) sc.onclick = () => setPane(null);
@@ -1987,8 +2099,6 @@
             const more = $r('news-more'); if (more) more.addEventListener('click', () => setPane(null));
             const logo = $r('rail-logo'), src = document.querySelector('img[data-logo]');
             if (logo) { if (src && src.src) logo.querySelector('img').src = src.src; logo.onclick = () => { setPane(null); const m = $r('info-modal'); if (m) m.style.display = 'flex'; }; }
-            const st = $r('rail-settings'); if (st) st.onclick = () => { setPane(null); const m = $r('settings-modal'); if (m) m.style.display = 'flex'; };
-            const ad = $r('rail-add'); if (ad) ad.onclick = () => { setPane(null); const m = $r('add-contact-modal'); if (m) { m.style.display = 'flex'; const i = $r('new-contact-id'); if (i) i.focus(); } };
             const pr = $r('rail-profile'); if (pr) pr.onclick = () => { setPane(null); if (typeof openProfileModal === 'function') openProfileModal(); };
             sync(); railExtras();
             const cnt = $r('todo-count'); if (cnt) new MutationObserver(sync).observe(cnt, { childList: true, characterData: true, subtree: true });
@@ -2082,7 +2192,7 @@
         function tick() {
             const t = $s('scr-time'), d = $s('scr-date'); if (!t || !d) return;
             const now = new Date();
-            try { t.textContent = now.toLocaleTimeString(currentLang, { hour: '2-digit', minute: '2-digit' }); } catch (e) { t.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+            try { t.textContent = now.toLocaleTimeString(currentLang, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch (e) { t.textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'); }
             try { d.textContent = now.toLocaleDateString(currentLang, { weekday: 'long', day: 'numeric', month: 'long' }); } catch (e) { d.textContent = now.toDateString(); }
             alignInk(t); alignInk(d);
         }
@@ -2121,6 +2231,552 @@
         window.addEventListener('keydown', e => { if (typeof screenerActive !== 'undefined' && screenerActive && !e.repeat) { e.preventDefault(); closeAceScreener(); } }, true);
     })();
     /* ================= end Ace Screener ================= */
+
+    /* ================= AceTalk 3.4 Dahlia: several statuses per person ================= */
+    (function () {
+        const MAX = 10, LEGACY_TEXT = 'AceTalk kullanıyor ✨';
+        const AGO = { en: ['just now', 'min ago', 'h ago', 'd ago'], tr: ['az önce', 'dk önce', 'sa önce', 'gün önce'], az: ['indicə', 'dəq əvvəl', 'saat əvvəl', 'gün əvvəl'] };
+        const D = () => (dict[currentLang] || dict.en);
+        const ago = ts => {
+            if (!ts) return '';
+            const a = xl('hx.ago') || AGO[currentLang] || AGO.en, m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+            return m < 2 ? a[0] : m < 60 ? m + ' ' + a[1] : m < 1440 ? Math.round(m / 60) + ' ' + a[2] : Math.round(m / 1440) + ' ' + a[3];
+        };
+        const hash = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return 'l' + (h >>> 0).toString(36); };
+        // people on an older AceTalk send one text: treat it as a single status
+        const legacy = text => (typeof text === 'string' && text.trim() && text !== LEGACY_TEXT) ? [{ id: hash(text), text: cleanText(text, 140), at: 0 }] : [];
+        const newest = list => list.slice().sort((a, b) => (b.at || 0) - (a.at || 0));
+        function mine() {
+            if (!Array.isArray(myProfile.statuses)) myProfile.statuses = legacy(myProfile.statusText).map(x => ({ ...x, at: Date.now() }));
+            return newest(myProfile.statuses);
+        }
+        const wire = () => mine().map(x => ({ id: x.id, text: x.text, at: x.at }));
+        window.pushMyStatus = text => {
+            const t = cleanText(text, 140); if (!t) return;
+            const list = mine(); list.unshift({ id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: t, at: Date.now() });
+            myProfile.statuses = list.slice(0, MAX);
+        };
+        function broadcast() {
+            const contacts = loadContacts();
+            connections.forEach(c => { if (contacts[c.peer]) { try { c.send({ type: 'text_status', text: myProfile.statusText || '' }); } catch (e) {} } });
+        }
+        function deleteMine(id) {
+            myProfile.statuses = mine().filter(x => x.id !== id);
+            const top = newest(myProfile.statuses)[0]; myProfile.statusText = top ? top.text : '';
+            saveMyProfile(); renderGrid(); broadcast();
+        }
+        // every profile / status packet carries the full list; older AceTalk versions simply ignore the extra field
+        window.__decoratePacket = pk => {
+            if (!pk || typeof pk !== 'object') return pk;
+            if (pk.type === 'profile' || pk.type === 'text_status') return { ...pk, statuses: wire() };
+            if ((pk.type === 'connection_request' || pk.type === 'request_accepted') && pk.profile) return { ...pk, profile: { ...pk.profile, statuses: wire() } };
+            return pk;
+        };
+        window.__packetHooks = window.__packetHooks || [];
+        window.__afterPacket = (pid, pk) => window.__packetHooks.forEach(h => { try { h(pid, pk); } catch (e) { console.error(e); } });
+        window.__packetHooks.push((pid, pk) => {
+            let list;
+            if (pk.type === 'profile') list = pk.statuses || legacy(pk.textStatus);
+            else if (pk.type === 'text_status') list = pk.statuses || legacy(pk.text);
+            else if (pk.type === 'request_accepted' && pk.profile) list = pk.profile.statuses || legacy(pk.profile.textStatus);
+            else return;
+            const contacts = loadContacts(), c = contacts[pid]; if (!c) return;
+            const next = newest(list).slice(0, MAX);
+            if (JSON.stringify(c.statuses || null) === JSON.stringify(next)) return;
+            c.statuses = next; saveContacts(contacts); renderGrid();
+        });
+        const theirs = c => Array.isArray(c.statuses) ? newest(c.statuses) : legacy(c.textStatus);
+        const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+        const TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+        function tile(name, list, own) {
+            const t = mk('div', 'tile status-tile' + (list.length > 1 ? ' stacked' : '') + (list.length > 2 ? ' stack3' : '') + (own ? ' own' : ''));
+            t.tabIndex = 0; t.setAttribute('role', 'button');
+            const box = mk('div', 'status-content'); box.append(mk('div', 'status-name', name), mk('div', 'status-text', list[0].text)); t.append(box);
+            if (list.length > 1) t.append(mk('span', 'status-count', String(list.length)));
+            const open = () => openViewer(name, list, own);
+            t.onclick = open; t.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+            return t;
+        }
+        window.renderStatusStacks = function () {
+            const row = document.getElementById('statuses-row'); if (!row) return;
+            const d = D(), contacts = loadContacts();
+            row.innerHTML = '';
+            const my = mine(); if (my.length) row.append(tile(myProfile.name + ' ' + d.you, my, true));
+            Object.keys(contacts).map(pid => ({ pid, c: contacts[pid] })).filter(x => x.c).map(x => ({ ...x, list: theirs(x.c) })).filter(x => x.list.length)
+                .sort((a, b) => (b.list[0].at || 0) - (a.list[0].at || 0))
+                .forEach(x => row.append(tile(x.c.name || peerIdToName(x.pid), x.list, false)));
+            const add = mk('div', 'tile tile-add'); add.onclick = () => { const m = document.getElementById('add-status-modal'); if (m) m.style.display = 'flex'; };
+            add.innerHTML = '<div class="tile-initial">+</div><div class="tile-bottom"><div class="tile-name"></div></div>';
+            add.querySelector('.tile-name').textContent = d.addStatus; row.append(add);
+        };
+        let viewer = null, viewing = null;
+        function openViewer(name, list, own) { viewing = { name, list, own }; drawViewer(); if (viewer) viewer.style.display = 'flex'; }
+        function drawViewer() {
+            if (!viewer) { viewer = mk('div', 'modal-overlay'); viewer.id = 'status-viewer'; viewer.addEventListener('click', e => { if (e.target === viewer) viewer.style.display = 'none'; }); document.body.append(viewer); }
+            const d = D(), list = viewing.own ? mine() : viewing.list;
+            if (!list.length) { viewer.style.display = 'none'; return; }
+            const box = mk('div', 'modal-box status-box');
+            const head = mk('div', 'sv-head'); head.append(mk('div', 'modal-title', viewing.name)); if (list.length > 1) head.append(mk('span', 'status-count inline', String(list.length)));
+            const ul = mk('div', 'sv-list');
+            list.forEach(x => {
+                const it = mk('div', 'sv-item'), body = mk('div', 'sv-body');
+                body.append(mk('div', 'sv-text', x.text)); const when = ago(x.at); if (when) body.append(mk('div', 'sv-time', when)); it.append(body);
+                if (viewing.own) {
+                    const del = mk('button', 'sv-del'); del.type = 'button'; del.innerHTML = TRASH; del.title = d.ctxDel; del.setAttribute('aria-label', d.ctxDel + ': ' + x.text);
+                    del.onclick = () => { deleteMine(x.id); drawViewer(); }; it.append(del);
+                }
+                ul.append(it);
+            });
+            const btns = mk('div', 'modal-btns');
+            if (viewing.own) { const add = mk('button', 'btn-primary', String(d.addStatus || '').replace(/\.+$/, '')); add.type = 'button'; add.onclick = () => { viewer.style.display = 'none'; const m = document.getElementById('add-status-modal'); if (m) m.style.display = 'flex'; }; btns.append(add); }
+            const close = mk('button', 'btn-cancel', d.btnClose); close.type = 'button'; close.onclick = () => { viewer.style.display = 'none'; }; btns.append(close);
+            box.append(head, ul, btns); viewer.innerHTML = ''; viewer.append(box);
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && viewer && viewer.style.display === 'flex') viewer.style.display = 'none'; });
+    })();
+    /* ================= end several statuses ================= */
+
+    /* ================= AceTalk 3.4 Dahlia: reactions, Copy, long-press menu ================= */
+    (function () {
+        const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+        const RX = {
+            copy: { en: 'Copy', tr: 'Kopyala', az: 'Kopyala', de: 'Kopieren', es: 'Copiar', fr: 'Copier', ru: 'Копировать', it: 'Copia', ja: 'コピー', zh: '复制' },
+            copied: { en: 'Copied', tr: 'Kopyalandı', az: 'Kopyalandı', de: 'Kopiert', es: 'Copiado', fr: 'Copié', ru: 'Скопировано', it: 'Copiato', ja: 'コピーしました', zh: '已复制' }
+        };
+        const rx = k => RX[k][currentLang] || RX[k].en;
+        const findMsg = (contacts, pid, id) => (contacts[pid] && Array.isArray(contacts[pid].messages)) ? contacts[pid].messages.find(m => m.msgId === id) : null;
+        // opening a chat draws every message at once: read the saved chats once per batch, not once per message
+        let cache = null;
+        const cached = () => { if (!cache) { cache = loadContacts(); setTimeout(() => { cache = null; }, 0); } return cache; };
+        function paint(msgId, contacts) {
+            const el = document.querySelector('.msg[data-msgid="' + CSS.escape(msgId) + '"]'); if (!el) return;
+            const m = findMsg(contacts || loadContacts(), activePeerId, msgId), r = (m && m.reactions) || {};
+            const old = el.querySelector('.rx-bar'); if (old) old.remove();
+            const list = [];
+            if (r.me) list.push({ emoji: r.me, mine: true, count: 1 });
+            if (r.them) { const same = list.find(x => x.emoji === r.them); if (same) same.count++; else list.push({ emoji: r.them, mine: false, count: 1 }); }
+            if (!list.length) return;
+            const bar = document.createElement('div'); bar.className = 'rx-bar';
+            list.forEach(x => {
+                const b = document.createElement('button'); b.type = 'button'; b.className = 'rx-badge' + (x.mine ? ' mine' : '');
+                b.textContent = x.emoji + (x.count > 1 ? ' ' + x.count : '');
+                b.onclick = e => { e.stopPropagation(); react(msgId, x.emoji); };   // tap mine to take it back, tap theirs to add the same
+                bar.append(b);
+            });
+            el.append(bar);
+        }
+        function send(pid, msgId, emoji) {
+            let ok = false;
+            connections.filter(c => c.peer === pid).forEach(c => { try { c.send({ type: 'reaction', msgId, emoji: emoji || '', on: !!emoji }); ok = true; } catch (e) {} });
+            return ok;
+        }
+        function react(msgId, emoji) {
+            const pid = activePeerId; if (!pid || !msgId) return;
+            const contacts = loadContacts(), m = findMsg(contacts, pid, msgId); if (!m || m.isDeleted) return;
+            m.reactions = m.reactions || {};
+            const next = m.reactions.me === emoji ? null : emoji;
+            m.reactions.me = next;
+            m.reactions.meSent = pid === 'ace_test' ? true : send(pid, msgId, next);   // offline: sent when they come back
+            saveContacts(contacts); paint(msgId, contacts);
+        }
+        window.reactToMessage = react;
+        function resend(pid) {
+            const contacts = loadContacts(), c = contacts[pid]; if (!c || !Array.isArray(c.messages)) return;
+            let changed = false;
+            c.messages.forEach(m => { if (m.reactions && m.reactions.meSent === false && send(pid, m.msgId, m.reactions.me)) { m.reactions.meSent = true; changed = true; } });
+            if (changed) saveContacts(contacts);
+        }
+        (window.__packetHooks = window.__packetHooks || []).push((pid, pk) => {
+            if (pk.type === 'profile') { resend(pid); return; }   // they are online again
+            if (pk.type !== 'reaction') return;
+            const contacts = loadContacts(), m = findMsg(contacts, pid, pk.msgId); if (!m) return;
+            m.reactions = m.reactions || {}; m.reactions.them = pk.on ? pk.emoji : null;
+            saveContacts(contacts); if (activePeerId === pid) paint(pk.msgId, contacts);
+        });
+        // every drawn message gets its reaction badges
+        const origAdd = window.addMessage;
+        window.addMessage = function (text, type, time, scroll, status, msgId) {
+            const r = origAdd.apply(this, arguments);
+            if (msgId && type !== 'system') { try { paint(msgId, cached()); } catch (e) {} }
+            return r;
+        };
+        // context menu: reaction row + Copy, kept inside the screen
+        const origMenu = window.showContextMenu;
+        window.showContextMenu = function (e, msgId, type) {
+            origMenu.apply(this, arguments);
+            const m = findMsg(loadContacts(), activePeerId, msgId), mine = m && m.reactions ? m.reactions.me : null;
+            const row = document.getElementById('ctx-rx-row');
+            if (row) {
+                row.innerHTML = ''; row.hidden = !m || !!m.isDeleted;
+                QUICK.forEach(em => { const b = document.createElement('button'); b.type = 'button'; b.textContent = em; b.title = em; if (em === mine) b.classList.add('on');
+                    b.onclick = ev => { ev.stopPropagation(); document.getElementById('context-menu').style.display = 'none'; react(msgId, em); }; row.append(b); });
+            }
+            const cp = document.getElementById('t-ctx-copy'); if (cp) cp.textContent = rx('copy');
+            const menu = document.getElementById('context-menu'); if (!menu) return;
+            const w = menu.offsetWidth, h = menu.offsetHeight, maxX = window.scrollX + window.innerWidth - 8, maxY = window.scrollY + window.innerHeight - 8;
+            if (e.pageX + w > maxX) menu.style.left = Math.max(8, e.pageX - w) + 'px';
+            if (e.pageY + h > maxY) menu.style.top = Math.max(8, e.pageY - h) + 'px';
+        };
+        window.handleCtxCopy = function () {
+            const menu = document.getElementById('context-menu'); if (menu) menu.style.display = 'none';
+            const m = findMsg(loadContacts(), activePeerId, ctxMsgId);
+            const bodyEl = document.querySelector('.msg[data-msgid="' + CSS.escape(String(ctxMsgId)) + '"] .msg-body');
+            const text = (m && typeof m.rawText === 'string' && m.rawText && !/^\s*</.test(m.rawText)) ? m.rawText : (bodyEl ? bodyEl.innerText : '');
+            if (!text) return;
+            const done = () => showToast(rx('copied'), '', 'info', 1500);
+            const fallback = () => { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.append(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove(); };
+            try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+        };
+        // phones: hold a message to open the same menu
+        document.addEventListener('DOMContentLoaded', () => {
+            const box = document.getElementById('chat-box'); if (!box) return;
+            let timer = null, sx = 0, sy = 0, fired = false;
+            box.addEventListener('touchstart', e => {
+                fired = false; clearTimeout(timer);
+                const msg = e.target.closest('.msg[data-msgid]'); if (!msg || e.touches.length !== 1 || e.target.closest('button, a, audio, video')) return;
+                const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
+                timer = setTimeout(() => {
+                    fired = true;
+                    const type = msg.classList.contains('local') ? 'local' : 'remote';
+                    window.showContextMenu({ preventDefault() {}, pageX: t.pageX, pageY: t.pageY }, msg.getAttribute('data-msgid'), type);
+                    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (x) {} }
+                }, 500);
+            }, { passive: true });
+            box.addEventListener('touchmove', e => { const t = e.touches[0]; if (Math.hypot(t.clientX - sx, t.clientY - sy) > 10) clearTimeout(timer); }, { passive: true });
+            box.addEventListener('touchend', e => { clearTimeout(timer); if (fired) { e.preventDefault(); fired = false; } });   // keep the menu open
+            box.addEventListener('touchcancel', () => clearTimeout(timer), { passive: true });
+        });
+    })();
+    /* ================= end reactions ================= */
+
+    /* ================= AceTalk 3.4 Dahlia: QR codes (add a contact, move the account) ================= */
+    (function () {
+        const QX = {
+            en: { or: 'or', scan: 'Scan a QR code', myCode: 'My QR code', myCodeHelp: 'Let a friend scan this to add you. Adding by QR also checks your security key, so nobody can pretend to be you.', scanTitle: 'Point the camera at an AceTalk QR code', fromImage: 'Choose an image', noCamera: 'The camera could not be opened. You can choose an image of the code instead.', notAce: 'This is not an AceTalk code.', verified: 'Verified with a QR code', mismatch: 'The security key does not match the QR code, so this contact was not added. Check the code with them in person.', self: 'This is your own code.', nowVerified: 'is verified now', libFail: 'QR tools could not be loaded. Check your connection.', move: 'Move account to another device', moveHelp: 'Your contacts, messages and settings move to the new device and this device is signed out. On the new device, press “Connect with QR” and scan the code.', moveTitle: 'Scan on your new device', expires: 'Expires in', confirm: 'A device wants your account ({dev}). Move everything to it? This device will be signed out and its AceTalk data deleted.', moved: 'Your account was moved. This device is signed out.', offline: 'Connect to AceTalk first.', expired: 'The code expired. Create a new one.', hasAccount: 'This device already has an AceTalk account. Delete it in Settings first, then scan again.' },
+            tr: { or: 'veya', scan: 'QR kod okut', myCode: 'QR kodum', myCodeHelp: 'Arkadaşın seni eklemek için bunu okutsun. QR ile eklemek güvenlik anahtarını da kontrol eder, böylece kimse senin yerine geçemez.', scanTitle: 'Kamerayı bir AceTalk QR koduna tut', fromImage: 'Resim seç', noCamera: 'Kamera açılamadı. Bunun yerine kodun resmini seçebilirsin.', notAce: 'Bu bir AceTalk kodu değil.', verified: 'QR kod ile doğrulandı', mismatch: 'Güvenlik anahtarı QR kodla eşleşmiyor, bu yüzden kişi eklenmedi. Kodu kişiyle yüz yüze kontrol et.', self: 'Bu senin kendi kodun.', nowVerified: 'artık doğrulandı', libFail: 'QR araçları yüklenemedi. İnternet bağlantını kontrol et.', move: 'Hesabı başka cihaza taşı', moveHelp: 'Kişilerin, mesajların ve ayarların yeni cihaza taşınır, bu cihazda oturum kapanır. Yeni cihazda “Connect with QR”a basıp kodu okut.', moveTitle: 'Yeni cihazında okut', expires: 'Kalan süre', confirm: 'Bir cihaz hesabını istiyor ({dev}). Her şey ona taşınsın mı? Bu cihazda oturum kapanacak ve AceTalk verileri silinecek.', moved: 'Hesabın taşındı. Bu cihazda oturum kapandı.', offline: 'Önce AceTalk’a bağlan.', expired: 'Kodun süresi doldu. Yeni bir kod oluştur.', hasAccount: 'Bu cihazda zaten bir AceTalk hesabı var. Önce Ayarlar’dan sil, sonra tekrar okut.' },
+            az: { or: 'və ya', scan: 'QR kodu oxut', myCode: 'QR kodum', myCodeHelp: 'Səni əlavə etmək üçün dostun bunu oxutsun. QR ilə əlavə etmək təhlükəsizlik açarını da yoxlayır, beləliklə heç kim sənin yerinə keçə bilməz.', scanTitle: 'Kameranı AceTalk QR koduna tut', fromImage: 'Şəkil seç', noCamera: 'Kamera açılmadı. Bunun əvəzinə kodun şəklini seçə bilərsən.', notAce: 'Bu AceTalk kodu deyil.', verified: 'QR kod ilə təsdiqləndi', mismatch: 'Təhlükəsizlik açarı QR kodla uyğun gəlmir, buna görə kontakt əlavə edilmədi. Kodu şəxslə üz-üzə yoxla.', self: 'Bu sənin öz kodundur.', nowVerified: 'artıq təsdiqləndi', libFail: 'QR alətləri yüklənmədi. İnterneti yoxla.', move: 'Hesabı başqa cihaza köçür', moveHelp: 'Kontaktların, mesajların və ayarların yeni cihaza köçürülür, bu cihazda sessiya bağlanır. Yeni cihazda “Connect with QR” düyməsinə basıb kodu oxut.', moveTitle: 'Yeni cihazında oxut', expires: 'Qalan vaxt', confirm: 'Bir cihaz hesabını istəyir ({dev}). Hər şey ora köçürülsün? Bu cihazda sessiya bağlanacaq və AceTalk məlumatları silinəcək.', moved: 'Hesabın köçürüldü. Bu cihazda sessiya bağlandı.', offline: 'Əvvəlcə AceTalk-a qoşul.', expired: 'Kodun vaxtı bitdi. Yeni kod yarat.', hasAccount: 'Bu cihazda artıq AceTalk hesabı var. Əvvəlcə Ayarlardan sil, sonra yenidən oxut.' },
+            de: { or: 'oder', scan: 'QR-Code scannen', myCode: 'Mein QR-Code', myCodeHelp: 'Lass diesen Code von Freunden scannen, damit sie dich hinzufügen. Beim Hinzufügen per QR wird auch dein Sicherheitsschlüssel geprüft, sodass sich niemand als du ausgeben kann.', scanTitle: 'Richte die Kamera auf einen AceTalk-QR-Code', fromImage: 'Bild auswählen', noCamera: 'Die Kamera konnte nicht geöffnet werden. Du kannst stattdessen ein Bild des Codes auswählen.', notAce: 'Das ist kein AceTalk-Code.', verified: 'Per QR-Code verifiziert', mismatch: 'Der Sicherheitsschlüssel passt nicht zum QR-Code, daher wurde der Kontakt nicht hinzugefügt. Prüft den Code persönlich.', self: 'Das ist dein eigener Code.', nowVerified: 'ist jetzt verifiziert', libFail: 'QR-Werkzeuge konnten nicht geladen werden. Prüfe deine Verbindung.', move: 'Konto auf ein anderes Gerät übertragen', moveHelp: 'Kontakte, Nachrichten und Einstellungen werden auf das neue Gerät übertragen und dieses Gerät wird abgemeldet. Tippe auf dem neuen Gerät auf „Connect with QR“ und scanne den Code.', moveTitle: 'Auf dem neuen Gerät scannen', expires: 'Läuft ab in', confirm: 'Ein Gerät möchte dein Konto ({dev}). Alles dorthin übertragen? Dieses Gerät wird abgemeldet und seine AceTalk-Daten werden gelöscht.', moved: 'Dein Konto wurde übertragen. Dieses Gerät ist abgemeldet.', offline: 'Verbinde dich zuerst mit AceTalk.', expired: 'Der Code ist abgelaufen. Erstelle einen neuen.', hasAccount: 'Auf diesem Gerät gibt es schon ein AceTalk-Konto. Lösche es zuerst in den Einstellungen und scanne dann erneut.' },
+            es: { or: 'o', scan: 'Escanear código QR', myCode: 'Mi código QR', myCodeHelp: 'Deja que un amigo lo escanee para añadirte. Añadir por QR también comprueba tu clave de seguridad, así nadie puede hacerse pasar por ti.', scanTitle: 'Apunta la cámara a un código QR de AceTalk', fromImage: 'Elegir una imagen', noCamera: 'No se pudo abrir la cámara. Puedes elegir una imagen del código.', notAce: 'No es un código de AceTalk.', verified: 'Verificado con código QR', mismatch: 'La clave de seguridad no coincide con el código QR, así que el contacto no se añadió. Revisad el código en persona.', self: 'Este es tu propio código.', nowVerified: 'ya está verificado', libFail: 'No se pudieron cargar las herramientas QR. Revisa tu conexión.', move: 'Pasar la cuenta a otro dispositivo', moveHelp: 'Tus contactos, mensajes y ajustes pasan al nuevo dispositivo y en este se cierra la sesión. En el nuevo dispositivo, pulsa «Connect with QR» y escanea el código.', moveTitle: 'Escanéalo en tu nuevo dispositivo', expires: 'Caduca en', confirm: 'Un dispositivo quiere tu cuenta ({dev}). ¿Pasarlo todo a él? En este dispositivo se cerrará la sesión y se borrarán sus datos de AceTalk.', moved: 'Tu cuenta se pasó. En este dispositivo se cerró la sesión.', offline: 'Primero conéctate a AceTalk.', expired: 'El código caducó. Crea uno nuevo.', hasAccount: 'Este dispositivo ya tiene una cuenta de AceTalk. Elimínala primero en Ajustes y vuelve a escanear.' },
+            fr: { or: 'ou', scan: 'Scanner un code QR', myCode: 'Mon code QR', myCodeHelp: 'Fais scanner ce code par un ami pour qu’il t’ajoute. L’ajout par QR vérifie aussi ta clé de sécurité, donc personne ne peut se faire passer pour toi.', scanTitle: 'Dirige la caméra vers un code QR AceTalk', fromImage: 'Choisir une image', noCamera: 'Impossible d’ouvrir la caméra. Tu peux choisir une image du code à la place.', notAce: 'Ce n’est pas un code AceTalk.', verified: 'Vérifié par code QR', mismatch: 'La clé de sécurité ne correspond pas au code QR, le contact n’a donc pas été ajouté. Vérifiez le code en personne.', self: 'C’est ton propre code.', nowVerified: 'est maintenant vérifié', libFail: 'Impossible de charger les outils QR. Vérifie ta connexion.', move: 'Transférer le compte vers un autre appareil', moveHelp: 'Tes contacts, messages et réglages passent sur le nouvel appareil et cet appareil est déconnecté. Sur le nouvel appareil, appuie sur « Connect with QR » et scanne le code.', moveTitle: 'Scanne-le sur ton nouvel appareil', expires: 'Expire dans', confirm: 'Un appareil demande ton compte ({dev}). Tout transférer vers lui ? Cet appareil sera déconnecté et ses données AceTalk supprimées.', moved: 'Ton compte a été transféré. Cet appareil est déconnecté.', offline: 'Connecte-toi d’abord à AceTalk.', expired: 'Le code a expiré. Crée-en un nouveau.', hasAccount: 'Cet appareil a déjà un compte AceTalk. Supprime-le d’abord dans les Paramètres, puis scanne à nouveau.' },
+            ru: { or: 'или', scan: 'Сканировать QR-код', myCode: 'Мой QR-код', myCodeHelp: 'Пусть друг отсканирует этот код, чтобы добавить вас. При добавлении по QR проверяется и ключ безопасности, поэтому никто не сможет выдать себя за вас.', scanTitle: 'Наведите камеру на QR-код AceTalk', fromImage: 'Выбрать изображение', noCamera: 'Не удалось открыть камеру. Можно выбрать изображение кода.', notAce: 'Это не код AceTalk.', verified: 'Подтверждено QR-кодом', mismatch: 'Ключ безопасности не совпадает с QR-кодом, поэтому контакт не добавлен. Сверьте код лично.', self: 'Это ваш собственный код.', nowVerified: 'теперь подтверждён', libFail: 'Не удалось загрузить инструменты QR. Проверьте подключение.', move: 'Перенести аккаунт на другое устройство', moveHelp: 'Контакты, сообщения и настройки перейдут на новое устройство, а на этом произойдёт выход. На новом устройстве нажмите «Connect with QR» и отсканируйте код.', moveTitle: 'Отсканируйте на новом устройстве', expires: 'Истекает через', confirm: 'Устройство запрашивает ваш аккаунт ({dev}). Перенести всё на него? На этом устройстве произойдёт выход, а данные AceTalk будут удалены.', moved: 'Аккаунт перенесён. На этом устройстве выполнен выход.', offline: 'Сначала подключитесь к AceTalk.', expired: 'Срок действия кода истёк. Создайте новый.', hasAccount: 'На этом устройстве уже есть аккаунт AceTalk. Сначала удалите его в настройках, затем отсканируйте снова.' },
+            it: { or: 'oppure', scan: 'Scansiona codice QR', myCode: 'Il mio codice QR', myCodeHelp: 'Fai scansionare questo codice a un amico per farti aggiungere. L’aggiunta tramite QR controlla anche la tua chiave di sicurezza, così nessuno può fingersi te.', scanTitle: 'Inquadra un codice QR di AceTalk', fromImage: 'Scegli un’immagine', noCamera: 'Impossibile aprire la fotocamera. Puoi scegliere un’immagine del codice.', notAce: 'Non è un codice AceTalk.', verified: 'Verificato con codice QR', mismatch: 'La chiave di sicurezza non corrisponde al codice QR, quindi il contatto non è stato aggiunto. Controllate il codice di persona.', self: 'Questo è il tuo codice.', nowVerified: 'ora è verificato', libFail: 'Impossibile caricare gli strumenti QR. Controlla la connessione.', move: 'Sposta l’account su un altro dispositivo', moveHelp: 'Contatti, messaggi e impostazioni passano al nuovo dispositivo e questo viene disconnesso. Sul nuovo dispositivo premi «Connect with QR» e scansiona il codice.', moveTitle: 'Scansionalo sul nuovo dispositivo', expires: 'Scade tra', confirm: 'Un dispositivo chiede il tuo account ({dev}). Spostare tutto lì? Questo dispositivo verrà disconnesso e i suoi dati AceTalk eliminati.', moved: 'Il tuo account è stato spostato. Questo dispositivo è disconnesso.', offline: 'Prima connettiti ad AceTalk.', expired: 'Il codice è scaduto. Creane uno nuovo.', hasAccount: 'Questo dispositivo ha già un account AceTalk. Eliminalo prima nelle Impostazioni, poi scansiona di nuovo.' },
+            ja: { or: 'または', scan: 'QRコードを読み取る', myCode: '自分のQRコード', myCodeHelp: '友だちにこのコードを読み取ってもらうと追加されます。QRで追加するとセキュリティキーも確認されるので、誰もあなたになりすませません。', scanTitle: 'AceTalkのQRコードにカメラを向けてください', fromImage: '画像を選ぶ', noCamera: 'カメラを開けませんでした。代わりにコードの画像を選べます。', notAce: 'AceTalkのコードではありません。', verified: 'QRコードで確認済み', mismatch: 'セキュリティキーがQRコードと一致しないため、連絡先は追加されませんでした。直接会ってコードを確認してください。', self: 'これはあなた自身のコードです。', nowVerified: 'を確認しました', libFail: 'QRツールを読み込めませんでした。接続を確認してください。', move: 'アカウントを別の端末に移す', moveHelp: '連絡先・メッセージ・設定が新しい端末に移り、この端末はログアウトします。新しい端末で「Connect with QR」を押してコードを読み取ってください。', moveTitle: '新しい端末で読み取ってください', expires: '有効期限まで', confirm: '端末（{dev}）があなたのアカウントを求めています。すべて移しますか？この端末はログアウトし、AceTalkのデータは削除されます。', moved: 'アカウントを移しました。この端末はログアウトしました。', offline: '先にAceTalkに接続してください。', expired: 'コードの有効期限が切れました。新しく作成してください。', hasAccount: 'この端末にはすでにAceTalkアカウントがあります。先に設定から削除し、もう一度読み取ってください。' },
+            zh: { or: '或', scan: '扫描二维码', myCode: '我的二维码', myCodeHelp: '让朋友扫描此码来添加你。通过二维码添加还会核对你的安全密钥，没人能冒充你。', scanTitle: '将摄像头对准 AceTalk 二维码', fromImage: '选择图片', noCamera: '无法打开摄像头。你可以改为选择二维码图片。', notAce: '这不是 AceTalk 二维码。', verified: '已通过二维码验证', mismatch: '安全密钥与二维码不符，因此未添加此联系人。请当面核对二维码。', self: '这是你自己的二维码。', nowVerified: '现已验证', libFail: '无法加载二维码工具。请检查网络。', move: '将账户转移到其他设备', moveHelp: '你的联系人、消息和设置会转移到新设备，此设备将退出登录。在新设备上点按“Connect with QR”并扫描此码。', moveTitle: '在新设备上扫描', expires: '剩余时间', confirm: '有设备请求你的账户（{dev}）。要把所有内容转移过去吗？此设备将退出登录并删除 AceTalk 数据。', moved: '账户已转移。此设备已退出登录。', offline: '请先连接 AceTalk。', expired: '二维码已过期。请重新生成。', hasAccount: '此设备已有 AceTalk 账户。请先在设置中删除，然后再扫描。' }
+        };
+        // the new device is on the sign-up screen, which is always English
+        const SETUP = { connectQr: 'Connect with QR', connecting: 'Connecting to your other device…', approve: 'Approve on your other device.', received: 'Account received. Opening AceTalk…', declined: 'The other device declined.', badCode: 'This code is not valid or has expired. Create a new one on your other device.', noReach: 'Could not reach your other device. Keep AceTalk open there and try again.', contactFirst: 'This is a contact’s code. Sign in first; they will be added right after.', title: 'Connect with QR' };
+        const qx = k => (onSetupScreen() ? QX.en : (QX[currentLang] || QX.en))[k] || QX.en[k];
+        const $q = id => document.getElementById(id);
+        const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+        const PEER_OPTS = { host: '0.peerjs.com', port: 443, secure: true, pingInterval: 10000 };
+        const toB64url = bytes => { let s = ''; const u = new Uint8Array(bytes); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+        const fromB64url = t => { const s = atob(t.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((t.length + 3) % 4)); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+        const appBase = () => location.origin + location.pathname;
+
+        /* ---------- libraries: from AceTalk's own site first, then public CDNs (only loaded when QR is used) ---------- */
+        const LIBS = {
+            qrcode: ['qrcode.js', 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js', 'https://unpkg.com/qrcode-generator@1.4.4/qrcode.js'],
+            jsQR: ['jsQR.js', 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js', 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js']
+        };
+        const libLoading = {};
+        function loadLib(name) {
+            if (typeof window[name] === 'function') return Promise.resolve(true);
+            return libLoading[name] || (libLoading[name] = new Promise(resolve => {
+                let i = 0;
+                (function next() {
+                    if (typeof window[name] === 'function') return resolve(true);
+                    if (i >= LIBS[name].length) { delete libLoading[name]; return resolve(false); }
+                    const sc = document.createElement('script'); sc.src = LIBS[name][i++];
+                    sc.onload = () => (typeof window[name] === 'function') ? resolve(true) : next(); sc.onerror = next;
+                    document.head.appendChild(sc);
+                })();
+            }));
+        }
+        async function drawQR(canvas, text, cssSize) {
+            if (!(await loadLib('qrcode'))) { showToast(qx('libFail'), '', 'error'); return false; }
+            const q = qrcode(0, 'M'); q.addData(text); q.make();
+            const n = q.getModuleCount(), quiet = 4, total = n + quiet * 2, cell = Math.max(2, Math.floor(cssSize / total)), dpr = Math.min(3, window.devicePixelRatio || 1);
+            canvas.width = canvas.height = total * cell * dpr; canvas.style.width = canvas.style.height = (total * cell) + 'px';
+            const g = canvas.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, canvas.width, canvas.height); g.fillStyle = '#000';
+            for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect((c + quiet) * cell * dpr, (r + quiet) * cell * dpr, cell * dpr, cell * dpr);
+            return true;
+        }
+        window.__drawQR = drawQR;
+
+        /* ---------- scanner: the browser's own detector when it has one, otherwise jsQR ---------- */
+        async function makeDetector() {
+            if ('BarcodeDetector' in window) { try { const f = await BarcodeDetector.getSupportedFormats(); if (f.includes('qr_code')) { const d = new BarcodeDetector({ formats: ['qr_code'] }); return src => d.detect(src).then(r => (r[0] && r[0].rawValue) || null); } } catch (e) {} }
+            if (!(await loadLib('jsQR'))) return null;
+            const cv = document.createElement('canvas'), g = cv.getContext('2d', { willReadFrequently: true });
+            return async src => {
+                const w0 = src.videoWidth || src.naturalWidth || src.width, h0 = src.videoHeight || src.naturalHeight || src.height; if (!w0 || !h0) return null;
+                const k = Math.min(1, 720 / Math.max(w0, h0)); cv.width = Math.round(w0 * k); cv.height = Math.round(h0 * k);
+                g.drawImage(src, 0, 0, cv.width, cv.height); const img = g.getImageData(0, 0, cv.width, cv.height);
+                const r = jsQR(img.data, cv.width, cv.height, { inversionAttempts: 'attemptBoth' }); return r ? r.data : null;
+            };
+        }
+        function scanQR() {
+            return new Promise(async resolve => {
+                const en = onSetupScreen(), d = en ? dict.en : (dict[currentLang] || dict.en);
+                const ov = mk('div', 'qr-scan'); ov.setAttribute('role', 'dialog');
+                const video = mk('video'); video.playsInline = true; video.muted = true; video.setAttribute('playsinline', '');
+                const frame = mk('div', 'qr-frame'), bar = mk('div', 'qr-bar'), cap = mk('div', 'qr-cap', qx('scanTitle')), acts = mk('div', 'qr-acts');
+                const pick = mk('label', 'qr-btn'), file = mk('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true; pick.append(file, mk('span', '', qx('fromImage')));
+                const cancel = mk('button', 'qr-btn', String(d.btnCancel || 'Cancel')); cancel.type = 'button';
+                acts.append(pick, cancel); bar.append(cap, acts); ov.append(video, frame, bar); document.body.append(ov);
+                let stream = null, done = false, timer = null;
+                const finish = txt => { if (done) return; done = true; clearInterval(timer); document.removeEventListener('keydown', onKey); if (stream) stream.getTracks().forEach(t => t.stop()); ov.remove(); resolve(txt); };
+                const onKey = e => { if (e.key === 'Escape') finish(null); }; document.addEventListener('keydown', onKey);
+                cancel.onclick = () => finish(null);
+                const detect = await makeDetector();
+                if (!detect) { showToast(qx('libFail'), '', 'error'); finish(null); return; }
+                file.onchange = async () => {
+                    const f = file.files && file.files[0]; file.value = ''; if (!f) return;
+                    try { const bmp = await createImageBitmap(f); const t = await detect(bmp); if (t) finish(t); else showToast(qx('notAce'), '', 'warning'); } catch (e) { showToast(qx('notAce'), '', 'warning'); }
+                };
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                    if (done) { stream.getTracks().forEach(t => t.stop()); return; }
+                    video.srcObject = stream; await video.play().catch(() => {});
+                    let busy = false;
+                    timer = setInterval(async () => { if (busy || done || video.readyState < 2) return; busy = true; try { const t = await detect(video); if (t) finish(t); } catch (e) {} busy = false; }, 200);
+                } catch (e) { ov.classList.add('nocam'); cap.textContent = qx('noCamera'); }
+            });
+        }
+        window.__scanQR = scanQR;
+        const parseQR = text => {
+            const m = /#(add|move)=([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)/.exec(String(text || ''));
+            if (!m) return null;
+            if (m[1] === 'add' && /^[a-z0-9_]{3,40}$/.test(m[2]) && /^[A-Za-z0-9_-]{22}$/.test(m[3])) return { kind: 'add', name: m[2], fp: m[3] };
+            if (m[1] === 'move' && /^acemv_[a-z0-9]{20}$/.test(m[2]) && /^[A-Za-z0-9_-]{43}$/.test(m[3])) return { kind: 'move', id: m[2], secret: m[3] };
+            return null;
+        };
+        window.__parseQR = parseQR;
+
+        /* ---------- key fingerprints and "verified by QR" ---------- */
+        const fingerprint = async pub => toB64url((await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pubId(pub)))).slice(0, 16));
+        const loadVerified = () => { try { return JSON.parse(localStorage.getItem('ace_verified_keys') || '{}'); } catch (e) { return {}; } };
+        const markVerified = (pid, pub) => { const v = loadVerified(); v[pid] = pubId(pub); try { localStorage.setItem('ace_verified_keys', JSON.stringify(v)); } catch (e) {} };
+        window.__isVerified = (pid, pub) => !!pub && loadVerified()[pid] === pubId(pub);
+        window.__verifiedText = () => qx('verified');
+        window.__expectKey = window.__expectKey || {};
+        // called by the handshake: a contact added by QR must have exactly the key in the QR code
+        window.__checkExpectedKey = async (pid, pub) => {
+            const exp = window.__expectKey[pid]; if (!exp) return true;
+            delete window.__expectKey[pid];
+            if ((await fingerprint(pub)) !== exp) { pendingOutbound.delete(pid); showToast(qx('mismatch'), '@' + peerIdToName(pid), 'error', 12000); return false; }
+            const pins = loadPins(); pins[pid] = pub; savePins(pins); markVerified(pid, pub); return true;
+        };
+        async function addByQR(p) {
+            const me = String(myProfile.id || '').replace('@', '');
+            if (p.name === me) { showToast(qx('self'), '', 'info'); return; }
+            const pid = 'ace_' + p.name, pin = loadPins()[pid];
+            if (loadContacts()[pid]) {
+                if (pin && (await fingerprint(pin)) === p.fp) { markVerified(pid, pin); showToast('@' + p.name + ' ' + qx('nowVerified') + ' ✓', '', 'info'); }
+                else if (pin) showToast(qx('mismatch'), '@' + p.name, 'error', 12000);
+                else window.__expectKey[pid] = p.fp;
+                if (window.closePanel) closePanel(); return;
+            }
+            if (!peer || peer.destroyed) { showToast(qx('offline'), '', 'warning'); return; }
+            window.__expectKey[pid] = p.fp;
+            const inp = $q('new-contact-id'); if (inp) { inp.value = p.name; addContact(); }
+        }
+
+        /* ---------- "Add contact" panel: scan + my own code ---------- */
+        async function renderMyCode() {
+            const box = $q('qr-mine'); if (!box || !myProfile.id) return;
+            const name = String(myProfile.id).replace('@', ''), id = await getIdentity(), fp = await fingerprint(id.pub);
+            const url = appBase() + '#add=' + name + '.' + fp;
+            if (box.dataset.url === url && box.dataset.lang === currentLang) return;
+            box.dataset.url = url; box.dataset.lang = currentLang; box.innerHTML = '';
+            const cv = mk('canvas', 'qr-canvas'); cv.setAttribute('aria-label', qx('myCode'));
+            box.append(mk('div', 'qr-mine-title', qx('myCode')), cv, mk('div', 'qr-mine-id', '@' + name), mk('p', 'qr-note', qx('myCodeHelp')));
+            await drawQR(cv, url, 220);
+        }
+        function buildAddPane() {
+            const pane = $q('pane-add'); if (!pane || $q('qr-sec')) return;
+            const sec = mk('div', 'qr-sec'); sec.id = 'qr-sec';
+            const scanBtn = mk('button', 'btn-primary qr-scan-btn'); scanBtn.type = 'button'; scanBtn.id = 'qr-scan-btn';
+            scanBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4"></path><rect x="7" y="7" width="10" height="10"></rect></svg><span></span>';
+            scanBtn.onclick = async () => { const t = await scanQR(); if (t) handleScanned(t); };
+            const mine = mk('div', 'qr-mine'); mine.id = 'qr-mine';
+            sec.append(mk('div', 'qr-or', qx('or')), scanBtn, mine); pane.append(sec);
+        }
+        function labelAddPane() {
+            const sec = $q('qr-sec'); if (!sec) return;
+            sec.querySelector('.qr-or').textContent = qx('or'); sec.querySelector('#qr-scan-btn span').textContent = qx('scan');
+        }
+        function handleScanned(text) {
+            const p = parseQR(text);
+            if (!p) { showToast(qx('notAce'), '', 'warning'); return; }
+            if (p.kind === 'add') {
+                if (onSetupScreen()) { try { sessionStorage.setItem('ace_pending_add', JSON.stringify(p)); } catch (e) {} showToast(SETUP.contactFirst, '@' + p.name, 'info', 8000); return; }
+                addByQR(p);
+            } else if (onSetupScreen()) receiveMove(p);
+            else showToast(qx('hasAccount'), '', 'warning', 9000);
+        }
+
+        /* ---------- moving the account: old device ---------- */
+        const SKIP = /^(ace_news_cache|ace_news_routes|acetalk_wallpaper)$/;
+        const isAceKey = k => /^(ace|acetalk)[A-Za-z0-9_@.-]{0,80}$/.test(k);
+        function collect() { const out = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && isAceKey(k) && !SKIP.test(k)) out[k] = localStorage.getItem(k); } return out; }
+        async function moveKey(secret) {
+            const base = await crypto.subtle.importKey('raw', secret, 'HKDF', false, ['deriveKey']);
+            return crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: new TextEncoder().encode('acetalk-move'), info: new TextEncoder().encode('acetalk-move-v1') }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+        }
+        const deviceName = () => { const u = navigator.userAgent;
+            const os = /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac OS X/.test(u) ? 'Mac' : /CrOS/.test(u) ? 'ChromeOS' : /Linux/.test(u) ? 'Linux' : 'Device';
+            const br = /Edg\//.test(u) ? 'Edge' : /Firefox\//.test(u) ? 'Firefox' : /SamsungBrowser/.test(u) ? 'Samsung Internet' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : '';
+            return os + (br ? ' · ' + br : ''); };
+        function clearAceData() { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && isAceKey(k)) ks.push(k); } ks.forEach(k => localStorage.removeItem(k)); }
+        window.startMoveAccount = async function () {
+            if (!peer || peer.destroyed || !peer.open) { showToast(qx('offline'), '', 'warning'); return; }
+            const secret = crypto.getRandomValues(new Uint8Array(32));
+            const rnd = crypto.getRandomValues(new Uint8Array(20)), tempId = 'acemv_' + Array.from(rnd, b => 'abcdefghijklmnopqrstuvwxyz0123456789'[b % 36]).join('');
+            const url = appBase() + '#move=' + tempId + '.' + toB64url(secret);
+            const ov = mk('div', 'modal-overlay'), box = mk('div', 'modal-box move-box'), cv = mk('canvas', 'qr-canvas'), count = mk('div', 'move-count'), d = dict[currentLang] || dict.en;
+            const cancel = mk('button', 'btn-cancel', d.btnCancel); cancel.type = 'button';
+            box.append(mk('div', 'modal-title', qx('moveTitle')), cv, count, mk('p', 'qr-note', qx('moveHelp')), cancel);
+            ov.append(box); document.body.append(ov); ov.style.display = 'flex';
+            if (window.closePanel) closePanel();
+            let tp = null, used = false, finished = false, left = 120;
+            const close = () => { clearInterval(tick); try { if (tp && !tp.destroyed) tp.destroy(); } catch (e) {} ov.remove(); };
+            cancel.onclick = close;
+            const tick = setInterval(() => { left--; count.textContent = qx('expires') + ' ' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0'); if (left <= 0 && !used) { close(); showToast(qx('expired'), '', 'warning'); } }, 1000);
+            count.textContent = qx('expires') + ' 2:00';
+            if (!(await drawQR(cv, url, 240))) { close(); return; }
+            tp = new Peer(tempId, PEER_OPTS);
+            tp.on('error', () => {});
+            tp.on('connection', conn => {
+                if (used) { try { conn.close(); } catch (e) {} return; }
+                used = true;
+                conn.on('data', async msg => {
+                    if (!msg || typeof msg !== 'object') return;
+                    if (msg.type === 'hello') {
+                        const dev = cleanText(msg.dev, 60) || '?';
+                        if (!confirm(qx('confirm').replace('{dev}', dev))) { try { conn.send({ type: 'no' }); } catch (e) {} setTimeout(close, 300); return; }
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await moveKey(secret), new TextEncoder().encode(JSON.stringify({ v: 1, data: collect() })));
+                        conn.send({ type: 'bundle', iv: toB64url(iv), data: toB64url(ct) });
+                    } else if (msg.type === 'done' && !finished) {
+                        finished = true; close();
+                        try { if (peer && !peer.destroyed) peer.destroy(); } catch (e) {}
+                        clearAceData();
+                        showToast(qx('moved'), '', 'info', 6000);
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                });
+            });
+        };
+
+        /* ---------- moving the account: new device (sign-up screen, English) ---------- */
+        async function receiveMove(p) {
+            const ov = mk('div', 'modal-overlay'), box = mk('div', 'modal-box move-box'), status = mk('p', 'move-status', SETUP.connecting);
+            const cancel = mk('button', 'btn-cancel', 'Cancel'); cancel.type = 'button';
+            box.append(mk('div', 'modal-title', SETUP.title), status, cancel); ov.append(box); document.body.append(ov); ov.style.display = 'flex';
+            let np = null, over = false;
+            const end = (msg, kind) => { if (over) return; over = true; clearTimeout(timer); try { if (np && !np.destroyed) np.destroy(); } catch (e) {} ov.remove(); if (msg) showToast(msg, '', kind || 'error', 9000); };
+            cancel.onclick = () => end();
+            const timer = setTimeout(() => end(SETUP.noReach), 90000);
+            if (!(await window.peerReady)) { end(loginErrText('lib')); return; }
+            const secret = fromB64url(p.secret);
+            np = new Peer(PEER_OPTS);
+            np.on('error', e => end(e && e.type === 'peer-unavailable' ? SETUP.badCode : SETUP.noReach));
+            np.on('open', () => {
+                const c = np.connect(p.id, { reliable: true });
+                c.on('open', () => { c.send({ type: 'hello', dev: deviceName() }); status.textContent = SETUP.approve; });
+                c.on('data', async msg => {
+                    if (!msg || typeof msg !== 'object') return;
+                    if (msg.type === 'no') { end(SETUP.declined); return; }
+                    if (msg.type !== 'bundle' || typeof msg.iv !== 'string' || typeof msg.data !== 'string') return;
+                    let bundle;
+                    try { bundle = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64url(msg.iv) }, await moveKey(secret), fromB64url(msg.data)))); }
+                    catch (e) { end(SETUP.badCode); return; }
+                    const data = bundle && bundle.data;
+                    if (!data || typeof data !== 'object' || !data.ace_myProfile) { end(SETUP.badCode); return; }
+                    clearAceData();
+                    Object.keys(data).forEach(k => { if (isAceKey(k) && typeof data[k] === 'string') { try { localStorage.setItem(k, data[k]); } catch (e) {} } });
+                    try { c.send({ type: 'done' }); } catch (e) {}
+                    status.textContent = SETUP.received; over = true; clearTimeout(timer);
+                    setTimeout(() => { try { np.destroy(); } catch (e) {} location.replace(location.pathname); }, 1200);
+                });
+            });
+        }
+
+        /* ---------- wiring ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            // sign-up screen: "Connect with QR"
+            const login = $q('t-login-btn');
+            if (login && !$q('setup-qr-btn')) {
+                const b = mk('button', 'setup-qr'); b.id = 'setup-qr-btn'; b.type = 'button';
+                b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4"></path><rect x="7" y="7" width="10" height="10"></rect></svg><span></span>';
+                b.querySelector('span').textContent = SETUP.connectQr;
+                b.onclick = async () => { const t = await scanQR(); if (t) handleScanned(t); };
+                login.after(b);
+            }
+            buildAddPane(); labelAddPane();
+            const mv = $q('move-acc-btn'); if (mv) mv.onclick = () => window.startMoveAccount();
+        });
+        const prevPane = window.__onPane;
+        window.__onPane = k => { if (prevPane) prevPane(k); if (k === 'add') { labelAddPane(); renderMyCode(); } if (k === 'settings') { const mv = $q('move-acc-btn'); if (mv) mv.textContent = qx('move'); } };
+        // after signing in, a contact code scanned on the sign-up screen is added
+        const origAfterLogin = window.setupAfterLogin;
+        window.setupAfterLogin = function () {
+            const r = origAfterLogin.apply(this, arguments);
+            let p = null; try { p = JSON.parse(sessionStorage.getItem('ace_pending_add') || 'null'); sessionStorage.removeItem('ace_pending_add'); } catch (e) {}
+            if (p && p.kind === 'add') setTimeout(() => addByQR(p), 1500);
+            return r;
+        };
+        // links opened by a phone's own camera app: acetalk.app/#add=… or #move=…
+        window.addEventListener('load', () => {
+            const p = parseQR(location.hash); if (!p) return;
+            history.replaceState(null, '', location.pathname + location.search);
+            const signedIn = !!localStorage.getItem('ace_myProfile');
+            if (p.kind === 'move') { if (signedIn) showToast(qx('hasAccount'), '', 'warning', 9000); else setTimeout(() => receiveMove(p), 300); return; }
+            if (!signedIn) { try { sessionStorage.setItem('ace_pending_add', JSON.stringify(p)); } catch (e) {} showToast(SETUP.contactFirst, '@' + p.name, 'info', 8000); return; }
+            let tries = 0; const wait = setInterval(() => { if ((peer && peer.open) || ++tries > 60) { clearInterval(wait); if (peer && peer.open) { if (window.openPanel) openPanel('add'); addByQR(p); } } }, 500);
+        });
+    })();
+    /* ================= end QR codes ================= */
+
+    /* ================= AceTalk 3.4 Dahlia: install as an app ================= */
+    (function () {
+        const IX = {
+            en: { label: 'Use as an app', install: 'Install', installed: 'Installed ✓', ios: 'On iPhone or iPad: tap Share, then “Add to Home Screen”.', manual: 'Open your browser menu and choose “Install app” or “Add to Home screen” (Chrome, Edge, Samsung Internet).', done: 'AceTalk was installed' },
+            tr: { label: 'Uygulama olarak kullan', install: 'Yükle', installed: 'Yüklü ✓', ios: 'iPhone veya iPad’de: Paylaş’a, sonra “Ana Ekrana Ekle”ye dokun.', manual: 'Tarayıcı menüsünü aç ve “Uygulamayı yükle” ya da “Ana ekrana ekle”yi seç (Chrome, Edge, Samsung Internet).', done: 'AceTalk yüklendi' },
+            az: { label: 'Tətbiq kimi istifadə et', install: 'Quraşdır', installed: 'Quraşdırılıb ✓', ios: 'iPhone və ya iPad-də: Paylaş, sonra “Əsas ekrana əlavə et” düyməsinə toxun.', manual: 'Brauzer menyusunu aç və “Tətbiqi quraşdır” və ya “Əsas ekrana əlavə et” seç (Chrome, Edge, Samsung Internet).', done: 'AceTalk quraşdırıldı' },
+            de: { label: 'Als App verwenden', install: 'Installieren', installed: 'Installiert ✓', ios: 'Auf iPhone oder iPad: Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“.', manual: 'Öffne das Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“ (Chrome, Edge, Samsung Internet).', done: 'AceTalk wurde installiert' },
+            es: { label: 'Usar como app', install: 'Instalar', installed: 'Instalada ✓', ios: 'En iPhone o iPad: toca Compartir y luego «Añadir a pantalla de inicio».', manual: 'Abre el menú del navegador y elige «Instalar aplicación» o «Añadir a pantalla de inicio» (Chrome, Edge, Samsung Internet).', done: 'AceTalk se instaló' },
+            fr: { label: 'Utiliser comme une app', install: 'Installer', installed: 'Installée ✓', ios: 'Sur iPhone ou iPad : touche Partager, puis « Sur l’écran d’accueil ».', manual: 'Ouvre le menu du navigateur et choisis « Installer l’application » ou « Ajouter à l’écran d’accueil » (Chrome, Edge, Samsung Internet).', done: 'AceTalk a été installée' },
+            ru: { label: 'Использовать как приложение', install: 'Установить', installed: 'Установлено ✓', ios: 'На iPhone или iPad: нажмите «Поделиться», затем «На экран „Домой“».', manual: 'Откройте меню браузера и выберите «Установить приложение» или «Добавить на главный экран» (Chrome, Edge, Samsung Internet).', done: 'AceTalk установлен' },
+            it: { label: 'Usa come app', install: 'Installa', installed: 'Installata ✓', ios: 'Su iPhone o iPad: tocca Condividi, poi «Aggiungi alla schermata Home».', manual: 'Apri il menu del browser e scegli «Installa app» o «Aggiungi a schermata Home» (Chrome, Edge, Samsung Internet).', done: 'AceTalk è stata installata' },
+            ja: { label: 'アプリとして使う', install: 'インストール', installed: 'インストール済み ✓', ios: 'iPhone・iPadの場合：共有ボタンをタップし、「ホーム画面に追加」を選びます。', manual: 'ブラウザーのメニューを開き、「アプリをインストール」または「ホーム画面に追加」を選びます（Chrome、Edge、Samsung Internet）。', done: 'AceTalkをインストールしました' },
+            zh: { label: '作为应用使用', install: '安装', installed: '已安装 ✓', ios: '在 iPhone 或 iPad 上：点按“分享”，然后选择“添加到主屏幕”。', manual: '打开浏览器菜单，选择“安装应用”或“添加到主屏幕”（Chrome、Edge、三星浏览器）。', done: 'AceTalk 已安装' }
+        };
+        const ix = k => (IX[currentLang] || IX.en)[k] || IX.en[k];
+        let deferred = null;
+        const standalone = () => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } };
+        const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        function render() {
+            const lab = document.getElementById('t-install'), btn = document.getElementById('install-btn'), help = document.getElementById('install-help');
+            if (!lab || !btn || !help) return;
+            lab.textContent = ix('label');
+            if (standalone()) { btn.hidden = false; btn.disabled = true; btn.textContent = ix('installed'); help.hidden = true; return; }
+            btn.disabled = false; btn.textContent = ix('install'); btn.hidden = !deferred;
+            help.hidden = !!deferred; help.textContent = ios ? ix('ios') : ix('manual');
+        }
+        // the browser offers installing only when the site has a manifest and a service worker
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; render(); });
+        window.addEventListener('appinstalled', () => { deferred = null; render(); if (typeof showToast === 'function') showToast(ix('done'), '', 'info'); });
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('install-btn');
+            if (btn) btn.onclick = async () => { if (!deferred) return; const ev = deferred; deferred = null; try { await ev.prompt(); await ev.userChoice; } catch (e) {} render(); };
+            render();
+            const orig = window.renderHomeExtras;
+            if (orig && !orig.__install) { const w = function () { const r = orig.apply(this, arguments); render(); return r; }; w.__install = true; window.renderHomeExtras = w; }
+        });
+    })();
+    /* ================= end install as an app ================= */
 
 
     /* GLOBAL DEGISKENLER */
@@ -2214,7 +2870,7 @@
         safeInner('t-ui-security', xl('ui.security') || 'Security'); safePlaceholder('gif-search-input', xl('ui.gifSearch')); safeInner('call-tap-audio', CL('tapAudio'));
         const d = dict[lang] || dict['en'];
         updateGreeting();
-        safeInner('t-contacts', d.contacts); safeInner('t-statuses', d.statuses); safePlaceholder('message-input', d.msgPlaceholder); safeInner('t-modal-contact', d.addContact); safeInner('t-modal-status', d.addStatus); safeInner('t-lang', d.lang); safeInner('t-notif', d.notif); safeInner('t-wp', d.wp); safeInner('t-wp-reset', d.wpReset); safeInner('t-theme', d.theme); safeInner('t-ctx-pin', d.ctxPin); safeInner('t-ctx-unpin', d.ctxUnpin); safeInner('t-ctx-edit', d.ctxEdit); safeInner('t-ctx-del', d.ctxDel); safeInner('btn-save-prof', d.btnSave); safeInner('btn-cancel-prof', d.btnCancel); safeInner('btn-conn-add', d.btnConnect); safeInner('btn-cancel-add', d.btnCancel); safeInner('btn-share-stat', d.btnShare); safeInner('btn-cancel-stat', d.btnCancel); safeInner('btn-save-edit', d.btnSave); safeInner('btn-cancel-edit', d.btnCancel); safeInner('btn-close-set', d.btnClose); safePlaceholder('setup-id', d.phId); safePlaceholder('new-status-text', d.phStatus); safePlaceholder('edit-name', d.phName); safePlaceholder('new-contact-id', d.phId); safeInner('t-login-btn', d.loginBtn); safeInner('btn-screen', d.btnScreen); safeInner('btn-hangup', d.btnHangup); safeInner('btn-answer', d.btnAnswer); safeInner('btn-reject', d.btnReject); safeInner('t-edit-prof', d.editProf); safeInner('t-status-mode', d.statusMode); safeInner('t-prof-pic', d.profPic); safeInner('t-edit-msg-title', d.editMsgTitle); safeInner('t-mode-online', d.online); safeInner('t-mode-sleep', d.sleep); safeInner('t-mode-dnd', d.dnd); safeInner('t-bg-color', d.bgColor); safeInner('t-delete-acc', d.deleteAcc); safeInner('tab-btn-gen', d.tabGen); safeInner('tab-btn-cust', d.tabCust); safeInner('t-color-reset', d.colorReset); safeInner('t-donate-btn', d.donateBtn); safeInner('t-donate-title', d.donateTitle); safeInner('t-donate-text', d.donateText); safeInner('btn-close-donate', d.btnClose); safeInner('btn-req-accept', d.accept); safeInner('btn-req-reject', d.reject); safeInner('req-sub', d.connReqSub); safeInner('t-archived-title', d.archivedContacts); safeInner('t-del-contact-btn', d.delContact); safeInner('t-archive-btn', d.archive); safeInner('t-reset-avatar', d.resetAvatar); safeInner('t-info-title', d.infoTitle); safeInner('t-info-text', d.infoText); safeInner('btn-close-info', d.btnClose); safeInner('t-settings-title', d.settings); safeInner('t-theme-modal-title', d.selectTheme); safeInner('t-interface-theme', d.interfaceTheme); safeInner('t-theme-btn', d.themeBtn); safeInner('btn-close-theme', d.btnClose);
+        safeInner('t-contacts', d.contacts); safeInner('t-statuses', d.statuses); safePlaceholder('message-input', d.msgPlaceholder); safeInner('t-modal-contact', d.addContact); safeInner('t-modal-status', d.addStatus); safeInner('t-lang', d.lang); safeInner('t-notif', d.notif); safeInner('t-wp', d.wp); safeInner('t-wp-reset', d.wpReset); safeInner('t-theme', d.theme); safeInner('t-ctx-pin', d.ctxPin); safeInner('t-ctx-unpin', d.ctxUnpin); safeInner('t-ctx-edit', d.ctxEdit); safeInner('t-ctx-del', d.ctxDel); safeInner('btn-save-prof', d.btnSave); safeInner('btn-cancel-prof', d.btnCancel); safeInner('btn-conn-add', d.btnConnect); safeInner('btn-cancel-add', d.btnCancel); safeInner('btn-share-stat', d.btnShare); safeInner('btn-cancel-stat', d.btnCancel); safeInner('btn-save-edit', d.btnSave); safeInner('btn-cancel-edit', d.btnCancel); safeInner('btn-close-set', d.btnClose); safePlaceholder('new-status-text', d.phStatus); safePlaceholder('edit-name', d.phName); safePlaceholder('new-contact-id', d.phId); safeInner('btn-screen', d.btnScreen); safeInner('btn-hangup', d.btnHangup); safeInner('btn-answer', d.btnAnswer); safeInner('btn-reject', d.btnReject); safeInner('t-edit-prof', d.editProf); safeInner('t-status-mode', d.statusMode); safeInner('t-prof-pic', d.profPic); safeInner('t-edit-msg-title', d.editMsgTitle); safeInner('t-mode-online', d.online); safeInner('t-mode-sleep', d.sleep); safeInner('t-mode-dnd', d.dnd); safeInner('t-bg-color', d.bgColor); safeInner('t-delete-acc', d.deleteAcc); safeInner('tab-btn-gen', d.tabGen); safeInner('tab-btn-cust', d.tabCust); safeInner('t-color-reset', d.colorReset); safeInner('t-donate-btn', d.donateBtn); safeInner('t-donate-title', d.donateTitle); safeInner('t-donate-text', d.donateText); safeInner('btn-close-donate', d.btnClose); safeInner('btn-req-accept', d.accept); safeInner('btn-req-reject', d.reject); safeInner('req-sub', d.connReqSub); safeInner('t-archived-title', d.archivedContacts); safeInner('t-del-contact-btn', d.delContact); safeInner('t-archive-btn', d.archive); safeInner('t-reset-avatar', d.resetAvatar); safeInner('t-info-title', d.infoTitle); safeInner('t-info-text', d.infoText); safeInner('btn-close-info', d.btnClose); safeInner('t-settings-title', d.settings); safeInner('t-theme-modal-title', d.selectTheme); safeInner('t-interface-theme', d.interfaceTheme); safeInner('t-theme-btn', d.themeBtn); safeInner('btn-close-theme', d.btnClose);
 
         const fileNames = document.querySelectorAll('#wp-file-name, #avatar-file-name');
         fileNames.forEach(fn => { if(fn.innerText.includes('Choose') || fn.innerText.includes('Seç') || fn.innerText.includes('seç') || fn.innerText.includes('Datei wählen') || fn.innerText.includes('Elegir') || fn.innerText.includes('Выбрать') || fn.innerText.includes('ファイルを選択') || fn.innerText.includes('Wählen') || fn.innerText.includes('Elegir') || fn.innerText.includes('Choisir') || fn.innerText.includes('Выберите') || fn.innerText.includes('Scegli') || fn.innerText.includes('ファイル') || fn.innerText.includes('选择')) { fn.innerText = d.fileSelect; } });
@@ -2425,9 +3081,12 @@
 
     let connectionTimeout; let idRetries = 0;
 
+    // Dahlia: the sign-up screen is always in English
+    function onSetupScreen() { const s = document.getElementById('setup-screen'); return !!s && s.style.display !== 'none'; }
     function loginErrText(k) {
-        const _x = xl('login.' + k); if (_x !== undefined) return _x;
-        const tr = currentLang === 'tr', az = currentLang === 'az';
+        const en = onSetupScreen();
+        const _x = en ? undefined : xl('login.' + k); if (_x !== undefined) return _x;
+        const tr = !en && currentLang === 'tr', az = !en && currentLang === 'az';
         const T = {
             lib: tr ? 'Bağlantı kütüphanesi yüklenemedi' : az ? 'Bağlantı kitabxanası yüklənmədi' : 'Could not load the connection library',
             libDesc: tr ? 'İnternet bağlantını kontrol et. Okul/şirket ağı veya reklam engelleyici unpkg/jsdelivr adreslerini engelliyor olabilir.' : az ? 'İnternet bağlantını yoxla. Şəbəkə və ya reklam bloklayıcı unpkg/jsdelivr ünvanlarını bloklaya bilər.' : 'Check your connection. A school/work network or an ad blocker may be blocking unpkg/jsdelivr.',
@@ -2450,9 +3109,9 @@
         const rawVal = document.getElementById('setup-id').value.trim();
         const val = rawVal.toLowerCase().replace(/[^a-z0-9_]/g, '');
         const btn = document.getElementById('t-login-btn');
-        const d = dict[currentLang] || dict['en'];
-        if (val === 'test') { showToast(d.invalidId, ux('reservedId'), "error"); return; }
-        if(val.length < 3) { showToast(d.invalidId, ux('minChars'), "error"); return; }
+        const d = dict['en'];
+        if (val === 'test') { showToast(d.invalidId, UI_X.en.reservedId, "error"); return; }
+        if(val.length < 3) { showToast(d.invalidId, UI_X.en.minChars, "error"); return; }
         showToast(d.connecting, "", "info");
         btn.disabled = true;
         if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
@@ -2480,7 +3139,7 @@
         if(connectionTimeout) clearTimeout(connectionTimeout);
         const btn = document.getElementById('t-login-btn');
         if(btn) btn.disabled = false;
-        const d = dict[currentLang] || dict['en'];
+        const d = onSetupScreen() ? dict['en'] : (dict[currentLang] || dict['en']);
         if (err.type === 'unavailable-id') {
             const setupScr = document.getElementById('setup-screen');
             const returning = setupScr && setupScr.style.display === 'none' && myProfile && myProfile.id;
@@ -2655,6 +3314,7 @@
 
         const addStatusTile = document.createElement('div'); addStatusTile.className = 'tile tile-add'; addStatusTile.onclick = () => { const m = document.getElementById('add-status-modal'); if(m) m.style.display='flex'; };
         addStatusTile.innerHTML = `<div class="tile-initial">+</div><div class="tile-bottom"><div class="tile-name">${d.addStatus}</div></div>`; statusesRow.appendChild(addStatusTile);
+        if (window.renderStatusStacks) renderStatusStacks();
         if (window.renderRecentChats) renderRecentChats();
     }
 
@@ -2687,7 +3347,7 @@
 
     function addStatus() {
         const statusInput = document.getElementById('new-status-text'); const text = statusInput ? statusInput.value.trim() : '';
-        if(text) { myProfile.statusText = text; saveMyProfile(); if(statusInput) statusInput.value = ''; const modal = document.getElementById('add-status-modal'); if(modal) modal.style.display = 'none'; renderGrid(); connections.forEach(c => { try { c.send({type: 'text_status', text: text}); } catch(e){} }); }
+        if(text) { myProfile.statusText = text; if (window.pushMyStatus) pushMyStatus(text); saveMyProfile(); if(statusInput) statusInput.value = ''; const modal = document.getElementById('add-status-modal'); if(modal) modal.style.display = 'none'; renderGrid(); connections.forEach(c => { try { c.send({type: 'text_status', text: text}); } catch(e){} }); }
     }
 
     function setupConn(conn) {
@@ -2737,7 +3397,7 @@
                         const senderName = peerNames[conn.peer] || peerIdToName(conn.peer);
                         let notifText = typeof parsedRaw === 'string' && parsedRaw.length > 40 ? parsedRaw.substring(0, 40) + '...' : (typeof parsedRaw === 'string' ? parsedRaw : '📷 Media');
                         if (data.kind === 'html' || notifText.includes('<img') || notifText.includes('<audio') || notifText.includes('<video') || notifText.includes('<a ')) notifText = "📷 Media";
-                        if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") { new Notification("AceTalk: " + senderName, { body: notifText, icon: safeAvatar(peerAvatars[conn.peer]) || 'icon-192.png' }); }
+                        if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") { new Notification("AceTalk: " + senderName, { body: notifText, icon: safeAvatar(peerAvatars[conn.peer]) || 'acetalk-icon-192.png' }); }
                         if (document.visibilityState === 'visible') { showToast(senderName, notifText, 'message'); }
                     }
                 })();
@@ -3213,7 +3873,7 @@
         $c('incoming-call-sub').textContent = CL(kind === 'video' ? 'video' : 'voice');
         panel.style.display = 'flex'; ringStart(true);
         mc.on('close', () => { if (call && call.mc === mc && !call.answered && !call.ended) finishCall('missed', false); });
-        try { if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible') new Notification('AceTalk · ' + CL('incoming'), { body: callPeerName(mc.peer), icon: 'icon-192.png' }); } catch (e) {}
+        try { if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible') new Notification('AceTalk · ' + CL('incoming'), { body: callPeerName(mc.peer), icon: 'acetalk-icon-192.png' }); } catch (e) {}
         call.ringTimer = setTimeout(() => { if (call && call.dir === 'in' && !call.answered) finishCall('missed'); }, CALL_RING_MS);
     }
     async function answerCall() {
@@ -3339,7 +3999,7 @@
         if (seenSOS.has(data.id) || data.ttl <= 0) return;
         seenSOS.add(data.id); playAudio('snd-sos'); if(activePeerId) addSOSMessage(data.fromName, data.hopCount + 1);
         showToast('SOS · ' + data.fromName, (data.fromId || '') + (data.hopCount > 0 ? ' (↳ ' + (data.hopCount + 1) + ')' : ''), 'error', 20000);
-        try { if ('Notification' in window && Notification.permission === 'granted') new Notification('AceTalk · SOS', { body: data.fromName + ' ' + (data.fromId || ''), icon: 'icon-192.png', requireInteraction: true }); } catch (e) {}
+        try { if ('Notification' in window && Notification.permission === 'granted') new Notification('AceTalk · SOS', { body: data.fromName + ' ' + (data.fromId || ''), icon: 'acetalk-icon-192.png', requireInteraction: true }); } catch (e) {}
         const forwardPacket = { ...data, ttl: data.ttl - 1, hopCount: data.hopCount + 1 }; connections.forEach(c => { try { c.send(forwardPacket); } catch(e){} });
     }
 
