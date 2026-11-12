@@ -2168,14 +2168,21 @@
                 im.src = url;
             });
         }
+        // AceTalk's own wallpapers, for when picsum.photos can't be reached (an ad blocker, Brave Shields, a school network…)
+        const LOCAL = ['AceTalkWP2.jpg', 'Acetalkwallpaper.jpg'];
+        let localIdx = Math.floor(Math.random() * LOCAL.length), picsumDown = false;
         async function nextScene() {
             const { w, h } = size();
-            const list = await photoList();
-            if (list.length) {
-                let p; do { p = list[Math.floor(Math.random() * list.length)]; } while (list.length > 1 && p.id === lastId);
-                try { const img = await loadImg('https://picsum.photos/id/' + p.id + '/' + w + '/' + h); lastId = p.id; return { bg: '#000', img, credit: p.author }; } catch (e) {}
+            if (!picsumDown) {
+                const list = await photoList();
+                if (list.length) {
+                    let p; do { p = list[Math.floor(Math.random() * list.length)]; } while (list.length > 1 && p.id === lastId);
+                    try { const img = await loadImg('https://picsum.photos/id/' + p.id + '/' + w + '/' + h); lastId = p.id; return { bg: '#000', img, credit: p.author }; } catch (e) {}
+                }
+                try { const img = await loadImg('https://picsum.photos/' + w + '/' + h + '?random=' + Date.now()); return { bg: '#000', img, credit: '' }; } catch (e) {}
+                picsumDown = true;   // don't wait for it again until the screener opens next time
             }
-            try { const img = await loadImg('https://picsum.photos/' + w + '/' + h + '?random=' + Date.now()); return { bg: '#000', img, credit: '' }; } catch (e) {}
+            for (let i = 0; i < LOCAL.length; i++) { const f = LOCAL[localIdx++ % LOCAL.length]; try { const img = await loadImg(f); return { bg: '#000', img, credit: '' }; } catch (e) {} }
             return randScene();
         }
         function show(scene) {
@@ -2214,7 +2221,7 @@
         }
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { const t = $s('scr-time'), d = $s('scr-date'); if (t && t.textContent) { alignInk(t); alignInk(d); } });
         window.screenerStart = function () {
-            run++; clearTimeout(slideTimer); clearInterval(clockTimer);
+            run++; clearTimeout(slideTimer); clearInterval(clockTimer); picsumDown = false;
             show(randScene());                  // something on screen at once while the first photo loads
             tick(); clockTimer = setInterval(tick, 1000);
             cycle(run);
