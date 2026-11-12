@@ -1363,7 +1363,12 @@
                 if (raw.type === 'hello') {
                     if (conn._aes || conn._blocked || !validPub(raw.pub)) return;
                     const pins = loadPins(); const pinned = pins[conn.peer];
-                    if (pinned && pubId(pinned) !== pubId(raw.pub)) {
+                    if (pinned && pubId(pinned) !== pubId(raw.pub) && !loadContacts()[conn.peer]) {
+                        // not a contact any more: the remembered key is out of date (they made a new account, or moved it).
+                        // forget it; a request from them still has to be accepted by hand
+                        delete pins[conn.peer]; savePins(pins);
+                        try { const v = JSON.parse(localStorage.getItem('ace_verified_keys') || '{}'); delete v[conn.peer]; localStorage.setItem('ace_verified_keys', JSON.stringify(v)); } catch (e) {}
+                    } else if (pinned && pubId(pinned) !== pubId(raw.pub)) {
                         conn._blocked = true; pendingKeyChange[conn.peer] = raw.pub;
                         if (loadContacts()[conn.peer] && !conn._warned && !(window.__keyWarned = window.__keyWarned || {})[conn.peer]) { window.__keyWarned[conn.peer] = true;
                             addSystemMessage(`⚠ ${esc(secT('keyChanged'))}. ${esc(secT('keyChangedDesc'))}`, conn.peer);
@@ -2464,7 +2469,7 @@
             zh: { or: '或', scan: '扫描二维码', myCode: '我的二维码', myCodeHelp: '让朋友扫描此码来添加你。通过二维码添加还会核对你的安全密钥，没人能冒充你。', scanTitle: '将摄像头对准 AceTalk 二维码', fromImage: '选择图片', noCamera: '无法打开摄像头。你可以改为选择二维码图片。', notAce: '这不是 AceTalk 二维码。', verified: '已通过二维码验证', mismatch: '安全密钥与二维码不符，因此未添加此联系人。请当面核对二维码。', self: '这是你自己的二维码。', nowVerified: '现已验证', libFail: '无法加载二维码工具。请检查网络。', move: '将账户转移到其他设备', moveHelp: '你的联系人、消息和设置会转移到新设备，此设备将退出登录。在新设备上点按“Connect with QR”并扫描此码。', moveTitle: '在新设备上扫描', expires: '剩余时间', confirm: '有设备请求你的账户（{dev}）。要把所有内容转移过去吗？此设备将退出登录并删除 AceTalk 数据。', moved: '账户已转移。此设备已退出登录。', offline: '请先连接 AceTalk。', expired: '二维码已过期。请重新生成。', hasAccount: '此设备已有 AceTalk 账户。请先在设置中删除，然后再扫描。' }
         };
         // the new device is on the sign-up screen, which is always English
-        const SETUP = { connectQr: 'Connect with QR', connecting: 'Connecting to your other device…', approve: 'Approve on your other device.', received: 'Account received. Opening AceTalk…', declined: 'The other device declined.', badCode: 'This code is not valid or has expired. Create a new one on your other device.', noReach: 'Could not reach your other device. Keep AceTalk open there and try again.', contactFirst: 'This is a contact’s code. Sign in first; they will be added right after.', title: 'Connect with QR' };
+        const SETUP = { connectQr: 'Connect with QR', connecting: 'Connecting to your other device…', approve: 'Approve on your other device.', received: 'Account received. Opening AceTalk…', declined: 'The other device declined.', badCode: 'This code is not valid or has expired. Create a new one on your other device.', noReach: 'Could not reach your other device. Keep AceTalk open there and try again.', contactFirst: 'This is a contact’s code. Sign in first; they will be added right after.', title: 'Connect with QR', ended: 'The other device ended the transfer. Create a new code there and try again.' };
         const qx = k => (onSetupScreen() ? QX.en : (QX[currentLang] || QX.en))[k] || QX.en[k];
         const $q = id => document.getElementById(id);
         const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
@@ -2685,6 +2690,7 @@
             np.on('open', () => {
                 const c = np.connect(p.id, { reliable: true });
                 c.on('open', () => { c.send({ type: 'hello', dev: deviceName() }); status.textContent = SETUP.approve; });
+                c.on('close', () => setTimeout(() => end(SETUP.ended), 400));   // cancelled, expired or closed there: don't keep waiting
                 c.on('data', async msg => {
                     if (!msg || typeof msg !== 'object') return;
                     if (msg.type === 'no') { end(SETUP.declined); return; }
@@ -3227,7 +3233,7 @@
         const d = dict[currentLang] || dict['en'];
         if (confirm(d.delContactConfirm)) {
             const contacts = loadContacts(); delete contacts[activePeerId]; saveContacts(contacts);
-            let keysObj = loadE2EKeys(); delete keysObj[activePeerId]; saveE2EKeys(keysObj);
+            let keysObj = loadE2EKeys(); delete keysObj[activePeerId]; saveE2EKeys(keysObj); const pinsNow = loadPins(); delete pinsNow[activePeerId]; savePins(pinsNow); try { const v = JSON.parse(localStorage.getItem('ace_verified_keys') || '{}'); delete v[activePeerId]; localStorage.setItem('ace_verified_keys', JSON.stringify(v)); } catch (e) {}
             connections.forEach(c => { if(c.peer === activePeerId) { try { c.send({type: 'offline'}); } catch(e) {} setTimeout(() => c.close(), 200); } });
             connections = connections.filter(c => c.peer !== activePeerId);
             const menu = document.getElementById('chat-options-menu'); if(menu) menu.style.display = 'none';
