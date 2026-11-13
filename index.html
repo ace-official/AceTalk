@@ -1289,7 +1289,8 @@
     }
 
     /* ---------- identity keys ---------- */
-    const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+    // in pieces: spreading a whole photo into one call overflowed the stack, and every packet over ~100 KB was silently lost
+    const b64 = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
     const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
     let identityPromise = null;
     function getIdentity() {
@@ -3114,6 +3115,12 @@
         if (a) peerAvatars[pid] = a; else delete peerAvatars[pid];
         try { const sv = JSON.parse(localStorage.getItem('ace_peer_avatars') || '{}'); if (a) sv[pid] = a; else delete sv[pid]; localStorage.setItem('ace_peer_avatars', JSON.stringify(sv)); } catch (e) {}
     }
+    // Dahlia: files in messages up to 20 MB (up to 5 MB stay in the history), a profile photo up to 10 MB
+    function tooBig(file, maxMb) {
+        if (!file || file.size <= maxMb * 1024 * 1024) return false;
+        const d = dict[currentLang] || dict['en'];
+        showToast(ux('fileTooLarge'), (d.sizeError || 'Max 50MB!').replace('50', maxMb), 'error'); return true;
+    }
     // Dahlia: a profile photo is made 256×256 before it is saved or sent. A phone photo is many MB:
     // it did not fit in storage and the other side threw it away, so nobody saw the new picture.
     function shrinkAvatar(src) {
@@ -3136,16 +3143,50 @@
     /* Dahlia: big media (files, voice) is shown when sent/received but not written to history,
        because localStorage only holds about 5 MB. If storage is still full, old messages are trimmed. */
     const MEDIA_KEEP_MAX = 600000;   // about 450 KB of file, roughly a 1-minute voice message
+    const mediaIcon = b => /<audio/i.test(b) ? '🎤' : /<img/i.test(b) ? '📷' : /<video/i.test(b) ? '🎬' : '📎';
     function slimMsg(m, limit) {
         if (!m || typeof m.body !== 'string' || m.body.length <= limit) return m;
-        const icon = /<audio/i.test(m.body) ? '🎤' : /<img/i.test(m.body) ? '📷' : /<video/i.test(m.body) ? '🎬' : '📎';
-        const note = `<span style="opacity:.6; font-style:italic;">${icon} ${esc(ux('mediaGone'))}</span>`;
+        const note = `<span style="opacity:.6; font-style:italic;">${mediaIcon(m.body)} ${esc(ux('mediaGone'))}</span>`;
         return { ...m, body: note, rawText: note, slim: true };
     }
+    /* Dahlia: pictures, files and voice notes up to 5 MB are kept in IndexedDB, which holds far more than
+       localStorage's ~5 MB. The chat history only keeps a small placeholder that points to it. */
+    const MEDIA_DB_MIN = 60000;                                  // smaller ones simply stay in the history
+    const MEDIA_DB_MAX = Math.ceil(5 * 1048576 / 3) * 4 + 4000;  // a 5 MB file, written out as text
+    let mediaDb = null, mediaDbOpening = true;
+    const mediaDbReady = new Promise(res0 => {
+        const res = db => { mediaDbOpening = false; res0(db); };
+        try {
+            const rq = indexedDB.open('acetalk-media', 1);
+            rq.onupgradeneeded = () => rq.result.createObjectStore('m');
+            rq.onsuccess = () => { mediaDb = rq.result; res(mediaDb); }; rq.onerror = rq.onblocked = () => res(null);
+        } catch (e) { res(null); }
+    });
+    const mediaTx = (mode, fn) => mediaDbReady.then(db => db ? new Promise(res => { try { const tx = db.transaction('m', mode); const r = fn(tx.objectStore('m')); tx.oncomplete = () => res(r && 'result' in r ? r.result : true); tx.onerror = tx.onabort = () => res(null); } catch (e) { res(null); } }) : null);
+    const mediaPut = (key, body) => mediaTx('readwrite', st => st.put(body, key));
+    const mediaGet = key => mediaTx('readonly', st => st.get(key));
+    function stashMsg(pid, m) {
+        if (!mediaDb || !m || m.mediaRef || typeof m.body !== 'string' || m.body.length <= MEDIA_DB_MIN || m.body.length > MEDIA_DB_MAX) return m;
+        const key = pid + '|' + m.msgId; mediaPut(key, m.body);
+        const ph = `<span style="opacity:.6; font-style:italic;">${mediaIcon(m.body)} …</span>`;
+        return { ...m, body: ph, rawText: ph, mediaRef: key };
+    }
+    async function fillMedia(m) {
+        const body = await mediaGet(m.mediaRef); const el = document.getElementById('body-' + m.msgId); if (!el) return;
+        el.innerHTML = typeof body === 'string' ? sanitizeHtml(body) : `<span style="opacity:.6; font-style:italic;">${mediaIcon(m.body)} ${esc(ux('mediaGone'))}</span>`;
+    }
+    // media of deleted messages and contacts is removed when AceTalk opens
+    window.addEventListener('load', () => setTimeout(async () => {
+        const db = await mediaDbReady; if (!db) return;
+        const keys = await mediaTx('readonly', st => st.getAllKeys());   // keys first: anything saved after this is never touched
+        const used = new Set(); const all = loadContacts(); Object.values(all).forEach(c => (c && c.messages || []).forEach(m => { if (m.mediaRef && !m.isDeleted) used.add(m.mediaRef); }));
+        (keys || []).forEach(k => { if (!used.has(k)) mediaTx('readwrite', st => st.delete(k)); });
+    }, 4000));
     function saveContacts(contacts) {
         let trimmed = false;
+        for (const id in contacts) { const c = contacts[id]; if (c && Array.isArray(c.messages)) c.messages = c.messages.map(m => stashMsg(id, m)); }
         for (let round = 0; round < 6; round++) {
-            const limit = round < 3 ? MEDIA_KEEP_MAX : 50000;
+            const limit = round < 3 ? (mediaDb ? MEDIA_DB_MIN : mediaDbOpening ? MEDIA_DB_MAX : MEDIA_KEEP_MAX) : 50000;   // while the store is opening, big media waits in the history
             for (const id in contacts) { const c = contacts[id]; if (c && Array.isArray(c.messages)) c.messages = c.messages.map(m => slimMsg(m, limit)); }
             try {
                 localStorage.setItem('acetalk_contacts', JSON.stringify(contacts));
@@ -3433,6 +3474,7 @@
         const editNameEl = document.getElementById('edit-name'); const n = editNameEl ? editNameEl.value.trim() : ''; const fileInput = document.getElementById('edit-avatar');
         if(n) myProfile.name = n; myProfile.statusMode = tempStatusMode;
         if (fileInput && fileInput.files && fileInput.files[0]) {
+            if (tooBig(fileInput.files[0], 10)) return;
             const reader = new FileReader(); reader.onload = async e => { try { myProfile.avatarB64 = await shrinkAvatar(e.target.result); } catch (er) { showToast('AceTalk', 'This picture could not be opened.', 'error'); return; } saveMyProfile(); updateProfileUI(); renderGrid(); const pModal = document.getElementById('profile-modal'); if(pModal) pModal.style.display = 'none'; connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }; reader.readAsDataURL(fileInput.files[0]);
         } else { saveMyProfile(); updateProfileUI(); renderGrid(); const pModal = document.getElementById('profile-modal'); if(pModal) pModal.style.display = 'none'; connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }
     }
@@ -3597,7 +3639,8 @@
         const c = loadContacts()[conn.peer]; if (!c || !Array.isArray(c.messages)) return;
         c.messages.filter(m => m.type === 'local' && m.status === 'sent' && !m.isDeleted && !m.slim).forEach(async m => {
             const key = conn.peer + '|' + m.msgId; if (resentAt[key] && Date.now() - resentAt[key] < 20000) return; resentAt[key] = Date.now();
-            const raw = m.rawText || m.body; const kind = (m.kind === 'html' || (m.rawText === m.body && /^\s*</.test(raw || ''))) ? 'html' : 'text';
+            let raw = m.rawText || m.body; if (m.mediaRef) { raw = await mediaGet(m.mediaRef); if (typeof raw !== 'string') return; }
+            const kind = (m.kind === 'html' || m.mediaRef || (m.rawText === m.body && /^\s*</.test(raw || ''))) ? 'html' : 'text';
             try { const k = e2eKeys[conn.peer];
                 if (k) conn.send({ type: 'msg', kind, name: myProfile.name, body: await encryptMsg(raw, k), time: m.time, msgId: m.msgId, isEncrypted: true });
                 else conn.send({ type: 'msg', kind, name: myProfile.name, body: raw, time: m.time, msgId: m.msgId });
@@ -3632,6 +3675,7 @@
             if (m.type === 'remote' && m.status !== 'seen') { m.status = 'seen'; hasUnseen = true; }
             if (m.rawText && typeof m.rawText === 'object' && m.rawText.iv && e2eKeys[peerId]) { try { const decrypted = await decryptMsg(m.rawText, e2eKeys[peerId]); m.rawText = decrypted; m.body = parseMarkdown(decrypted); } catch(e) {} }
             addMessage(m.call ? callCardHtml(m.call) : m.body, m.type, m.time, false, m.status, m.msgId);
+            if (m.mediaRef && !m.isDeleted) fillMedia(m);
         });
 
         if (hasUnseen) { saveContacts(contacts); const conn = connections.find(cn => cn.peer === peerId); if (conn) { const lastRemote = [...c.messages].reverse().find(m => m.type === 'remote'); if (lastRemote) conn.send({type: 'seen', msgId: lastRemote.msgId || lastRemote.time}); } }
@@ -3764,7 +3808,7 @@
     function handleMedia(input) {
         if (!input.files || input.files.length === 0) return;
         const file = input.files[0]; input.value = ''; const d = dict[currentLang] || dict['en'];
-        const MAX_MB = 20; if (file.size / (1024 * 1024) > MAX_MB) { showToast(ux('fileTooLarge'), (d.sizeError || "Max 50MB!").replace('50', MAX_MB), "error"); return; }
+        if (tooBig(file, 20)) return;
         const reader = new FileReader();
         reader.onload = async e => {
             const b64 = e.target.result; const ext = file.name.split('.').pop().toLowerCase(); const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext); let mediaHtml = '';
