@@ -3642,7 +3642,16 @@
     // Shared news, photos, files and voice notes keep their "html" mark, so they arrive as a card and not as code.
     const resentAt = {};
     function resendPending(conn) {
-        const c = loadContacts()[conn.peer]; if (!c || !Array.isArray(c.messages)) return;
+        const all = loadContacts(), c = all[conn.peer]; if (!c || !Array.isArray(c.messages)) return;
+        // edits and deletions made while they were away
+        const ops = c.messages.filter(m => m.type === 'local' && m.pendingOp);
+        if (ops.length) {
+            ops.forEach(m => { const op = m.pendingOp, id = m.msgId, text = m.rawText || ''; delete m.pendingOp; (async () => { try {
+                if (op === 'delete') conn.send({ type: 'delete', msgId: id });
+                else { const k = e2eKeys[conn.peer]; conn.send(k ? { type: 'edit', msgId: id, body: await encryptMsg(text, k), isEncrypted: true } : { type: 'edit', msgId: id, body: text }); }
+            } catch (e) {} })(); });
+            saveContacts(all);
+        }
         c.messages.filter(m => m.type === 'local' && m.status === 'sent' && !m.isDeleted && !m.slim).forEach(async m => {
             const key = conn.peer + '|' + m.msgId; if (resentAt[key] && Date.now() - resentAt[key] < 20000) return; resentAt[key] = Date.now();
             let raw = m.rawText || m.body; if (m.mediaRef) { raw = await mediaGet(m.mediaRef); if (typeof raw !== 'string') return; }
@@ -3906,7 +3915,10 @@
         e.preventDefault(); ctxMsgId = msgId; ctxMsgType = type;
         const contacts = loadContacts(); const isPinned = contacts[activePeerId]?.pinnedMsgId === msgId;
         const pEl = document.getElementById('ctx-pin-container'); const upEl = document.getElementById('ctx-unpin-container'); const edEl = document.getElementById('ctx-edit-container'); const delEl = document.getElementById('ctx-delete-container');
-        if(pEl) pEl.style.display = isPinned ? 'none' : 'flex'; if(upEl) upEl.style.display = isPinned ? 'flex' : 'none'; if(edEl) edEl.style.display = (type === 'local') ? 'flex' : 'none'; if(delEl) delEl.style.display = (type === 'local') ? 'flex' : 'none';
+        if(pEl) pEl.style.display = isPinned ? 'none' : 'flex'; if(upEl) upEl.style.display = isPinned ? 'flex' : 'none'; const cm = (contacts[activePeerId]?.messages || []).find(m => m.msgId === msgId) || {};
+        // pictures, files, voice notes, shared news and calls can be deleted but not edited (editing showed their code)
+        const isMedia = cm.kind === 'html' || cm.mediaRef || cm.slim || cm.call || (typeof cm.rawText === 'string' && cm.rawText === cm.body && /^\s*</.test(cm.rawText));
+        if(edEl) edEl.style.display = (type === 'local' && !cm.isDeleted && !isMedia) ? 'flex' : 'none'; if(delEl) delEl.style.display = (type === 'local' && !cm.isDeleted) ? 'flex' : 'none';
         const menu = document.getElementById('context-menu');
         if(menu) { menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; }
     }
@@ -3942,6 +3954,7 @@
             const msgBodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`); if(msgBodyEl) msgBodyEl.innerHTML = msg.body; if (contacts[activePeerId].pinnedMsgId === ctxMsgId) renderPinnedMessage();
             if (activePeerId === 'ace_test') return;
             const targets = connections.filter(c => c.peer === activePeerId);
+            if (!targets.length) { msg.pendingOp = 'edit'; saveContacts(contacts); }   // sent when they are back
             for (let c of targets) { if (e2eKeys[c.peer]) { const enc = await encryptMsg(newText, e2eKeys[c.peer]); c.send({type: 'edit', msgId: ctxMsgId, body: enc, isEncrypted: true}); } else { c.send({type: 'edit', msgId: ctxMsgId, body: newText}); } }
         }
     }
@@ -3952,7 +3965,9 @@
             msg.isDeleted = true; msg.body = `<span style="font-style:italic; opacity:0.6;">${d.delMsg}</span>`; saveContacts(contacts);
             const msgBodyEl = document.querySelector(`.msg[data-msgid="${ctxMsgId}"] .msg-body`); if(msgBodyEl) msgBodyEl.innerHTML = msg.body; if (contacts[activePeerId].pinnedMsgId === ctxMsgId) renderPinnedMessage();
             if (activePeerId === 'ace_test') return;
-            connections.filter(c => c.peer === activePeerId).forEach(c => c.send({type: 'delete', msgId: ctxMsgId}));
+            const targets = connections.filter(c => c.peer === activePeerId);
+            if (!targets.length) { msg.pendingOp = 'delete'; saveContacts(contacts); }   // sent when they are back
+            targets.forEach(c => c.send({type: 'delete', msgId: ctxMsgId}));
         }
     }
 
@@ -4259,27 +4274,41 @@
         document.addEventListener('change', e => { const t = e.target; if (t && t.matches && t.matches('.toggle-switch input') && t.id !== 'sound-toggle' && soundEnabled) window.playAudio('snd-click'); });
         window.playAudio = id => { if (SOUNDS[id]) SOUNDS[id](); else { const a = document.getElementById(id); if (a) a.play().catch(() => {}); } };
 
-        // Calls ring even when message sounds are off.
-        // The caller hears the usual "calling" tone: 425 Hz, 1 s on, 4 s off (as in Turkey, Azerbaijan and most of Europe).
-        // The person called hears a normal telephone ring: "ring-ring … ring-ring".
-        let ringTimer = null;
+        // Calls ring even when message sounds are off. A calm ringtone of AceTalk's own: soft mallet notes
+        // (a warm Dmaj9 arpeggio) with a little echo. The caller hears a quieter two-note version.
+        let ringTimer = null, ringBus = null;
+        function ringChain() {
+            const c = audio(); if (!c) return null;
+            const bus = c.createGain(); bus.gain.value = 1;
+            const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; lp.Q.value = 0.4;
+            const dly = c.createDelay(1); dly.delayTime.value = 0.23; const fb = c.createGain(); fb.gain.value = 0.28; const wet = c.createGain(); wet.gain.value = 0.3;
+            bus.connect(lp); lp.connect(c.destination); lp.connect(dly); dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(c.destination);
+            return bus;
+        }
+        function mallet(bus, f, at, len, vol) {
+            const c = audio(); if (!c || !bus) return; const t = c.currentTime + at;
+            const g = c.createGain(); g.connect(bus);
+            g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.015); g.gain.exponentialRampToValueAtTime(vol * 0.35, t + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+            [[f, 'sine', 1], [f * 2, 'sine', 0.18], [f * 4.01, 'sine', 0.05]].forEach(([fr, ty, amp]) => {
+                const o = c.createOscillator(), og = c.createGain(); o.type = ty; o.frequency.value = fr; og.gain.value = amp; o.connect(og); og.connect(g); o.start(t); o.stop(t + len + 0.05);
+            });
+        }
         window.ringStart = incoming => {
-            window.ringStop(); if (!audio()) return;
-            if (!incoming) { const back = () => tone([425], 0, 1.0, 0.09, 'sine', 'flat'); back(); ringTimer = setInterval(back, 5000); return; }
-            const once = () => {
-                const v = 0.2;
-                [0, 0.6].forEach(off => {
-                    // 400 + 450 Hz, switched on and off 25 times a second like a bell striking
-                    const c = audio(); if (!c) return; const t = c.currentTime + off, g = c.createGain(); g.connect(c.destination); g.gain.setValueAtTime(0.0001, t);
-                    for (let k = 0; k < 10; k++) { g.gain.setValueAtTime(v, t + k * 0.04); g.gain.setValueAtTime(v * 0.35, t + k * 0.04 + 0.02); }
-                    g.gain.setValueAtTime(0.0001, t + 0.4);
-                    [400, 450].forEach(f => { const o = c.createOscillator(); o.frequency.value = f; o.connect(g); o.start(t); o.stop(t + 0.42); });
-                });
-                if (incoming && navigator.vibrate) { try { navigator.vibrate([400, 200, 400]); } catch (e) {} }
-            };
-            once(); ringTimer = setInterval(once, 3000);
+            window.ringStop(); ringBus = ringChain(); if (!ringBus) return;
+            const bus = ringBus;
+            const once = incoming ? () => {
+                // D5 F#5 A5 C#6 E6 rising, then settling on A5 / F#5
+                [[587.33, 0], [739.99, 0.16], [880.0, 0.32], [1108.73, 0.48], [1318.51, 0.64]].forEach(([f, at]) => mallet(bus, f, at, 1.1, 0.13));
+                mallet(bus, 880.0, 1.25, 1.3, 0.11); mallet(bus, 739.99, 1.25, 1.3, 0.08);
+                if (navigator.vibrate) { try { navigator.vibrate([300, 150, 300]); } catch (e) {} }
+            } : () => { mallet(bus, 587.33, 0, 1.0, 0.07); mallet(bus, 880.0, 0.22, 1.2, 0.06); };
+            once(); ringTimer = setInterval(once, incoming ? 3200 : 3500);
         };
-        window.ringStop = () => { clearInterval(ringTimer); ringTimer = null; if (navigator.vibrate) { try { navigator.vibrate(0); } catch (e) {} } };
+        window.ringStop = () => {
+            clearInterval(ringTimer); ringTimer = null;
+            if (ringBus) { const c = audio(), b = ringBus; ringBus = null; try { b.gain.setTargetAtTime(0, c.currentTime, 0.05); setTimeout(() => { try { b.disconnect(); } catch (e) {} }, 400); } catch (e) {} }   // notes already planned fade out too
+            if (navigator.vibrate) { try { navigator.vibrate(0); } catch (e) {} }
+        };
 
         // message sounds: on unless the person turned them off
         try { if (localStorage.getItem('acetalk_sound') === null) { localStorage.setItem('acetalk_sound', 'true'); soundEnabled = true; } } catch (e) {}
@@ -4313,6 +4342,8 @@
         const prevOpen = window.openChat; window.openChat = function () { const r = prevOpen.apply(this, arguments); paintHeader(); return r; };
         (window.__packetHooks = window.__packetHooks || []).push((pid, pk) => { if (pk.type === 'profile' || pk.type === 'offline') setTimeout(check, 50); });
         // closing the tab tells contacts right away instead of letting them wait
+        // name and picture show even when the connection library or server is slow or blocked
+        window.addEventListener('load', () => setTimeout(() => { try { if (myProfile && myProfile.name) { updateProfileUI(); renderGrid(); } } catch (e) {} }, 300));
         window.addEventListener('pagehide', () => { connections.forEach(c => { try { if (c._rawSend) c._rawSend({ type: 'bye' }); } catch (e) {} }); });
     })();
     /* ================= end sounds and online status ================= */
