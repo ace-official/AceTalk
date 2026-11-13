@@ -93,6 +93,22 @@
         .user-corner-id { font-size: 12px; color: var(--grid-dark); font-weight: 700; margin-top: 2px;}
         .user-corner-avatar { width: 45px; height: 45px; background: var(--grid-dark); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; position: relative; line-height: 1; }
         .user-corner-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        /* Dahlia 🌸 */
+        .bloom { position: absolute; top: -9px; right: -9px; z-index: 6; font-size: 17px; line-height: 1; cursor: default; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .tile > .bloom { top: 6px; right: 6px; font-size: 24px; padding: 4px; margin: -4px; }
+        .recent-av.has-bloom, .rail-av.has-bloom { position: relative; overflow: visible; }
+        .rail-av > .bloom { top: -8px; right: -9px; font-size: 15px; }
+        .recent-av > .bloom { top: -7px; right: -7px; font-size: 15px; }
+        .bloom-tip { position: fixed; z-index: 100000; display: none; pointer-events: none; background: var(--bg-base); color: var(--text-black); border: 1px solid var(--grid-dark); padding: 6px 10px; font-size: 13px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+        #bloom-note { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 99999; width: min(620px, calc(100vw - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 16px; background: var(--bg-base); color: var(--text-black); border: 1px solid var(--grid-dark); border-left: 4px solid #f3a6c8; padding: 18px 20px; box-shadow: 0 14px 40px rgba(0,0,0,.5); animation: bloomUp .35s cubic-bezier(.2,.8,.2,1); transition: opacity .3s, transform .3s; }
+        #bloom-note.out { opacity: 0; transform: translate(-50%, 20px); }
+        .bloom-note-ic { font-size: 34px; line-height: 1; flex: none; }
+        .bloom-note-tx { flex: 1; font-size: 16px; line-height: 1.45; }
+        .bloom-note-ok { flex: none; background: var(--grid-dark); color: #fff; border: 0; padding: 10px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+        @keyframes bloomUp { from { opacity: 0; transform: translate(-50%, 24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @media (max-width: 520px) { #bloom-note { flex-wrap: wrap; gap: 10px 14px; padding: 16px; } .bloom-note-tx { flex-basis: calc(100% - 50px); font-size: 15px; } .bloom-note-ok { margin-left: auto; } }
+        body.bloom-open #toast-container { bottom: 150px; }   /* toasts move up while the note is open */
+        @media (max-width: 768px) { #bloom-note { bottom: calc(70px + env(safe-area-inset-bottom)); } body.bloom-open #toast-container { bottom: calc(250px + env(safe-area-inset-bottom)); } }
         .avatar-badge { position: absolute; bottom: -4px; right: -4px; display: flex; z-index: 5; background: transparent; border-radius: 50% !important; }
 
         .main-hub-container { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 50px 40px 50px; display: flex; flex-direction: column; gap: 25px; }
@@ -1241,9 +1257,10 @@
         return v.slice(0, 10).map(x => (x && typeof x === 'object' && typeof x.id === 'string' && MSGID_RE.test(x.id))
             ? { id: x.id, text: cleanText(x.text, 140), at: Number.isFinite(+x.at) ? Math.max(0, Math.min(+x.at, Date.now() + 86400000)) : 0 } : null).filter(x => x && x.text);
     }
+    const cleanBloom = v => { v = +v; return Number.isFinite(v) && v > Date.now() && v < Date.now() + 8 * 864e5 ? v : 0; };   // 🌸 ends within a week
     function cleanProfile(p) {
         if (!p || typeof p !== 'object') return { name: '', textStatus: '', statusMode: 'online', avatar: null };
-        return { name: cleanText(p.name, 40), textStatus: cleanText(p.textStatus, 140), statusMode: STATUS_MODES.includes(p.statusMode) ? p.statusMode : 'online', avatar: safeAvatar(p.avatar), statuses: cleanStatuses(p.statuses) };
+        return { name: cleanText(p.name, 40), textStatus: cleanText(p.textStatus, 140), statusMode: STATUS_MODES.includes(p.statusMode) ? p.statusMode : 'online', avatar: safeAvatar(p.avatar), statuses: cleanStatuses(p.statuses), bloom: cleanBloom(p.bloom) };
     }
     function cleanEncBody(b) {
         if (typeof b === 'string') return b.slice(0, 80e6);
@@ -1258,7 +1275,7 @@
         if ('name' in p) out.name = cleanText(p.name, 40);
         switch (p.type) {
             case 'connection_request': case 'request_accepted': out.profile = cleanProfile(p.profile); break;
-            case 'profile': { const c = cleanProfile(p); out.name = c.name; out.textStatus = c.textStatus; out.statusMode = c.statusMode; out.avatar = c.avatar; out.statuses = c.statuses; break; }
+            case 'profile': { const c = cleanProfile(p); out.name = c.name; out.textStatus = c.textStatus; out.statusMode = c.statusMode; out.avatar = c.avatar; out.statuses = c.statuses; out.bloom = c.bloom; break; }
             case 'text_status': out.text = cleanText(p.text, 140); out.textStatus = cleanText(p.textStatus, 140); out.statuses = cleanStatuses(p.statuses); break;
             case 'msg': case 'edit': { const b = cleanEncBody(p.body); if (b === null) return null; out.body = b; out.isEncrypted = !!p.isEncrypted; out.kind = p.kind === 'html' ? 'html' : 'text'; if (!out.msgId) return null; break; }
             case 'delete': case 'seen': case 'delivered': if (!out.msgId) return null; break;
@@ -2021,7 +2038,7 @@
             if (!rows.length) { list.append(mk('div', 'recent-empty', rt('empty'))); return; }
             rows.slice(0, 40).forEach(r => {
                 const name = r.c.name || peerIdToName(r.pid);
-                const row = mk('button', 'recent-row' + (r.unread ? ' unread' : '')); row.type = 'button'; row.onclick = () => openChat(r.pid);
+                const row = mk('button', 'recent-row' + (r.unread ? ' unread' : '')); row.type = 'button'; row.dataset.pid = r.pid; row.onclick = () => openChat(r.pid);
                 const av = mk('span', 'recent-av'); const a = safeAvatar(peerAvatars[r.pid]);
                 if (a) { const im = mk('img'); im.src = a; im.alt = ''; av.append(im); } else av.textContent = name.charAt(0).toUpperCase();
                 const mid = mk('span', 'recent-mid');
@@ -2765,6 +2782,102 @@
         });
     })();
     /* ================= end QR codes ================= */
+    /* ================= AceTalk 3.4 Dahlia: 🌸 for people who lived through the earlier Dahlia builds ================= */
+    (() => {
+        const VERSION = '3.4-dahlia-u4', WEEK = 7 * 864e5;
+        const TIP = 'Escaped from bug hell';
+        const NOTE = 'We apologize for the issues in the previous version of AceTalk Dahlia; we might have placed something next to your profile :)';
+        const get = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+        const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+        // Earlier builds never wrote their version anywhere. So an account that is already here when this
+        // build first opens, with no version mark, was made with an earlier AceTalk. A new sign-up gets no flower.
+        if (get('acetalk_version') !== VERSION) {
+            if (!get('acetalk_version') && get('ace_myProfile')) { set('ace_bloom_until', String(Date.now() + WEEK)); set('ace_bloom_note', '1'); }
+            set('acetalk_version', VERSION);
+        }
+        const myBloom = () => { const u = +get('ace_bloom_until') || 0; return u > Date.now() ? u : 0; };
+        const loadPeer = () => { try { return JSON.parse(get('ace_peer_blooms') || '{}') || {}; } catch (e) { return {}; } };
+        const peerBloom = pid => { const u = +loadPeer()[pid] || 0; return u > Date.now() ? u : 0; };
+        function setPeerBloom(pid, until) {
+            const all = loadPeer(), now = Date.now(); Object.keys(all).forEach(k => { if (!(all[k] > now)) delete all[k]; });
+            if ((all[pid] || 0) === (until || 0)) return false;
+            if (until) all[pid] = until; else delete all[pid];
+            set('ace_peer_blooms', JSON.stringify(all)); return true;
+        }
+
+        // outgoing: profile packets carry when my flower ends (older versions ignore the extra field)
+        const prevDecorate = window.__decoratePacket;
+        window.__decoratePacket = pk => {
+            pk = prevDecorate ? prevDecorate(pk) : pk; const b = myBloom(); if (!b || !pk || typeof pk !== 'object') return pk;
+            if (pk.type === 'profile') return { ...pk, bloom: b };
+            if ((pk.type === 'connection_request' || pk.type === 'request_accepted') && pk.profile) return { ...pk, profile: { ...pk.profile, bloom: b } };
+            return pk;
+        };
+        // incoming: no bloom field (or an older AceTalk) means no flower
+        (window.__packetHooks = window.__packetHooks || []).push((pid, pk) => {
+            let b;
+            if (pk.type === 'profile') b = pk.bloom; else if ((pk.type === 'request_accepted' || pk.type === 'connection_request') && pk.profile) b = pk.profile.bloom; else return;
+            if (setPeerBloom(pid, b || 0)) paint();
+        });
+
+        // drawing: a small flower over the top-right corner of the picture
+        const flower = () => { const s = document.createElement('span'); s.className = 'bloom'; s.textContent = '🌸'; s.setAttribute('role', 'img'); s.setAttribute('aria-label', TIP); s.dataset.tip = TIP; return s; };
+        function mark(host, on) {
+            if (!host) return; const had = host.querySelector(':scope > .bloom');
+            if (on && !had) { host.classList.add('has-bloom'); host.append(flower()); } else if (!on && had) { had.remove(); host.classList.remove('has-bloom'); }
+        }
+        function paint() {
+            mark(document.getElementById('my-display-avatar'), !!myBloom()); mark(document.getElementById('rail-av'), !!myBloom());
+            document.querySelectorAll('#contacts-row .tile[data-pid]').forEach(t => mark(t, !!peerBloom(t.dataset.pid)));
+            document.querySelectorAll('.recent-row[data-pid]').forEach(r => mark(r.querySelector('.recent-av'), !!peerBloom(r.dataset.pid)));
+            mark(document.getElementById('current-chat-avatar'), !!(activePeerId && peerBloom(activePeerId)));
+        }
+        window.paintBlooms = paint;
+        ['renderGrid', 'updateProfileUI', 'openChat', 'renderRecentChats', '__railSync'].forEach(fn => {
+            const orig = window[fn]; if (typeof orig !== 'function') return;
+            window[fn] = function () { const r = orig.apply(this, arguments); try { paint(); } catch (e) {} return r; };
+        });
+        setInterval(paint, 60000);   // the flower leaves by itself when the week is over
+
+        // the explanation: a mouse resting on the flower, or a finger held on it
+        let tipEl = null, hoverT = 0, pressT = 0, swallowClick = false;
+        function showTip(target) {
+            if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'bloom-tip'; tipEl.setAttribute('role', 'tooltip'); document.body.append(tipEl); }
+            tipEl.textContent = target.dataset.tip || TIP; tipEl.style.display = 'block';
+            const r = target.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+            tipEl.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+            tipEl.style.top = (r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8) + 'px';
+        }
+        const hideTip = () => { clearTimeout(hoverT); clearTimeout(pressT); if (tipEl) tipEl.style.display = 'none'; };
+        document.addEventListener('pointerover', e => { const b = e.target.closest && e.target.closest('.bloom'); if (!b || e.pointerType !== 'mouse') return; clearTimeout(hoverT); hoverT = setTimeout(() => showTip(b), 350); });
+        document.addEventListener('pointerout', e => { if (e.pointerType === 'mouse' && e.target.closest && e.target.closest('.bloom')) hideTip(); });
+        document.addEventListener('pointerdown', e => {
+            const b = e.target.closest && e.target.closest('.bloom'); if (!b || e.pointerType === 'mouse') return;
+            clearTimeout(pressT); pressT = setTimeout(() => { showTip(b); swallowClick = true; setTimeout(hideTip, 2500); }, 450);
+        }, { passive: true });
+        ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, e => { if (e.pointerType !== 'mouse') clearTimeout(pressT); }, { passive: true }));
+        document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.bloom')) e.preventDefault(); });
+        // a held finger shows the explanation; it does not also open the chat under it
+        document.addEventListener('click', e => { if (swallowClick) { swallowClick = false; e.preventDefault(); e.stopPropagation(); } }, true);
+        window.addEventListener('scroll', hideTip, true);
+
+        // the one-time note at the bottom
+        function showNote() {
+            if (get('ace_bloom_note') !== '1' || document.getElementById('bloom-note')) return;
+            const n = document.createElement('div'); n.id = 'bloom-note'; n.setAttribute('role', 'status');
+            const ic = document.createElement('div'); ic.className = 'bloom-note-ic'; ic.textContent = '🌸';
+            const tx = document.createElement('div'); tx.className = 'bloom-note-tx'; tx.textContent = NOTE;
+            const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'bloom-note-ok'; ok.textContent = 'OK';
+            ok.onclick = () => { n.classList.add('out'); document.body.classList.remove('bloom-open'); setTimeout(() => n.remove(), 300); };
+            n.append(ic, tx, ok); document.body.append(n); document.body.classList.add('bloom-open');
+            try { localStorage.removeItem('ace_bloom_note'); } catch (e) {}   // shown once, even if it is not closed
+        }
+        const prevLogin = window.setupAfterLogin;
+        window.setupAfterLogin = function () { const r = prevLogin.apply(this, arguments); setTimeout(() => { paint(); showNote(); }, 1200); return r; };
+        // also when the connection server is slow or blocked: the note does not wait for it
+        window.addEventListener('load', () => setTimeout(() => { if (get('ace_myProfile')) { paint(); showNote(); } }, 1500));
+    })();
+    /* ================= end 🌸 ================= */
 
     /* ================= AceTalk 3.4 Dahlia: install as an app ================= */
     (function () {
@@ -2994,6 +3107,28 @@
 
     /* BACKEND & PEERJS STATE */
     let peer = null; let connections = []; let peerNames = {}; let peerAvatars = {}; let peerStatusModes = {}; let e2eKeys = {};
+    // Dahlia: contacts' profile photos are remembered, so they show before the person comes online
+    try { const sv = JSON.parse(localStorage.getItem('ace_peer_avatars') || '{}'); Object.keys(sv).forEach(k => { const a = safeAvatar(sv[k]); if (a) peerAvatars[k] = a; }); } catch (e) {}
+    function rememberAvatar(pid, a) {
+        a = safeAvatar(a); if ((peerAvatars[pid] || null) === a) return;
+        if (a) peerAvatars[pid] = a; else delete peerAvatars[pid];
+        try { const sv = JSON.parse(localStorage.getItem('ace_peer_avatars') || '{}'); if (a) sv[pid] = a; else delete sv[pid]; localStorage.setItem('ace_peer_avatars', JSON.stringify(sv)); } catch (e) {}
+    }
+    // Dahlia: a profile photo is made 256×256 before it is saved or sent. A phone photo is many MB:
+    // it did not fit in storage and the other side threw it away, so nobody saw the new picture.
+    function shrinkAvatar(src) {
+        return new Promise((res, rej) => {
+            const im = new Image(); im.onerror = () => rej(new Error('image'));
+            im.onload = () => {
+                const S = 256, side = Math.min(im.naturalWidth, im.naturalHeight); if (!side) return rej(new Error('image'));
+                const cv = document.createElement('canvas'); cv.width = cv.height = S; const g = cv.getContext('2d');
+                g.fillStyle = '#fff'; g.fillRect(0, 0, S, S);
+                g.drawImage(im, (im.naturalWidth - side) / 2, (im.naturalHeight - side) / 2, side, side, 0, 0, S, S);
+                res(cv.toDataURL('image/jpeg', 0.85));
+            };
+            im.src = src;
+        });
+    }
     let pendingOutbound = new Set(); let pendingInbound = {};
     let myProfile = { id: '', name: '', avatarB64: null, statusText: '', statusMode: 'online' };
 
@@ -3096,6 +3231,7 @@
                 myProfile = JSON.parse(savedProfile);
                 if (myProfile.statusText === 'AceTalk kullanıyor ✨') myProfile.statusText = '';
                 if (!myProfile.statusMode) myProfile.statusMode = 'online';
+                if (myProfile.avatarB64 && myProfile.avatarB64.length > 200000) shrinkAvatar(myProfile.avatarB64).then(a => { myProfile.avatarB64 = a; saveMyProfile(); updateProfileUI(); connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }).catch(() => {});
                 const setupScreen = document.getElementById('setup-screen');
                 if(setupScreen) setupScreen.style.display = 'none';
                 changeLanguage(currentLang);
@@ -3210,7 +3346,7 @@
         panel.style.display = 'none';
         if (pendingInbound[peerId]) {
             const { name, conn, data } = pendingInbound[peerId];
-            peerNames[conn.peer] = data.name; if(data.avatar) peerAvatars[conn.peer] = data.avatar; if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
+            peerNames[conn.peer] = data.name; rememberAvatar(conn.peer, data.avatar); if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode;
             upsertContact(conn.peer, data.name, null, data.textStatus);
             conn.send({type: 'request_accepted', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}});
             delete pendingInbound[peerId];
@@ -3255,6 +3391,7 @@
         if (confirm(d.delContactConfirm)) {
             const contacts = loadContacts(); delete contacts[activePeerId]; saveContacts(contacts);
             let keysObj = loadE2EKeys(); delete keysObj[activePeerId]; saveE2EKeys(keysObj); const pinsNow = loadPins(); delete pinsNow[activePeerId]; savePins(pinsNow); try { const v = JSON.parse(localStorage.getItem('ace_verified_keys') || '{}'); delete v[activePeerId]; localStorage.setItem('ace_verified_keys', JSON.stringify(v)); } catch (e) {}
+            rememberAvatar(activePeerId, null);
             connections.forEach(c => { if(c.peer === activePeerId) { try { c.send({type: 'offline'}); } catch(e) {} setTimeout(() => c.close(), 200); } });
             connections = connections.filter(c => c.peer !== activePeerId);
             const menu = document.getElementById('chat-options-menu'); if(menu) menu.style.display = 'none';
@@ -3296,7 +3433,7 @@
         const editNameEl = document.getElementById('edit-name'); const n = editNameEl ? editNameEl.value.trim() : ''; const fileInput = document.getElementById('edit-avatar');
         if(n) myProfile.name = n; myProfile.statusMode = tempStatusMode;
         if (fileInput && fileInput.files && fileInput.files[0]) {
-            const reader = new FileReader(); reader.onload = e => { myProfile.avatarB64 = e.target.result; saveMyProfile(); updateProfileUI(); renderGrid(); const pModal = document.getElementById('profile-modal'); if(pModal) pModal.style.display = 'none'; connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }; reader.readAsDataURL(fileInput.files[0]);
+            const reader = new FileReader(); reader.onload = async e => { try { myProfile.avatarB64 = await shrinkAvatar(e.target.result); } catch (er) { showToast('AceTalk', 'This picture could not be opened.', 'error'); return; } saveMyProfile(); updateProfileUI(); renderGrid(); const pModal = document.getElementById('profile-modal'); if(pModal) pModal.style.display = 'none'; connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }; reader.readAsDataURL(fileInput.files[0]);
         } else { saveMyProfile(); updateProfileUI(); renderGrid(); const pModal = document.getElementById('profile-modal'); if(pModal) pModal.style.display = 'none'; connections.forEach(c => { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} }); }
     }
 
@@ -3311,7 +3448,7 @@
 
         activeKeys.forEach(peerId => {
             const c = contacts[peerId]; const isOnline = (peerId === 'ace_test') ? true : onlineIds.has(peerId); const mode = (peerId === 'ace_test') ? 'online' : (peerStatusModes[peerId] || 'online'); const displayName = c.name || peerIdToName(peerId);
-            const tile = document.createElement('div'); tile.className = 'tile'; tile.onclick = () => openChat(peerId);
+            const tile = document.createElement('div'); tile.className = 'tile'; tile.dataset.pid = peerId; tile.onclick = () => openChat(peerId);
             const avatarHtml = safeAvatar(peerAvatars[peerId]) ? `<img class="tile-bg" src="${peerAvatars[peerId]}">` : `<div class="tile-initial">${esc(displayName.charAt(0).toUpperCase())}</div>`;
             const displayId = '@' + peerIdToName(peerId); const dot = `<span style="margin-left: 8px; display:flex;">${getStatusIcon(isOnline, mode, 14)}</span>`;
             tile.innerHTML = `${avatarHtml}<div class="tile-bottom"><div class="tile-name">${esc(displayName)} ${dot}</div><div class="tile-sub">${esc(displayId)}</div></div>`; contactsRow.appendChild(tile);
@@ -3387,29 +3524,27 @@
                 else if (isKnown) {
                     conn.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode});
                     /* keys now come from the identity-key handshake in secureConn() */
-                    setTimeout(() => {
-                        const contacts = loadContacts();
-                        if (contacts[conn.peer]) {
-                            const pendingMsgs = contacts[conn.peer].messages.filter(m => m.type === 'local' && m.status === 'sent');
-                            pendingMsgs.forEach(async m => { let k = e2eKeys[conn.peer]; if (k) { const encryptedBody = await encryptMsg(m.rawText || m.body, k); conn.send({type: 'msg', name: myProfile.name, body: encryptedBody, time: m.time, msgId: m.msgId, isEncrypted: true}); } else { conn.send({type: 'msg', name: myProfile.name, body: m.rawText || m.body, time: m.time, msgId: m.msgId}); } });
-                        }
-                    }, 500);
+                    setTimeout(() => resendPending(conn), 500);
                 }
             }
         });
 
         conn.on('data', data => {
             const isKnownContact = !!loadContacts()[conn.peer] || conn.peer === 'ace_test';
+            // Dahlia: when someone closes the tab and opens AceTalk again, the old link can look alive for a while.
+            // Whatever link their packets really come in on is the one we talk on.
+            if (!connections.includes(conn)) { const wasThere = connections.some(c => c.peer === conn.peer); connections = connections.filter(c => c.peer !== conn.peer); connections.push(conn); if (wasThere && isKnownContact) setTimeout(() => resendPending(conn), 300); }
             if (data.type === 'connection_request') { if (isKnownContact) { conn.send({type: 'request_accepted', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}}); } else { pendingInbound[conn.peer] = { name: data.profile.name, conn: conn, data: data.profile }; if (document.getElementById('incoming-request-panel').style.display !== 'flex') { showIncomingRequest(conn.peer, data.profile.name); } } return; }
-            if (data.type === 'request_accepted') { if (pendingOutbound.has(conn.peer)) { pendingOutbound.delete(conn.peer); upsertContact(conn.peer, data.profile.name, null, data.profile.textStatus); peerNames[conn.peer] = data.profile.name; if(data.profile.avatar) peerAvatars[conn.peer] = data.profile.avatar; if(data.profile.statusMode) peerStatusModes[conn.peer] = data.profile.statusMode; const d = dict[currentLang] || dict['en']; showToast(d.reqAccepted, data.profile.name + " " + d.acceptedDesc, "info"); renderGrid(); } return; }
+            if (data.type === 'request_accepted') { if (pendingOutbound.has(conn.peer)) { pendingOutbound.delete(conn.peer); upsertContact(conn.peer, data.profile.name, null, data.profile.textStatus); peerNames[conn.peer] = data.profile.name; rememberAvatar(conn.peer, data.profile.avatar); if(data.profile.statusMode) peerStatusModes[conn.peer] = data.profile.statusMode; const d = dict[currentLang] || dict['en']; showToast(d.reqAccepted, data.profile.name + " " + d.acceptedDesc, "info"); renderGrid(); } return; }
             if (data.type === 'request_rejected') { const d = dict[currentLang] || dict['en']; showToast(d.reqRejected, d.reqRejectedDesc, "error"); pendingOutbound.delete(conn.peer); return; }
-            if (data.type === 'profile') { if (isKnownContact) { peerNames[conn.peer] = data.name; if(data.avatar) peerAvatars[conn.peer] = data.avatar; if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode; let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus; upsertContact(conn.peer, data.name, null, cleanStatus); if(activePeerId === conn.peer) { const avatarEl = document.getElementById('current-chat-avatar'); if(avatarEl) { const imgHtml = peerAvatars[conn.peer] ? `<img src="${peerAvatars[conn.peer]}">` : (data.name || peerIdToName(conn.peer)).charAt(0).toUpperCase(); avatarEl.innerHTML = imgHtml + `<div class="avatar-badge">${getStatusIcon(true, data.statusMode, 16)}</div>`; } } } return; }
+            if (data.type === 'profile') { if (isKnownContact) { resendPending(conn); peerNames[conn.peer] = data.name; rememberAvatar(conn.peer, data.avatar); if (activePeerId === conn.peer && data.name) { currentRawChatName = data.name; updateChatNameDisplay(); } if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode; let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus; upsertContact(conn.peer, data.name, null, cleanStatus); if(activePeerId === conn.peer) { const avatarEl = document.getElementById('current-chat-avatar'); if(avatarEl) { const imgHtml = peerAvatars[conn.peer] ? `<img src="${peerAvatars[conn.peer]}">` : (data.name || peerIdToName(conn.peer)).charAt(0).toUpperCase(); avatarEl.innerHTML = imgHtml + `<div class="avatar-badge">${getStatusIcon(true, data.statusMode, 16)}</div>`; } } } return; }
             if (!isKnownContact) return;
 
             if (data.type === 'text_status') { let cleanStatus = data.text === 'AceTalk kullanıyor ✨' ? '' : data.text; upsertContact(conn.peer, null, null, cleanStatus); }
             else if (data.type === 'e2e_key') { /* ignored: old plaintext key exchange */ }
             else if (data.type === 'msg') {
                 (async () => {
+                    { const old = (loadContacts()[conn.peer] || {}).messages || []; if (old.some(m => m.type === 'remote' && m.msgId === data.msgId)) { try { conn.send({ type: activePeerId === conn.peer && document.visibilityState === 'visible' ? 'seen' : 'delivered', msgId: data.msgId }); } catch (e) {} return; } }   // a message sent again: already here
                     if(soundEnabled) playAudio('snd-msg');
                     let parsedRaw = data.body; let parsed = data.body; const lockSvg = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
                     if (data.isEncrypted && e2eKeys[conn.peer]) { try { parsedRaw = await decryptMsg(data.body, e2eKeys[conn.peer]); parsed = data.kind === 'html' ? sanitizeHtml(parsedRaw) : parseMarkdown(parsedRaw); if (data.kind === 'html') parsedRaw = parsed; } catch(e) { parsed = `${lockSvg} [Error]`; parsedRaw = data.body; } } 
@@ -3451,9 +3586,24 @@
             else if (data.type === 'call_rejected') { onRemoteReject(conn.peer, data.reason); }
         });
 
-        conn.on('close', () => handlePeerDisconnect(conn.peer));
+        // an old link that already gave way to a newer one closing late must not cut the newer one
+        conn.on('close', () => { if (connections.includes(conn) || !connections.some(c => c.peer === conn.peer)) handlePeerDisconnect(conn.peer); });
     }
 
+    // Dahlia: messages written while the other person was away are sent again when they are back.
+    // Shared news, photos, files and voice notes keep their "html" mark, so they arrive as a card and not as code.
+    const resentAt = {};
+    function resendPending(conn) {
+        const c = loadContacts()[conn.peer]; if (!c || !Array.isArray(c.messages)) return;
+        c.messages.filter(m => m.type === 'local' && m.status === 'sent' && !m.isDeleted && !m.slim).forEach(async m => {
+            const key = conn.peer + '|' + m.msgId; if (resentAt[key] && Date.now() - resentAt[key] < 20000) return; resentAt[key] = Date.now();
+            const raw = m.rawText || m.body; const kind = (m.kind === 'html' || (m.rawText === m.body && /^\s*</.test(raw || ''))) ? 'html' : 'text';
+            try { const k = e2eKeys[conn.peer];
+                if (k) conn.send({ type: 'msg', kind, name: myProfile.name, body: await encryptMsg(raw, k), time: m.time, msgId: m.msgId, isEncrypted: true });
+                else conn.send({ type: 'msg', kind, name: myProfile.name, body: raw, time: m.time, msgId: m.msgId });
+            } catch (e) {}
+        });
+    }
     function handlePeerDisconnect(peerId) {
         connections = connections.filter(c => c.peer !== peerId); renderGrid(); callOnPeerGone(peerId);
         if (activePeerId === peerId) {
@@ -3675,7 +3825,7 @@
     async function sendSpecialMessage(content) {
         if (!activePeerId) return;
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const msgId = Date.now().toString();
-        upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', rawText: content, body: content, time: time, msgId: msgId, status: 'sent' }); addMessage(content, 'local', time, true, 'sent', msgId);
+        upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', kind: 'html', rawText: content, body: content, time: time, msgId: msgId, status: 'sent' }); addMessage(content, 'local', time, true, 'sent', msgId);
         if (activePeerId === 'ace_test') {
             setTimeout(() => { if (!loadContacts()['ace_test']) return; if(soundEnabled) playAudio('snd-msg'); const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const replyMsgId = Date.now().toString(); const replyText = `[Test Reply] Media/Special content received successfully!`; updateMsgStatus('ace_test', msgId, 'seen'); upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' }); if (activePeerId === 'ace_test') addMessage(replyText, 'remote', replyTime, true, 'seen', replyMsgId); }, 1000);
             return;
