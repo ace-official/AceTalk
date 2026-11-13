@@ -1357,7 +1357,11 @@
         const rawSend = conn.send.bind(conn); const rawOn = conn.on.bind(conn);
         const appOpen = []; const appData = [];
         conn._rawSend = rawSend;
-        conn.send = packet => {
+        conn.send = (packet, chunked) => {
+            // PeerJS splits a big packet itself and sends each piece through conn.send(piece, true).
+            // Those pieces are already encrypted data: they go out untouched. (They used to be wrapped
+            // again, which turned them into "{}", so nothing over ~15 KB ever arrived: photos, files, profile pictures.)
+            if (chunked === true) return rawSend(packet, true);
             if (conn._blocked || !packet) return;
             if (window.__decoratePacket) packet = __decoratePacket(packet);
             if (!conn._aes) { conn._queue.push(packet); return; }
@@ -1436,7 +1440,7 @@
         const pub = pendingKeyChange[peerId]; if (!pub) return;
         const pins = loadPins(); pins[peerId] = pub; savePins(pins); delete pendingKeyChange[peerId]; if (window.__keyWarned) delete window.__keyWarned[peerId];
         showToast(secT('approved'), '', 'info');
-        if (peer && !peer.destroyed) setupConn(peer.connect(peerId));
+        if (peer && !peer.destroyed) setupConn(peer.connect(peerId, { reliable: true }));
     }
     async function openSecurityPanel() {
         const menu = document.getElementById('chat-options-menu'); if (menu) menu.style.display = 'none';
@@ -3088,7 +3092,7 @@
     window.addEventListener('click', resetIdleTimer);
     /* --- ACE SCREENER LOGIC END --- */
 
-    function toggleSound(cb) { soundEnabled = cb.checked; localStorage.setItem('acetalk_sound', soundEnabled); if(soundEnabled) playAudio('snd-msg'); }
+    function toggleSound(cb) { soundEnabled = cb.checked; localStorage.setItem('acetalk_sound', soundEnabled); playAudio('snd-click'); }   // a click both ways, like the other switches
 
     function updateFileName(input, textElementId) { const textEl = document.getElementById(textElementId); const d = dict[currentLang] || dict['en']; if(input.files && input.files.length > 0) { textEl.innerText = input.files[0].name; } else { textEl.innerText = d.fileSelect; } }
 
@@ -3369,7 +3373,7 @@
         if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
         updateProfileUI(); renderGrid(); if (window.renderHomeExtras) window.renderHomeExtras();
         const savedContacts = loadContacts();
-        Object.keys(savedContacts).forEach(pid => { if (pid === 'ace_test') return; if(pid !== peer.id && !connections.find(c => c.peer === pid)) setupConn(peer.connect(pid)); });
+        Object.keys(savedContacts).forEach(pid => { if (pid === 'ace_test') return; if(pid !== peer.id && !connections.find(c => c.peer === pid)) setupConn(peer.connect(pid, { reliable: true })); });
         setInterval(() => { const contacts = loadContacts(); connections.forEach(c => { if (contacts[c.peer] || c.peer === 'ace_test') { try { c.send({type: 'profile', name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}); } catch(e){} } }); }, 10000);
     }
 
@@ -3548,7 +3552,7 @@
             if (val === 'test') { upsertContact('ace_test', 'Test', null, "Test Mode Active!"); if(contactInput) contactInput.value = ''; const modal = document.getElementById('add-contact-modal'); if(modal) modal.style.display = 'none'; showToast(ux('testAdded'), "", "info"); return; }
             const pid = 'ace_' + val;
             if (loadContacts()[pid]) { showToast(ux('alreadyAdded'), "", "info"); return; }
-            pendingOutbound.add(pid); setupConn(peer.connect(pid));
+            pendingOutbound.add(pid); setupConn(peer.connect(pid, { reliable: true }));
             if(contactInput) contactInput.value = ''; const modal = document.getElementById('add-contact-modal'); if(modal) modal.style.display = 'none'; showToast(d.connecting, "", "info");
         }
     }
@@ -4248,16 +4252,22 @@
         }
         const SOUNDS = {
             'snd-msg': () => { tone([1046.5], 0, 0.35, 0.16); tone([1318.5], 0.11, 0.55, 0.14); },                                  // a soft two-note chime
-            'snd-sos': () => { for (let i = 0; i < 6; i++) tone([1400], i * 0.22, 0.16, 0.22, 'square', 'flat'); }                 // an alarm
+            'snd-sos': () => { for (let i = 0; i < 6; i++) tone([1400], i * 0.22, 0.16, 0.22, 'square', 'flat'); },                // an alarm
+            'snd-click': () => { tone([2200], 0, 0.035, 0.12, 'triangle'); tone([1300], 0.004, 0.03, 0.06, 'sine'); }             // a short tap
         };
+        // every switch in the settings clicks (when sounds are on); the sound switch itself always clicks
+        document.addEventListener('change', e => { const t = e.target; if (t && t.matches && t.matches('.toggle-switch input') && t.id !== 'sound-toggle' && soundEnabled) window.playAudio('snd-click'); });
         window.playAudio = id => { if (SOUNDS[id]) SOUNDS[id](); else { const a = document.getElementById(id); if (a) a.play().catch(() => {}); } };
 
-        // a normal telephone ring: "ring-ring … ring-ring". Calls ring even when message sounds are off.
+        // Calls ring even when message sounds are off.
+        // The caller hears the usual "calling" tone: 425 Hz, 1 s on, 4 s off (as in Turkey, Azerbaijan and most of Europe).
+        // The person called hears a normal telephone ring: "ring-ring … ring-ring".
         let ringTimer = null;
         window.ringStart = incoming => {
             window.ringStop(); if (!audio()) return;
+            if (!incoming) { const back = () => tone([425], 0, 1.0, 0.09, 'sine', 'flat'); back(); ringTimer = setInterval(back, 5000); return; }
             const once = () => {
-                const v = incoming ? 0.2 : 0.07;            // what the caller hears is quieter
+                const v = 0.2;
                 [0, 0.6].forEach(off => {
                     // 400 + 450 Hz, switched on and off 25 times a second like a bell striking
                     const c = audio(); if (!c) return; const t = c.currentTime + off, g = c.createGain(); g.connect(c.destination); g.gain.setValueAtTime(0.0001, t);
