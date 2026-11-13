@@ -2845,6 +2845,11 @@
             window[fn] = function () { const r = orig.apply(this, arguments); try { paint(); } catch (e) {} return r; };
         });
         setInterval(paint, 60000);   // the flower leaves by itself when the week is over
+        // Other code redraws these pictures (the chat header every 10 s when a profile arrives). The flower is put
+        // back in the same moment, before the screen is drawn, so it does not blink.
+        let painting = false;
+        const mo = new MutationObserver(() => { if (painting) return; painting = true; try { paint(); } catch (e) {} painting = false; mo.takeRecords(); });
+        window.addEventListener('DOMContentLoaded', () => ['current-chat-avatar', 'my-display-avatar', 'rail-av', 'contacts-row'].forEach(id => { const el = document.getElementById(id); if (el) mo.observe(el, { childList: true, subtree: id === 'contacts-row' }); }));
 
         // the explanation: a mouse resting on the flower, or a finger held on it
         let tipEl = null, hoverT = 0, pressT = 0, swallowClick = false;
@@ -3585,7 +3590,7 @@
             if (data.type === 'connection_request') { if (isKnownContact) { conn.send({type: 'request_accepted', profile: {name: myProfile.name, avatar: myProfile.avatarB64, textStatus: myProfile.statusText, statusMode: myProfile.statusMode}}); } else { pendingInbound[conn.peer] = { name: data.profile.name, conn: conn, data: data.profile }; if (document.getElementById('incoming-request-panel').style.display !== 'flex') { showIncomingRequest(conn.peer, data.profile.name); } } return; }
             if (data.type === 'request_accepted') { if (pendingOutbound.has(conn.peer)) { pendingOutbound.delete(conn.peer); upsertContact(conn.peer, data.profile.name, null, data.profile.textStatus); peerNames[conn.peer] = data.profile.name; rememberAvatar(conn.peer, data.profile.avatar); if(data.profile.statusMode) peerStatusModes[conn.peer] = data.profile.statusMode; const d = dict[currentLang] || dict['en']; showToast(d.reqAccepted, data.profile.name + " " + d.acceptedDesc, "info"); renderGrid(); } return; }
             if (data.type === 'request_rejected') { const d = dict[currentLang] || dict['en']; showToast(d.reqRejected, d.reqRejectedDesc, "error"); pendingOutbound.delete(conn.peer); return; }
-            if (data.type === 'profile') { if (isKnownContact) { resendPending(conn); peerNames[conn.peer] = data.name; rememberAvatar(conn.peer, data.avatar); if (activePeerId === conn.peer && data.name) { currentRawChatName = data.name; updateChatNameDisplay(); } if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode; let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus; upsertContact(conn.peer, data.name, null, cleanStatus); if(activePeerId === conn.peer) { const avatarEl = document.getElementById('current-chat-avatar'); if(avatarEl) { const imgHtml = peerAvatars[conn.peer] ? `<img src="${peerAvatars[conn.peer]}">` : (data.name || peerIdToName(conn.peer)).charAt(0).toUpperCase(); avatarEl.innerHTML = imgHtml + `<div class="avatar-badge">${getStatusIcon(true, data.statusMode, 16)}</div>`; } } } return; }
+            if (data.type === 'profile') { if (isKnownContact) { resendPending(conn); peerNames[conn.peer] = data.name; rememberAvatar(conn.peer, data.avatar); if (activePeerId === conn.peer && data.name) { currentRawChatName = data.name; updateChatNameDisplay(); } if(data.statusMode) peerStatusModes[conn.peer] = data.statusMode; let cleanStatus = data.textStatus === 'AceTalk kullanıyor ✨' ? '' : data.textStatus; upsertContact(conn.peer, data.name, null, cleanStatus); if(activePeerId === conn.peer) { const avatarEl = document.getElementById('current-chat-avatar'); if(avatarEl) { const imgHtml = peerAvatars[conn.peer] ? `<img src="${peerAvatars[conn.peer]}">` : (data.name || peerIdToName(conn.peer)).charAt(0).toUpperCase(); const next = imgHtml + `<div class="avatar-badge">${getStatusIcon(true, data.statusMode, 16)}</div>`; if (avatarEl.dataset.drawn !== next) { avatarEl.dataset.drawn = next; avatarEl.innerHTML = next; } } } } return; }   /* redrawn only when something changed */
             if (!isKnownContact) return;
 
             if (data.type === 'text_status') { let cleanStatus = data.text === 'AceTalk kullanıyor ✨' ? '' : data.text; upsertContact(conn.peer, null, null, cleanStatus); }
@@ -4339,7 +4344,7 @@
             paintHeader();
         }
         setInterval(check, 3000);
-        const prevOpen = window.openChat; window.openChat = function () { const r = prevOpen.apply(this, arguments); paintHeader(); return r; };
+        const prevOpen = window.openChat; window.openChat = function () { const r = prevOpen.apply(this, arguments); const av = document.getElementById('current-chat-avatar'); if (av) delete av.dataset.drawn; paintHeader(); return r; };
         (window.__packetHooks = window.__packetHooks || []).push((pid, pk) => { if (pk.type === 'profile' || pk.type === 'offline') setTimeout(check, 50); });
         // closing the tab tells contacts right away instead of letting them wait
         // name and picture show even when the connection library or server is slow or blocked
