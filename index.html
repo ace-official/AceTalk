@@ -712,8 +712,8 @@
 </head>
 <body>
 
-    <audio id="snd-msg" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
-    <audio id="snd-sos" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="snd-msg"></audio>
+    <audio id="snd-sos"></audio>
     <div id="toast-container"></div>
 
     <div id="incoming-request-panel">
@@ -1271,7 +1271,7 @@
         if (!p || typeof p !== 'object' || !PACKET_TYPES.includes(p.type)) return null;
         const out = { type: p.type };
         if ('msgId' in p) { if (typeof p.msgId !== 'string' || !MSGID_RE.test(p.msgId)) return null; out.msgId = p.msgId; }
-        if ('time' in p) out.time = cleanText(p.time, 16) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if ('time' in p) out.time = cleanText(p.time, 16) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
         if ('name' in p) out.name = cleanText(p.name, 40);
         switch (p.type) {
             case 'connection_request': case 'request_accepted': out.profile = cleanProfile(p.profile); break;
@@ -1406,6 +1406,8 @@
                     const q = conn._queue; conn._queue = []; q.forEach(p => conn.send(p));
                     return;
                 }
+                // a closing tab has no time to encrypt: it just says "bye" on this link, which can only mark this link as gone
+                if (raw.type === 'bye' && conn._aes) { if (connections.includes(conn)) handlePeerDisconnect(conn.peer); return; }
                 if (raw.type !== 'sec' || !conn._aes || typeof raw.iv !== 'string' || typeof raw.data !== 'string') return;
                 let packet;
                 try {
@@ -1526,7 +1528,7 @@
         const loadTodos = () => { todos = store.get(userKey('todos'), []); if (!Array.isArray(todos)) todos = []; };
         const saveTodos = () => store.set(userKey('todos'), todos);
         const fmtWhen = ts => { const d = new Date(ts); const today = new Date(); const sameDay = d.toDateString() === today.toDateString();
-            return (sameDay ? '' : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ') + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+            return (sameDay ? '' : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ') + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); };
 
         function renderTodos() {
             const list = document.getElementById('todo-list'); if (!list) return;
@@ -2944,7 +2946,7 @@
 
     function startMobileClockAndLocation() {
         const timeEl = document.getElementById('time-text');
-        const updateTime = () => { if(timeEl) timeEl.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+        const updateTime = () => { if(timeEl) timeEl.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); };
         setInterval(updateTime, 1000);
         updateTime();
         const locEl = document.getElementById('loc-text');
@@ -3701,7 +3703,7 @@
 
     function addSystemMessage(text, targetPeerId) {
         const pId = targetPeerId || activePeerId; if (!pId) return;
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const msgId = Date.now().toString();
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const msgId = Date.now().toString();
         upsertContact(pId, peerNames[pId] || null, { type: 'system', rawText: text, body: text, time: time, msgId: msgId, status: 'seen' });
         if (activePeerId === pId) { addMessage(text, 'system', time, true, 'seen', msgId); }
     }
@@ -3709,7 +3711,7 @@
     async function sendMessage() {
         const input = document.getElementById('message-input'); if(!input) return;
         const rawBody = input.value.trim(); if(!rawBody || !activePeerId) return;
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const msgId = Date.now().toString(); const parsed = parseMarkdown(rawBody);
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const msgId = Date.now().toString(); const parsed = parseMarkdown(rawBody);
 
         upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', rawText: rawBody, body: parsed, time: time, msgId: msgId, status: 'sent' });
         addMessage(parsed, 'local', time, true, 'sent', msgId);
@@ -3718,7 +3720,7 @@
         if (activePeerId === 'ace_test') {
             setTimeout(() => {
                 if(soundEnabled) playAudio('snd-msg');
-                const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const replyMsgId = Date.now().toString(); const replyText = `[Test Reply] Received "${rawBody}"!`;
+                const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const replyMsgId = Date.now().toString(); const replyText = `[Test Reply] Received "${rawBody}"!`;
                 if (!loadContacts()['ace_test']) return;
                 updateMsgStatus('ace_test', msgId, 'seen');
                 upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' });
@@ -3868,10 +3870,10 @@
 
     async function sendSpecialMessage(content) {
         if (!activePeerId) return;
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const msgId = Date.now().toString();
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const msgId = Date.now().toString();
         upsertContact(activePeerId, peerNames[activePeerId] || null, { type: 'local', kind: 'html', rawText: content, body: content, time: time, msgId: msgId, status: 'sent' }); addMessage(content, 'local', time, true, 'sent', msgId);
         if (activePeerId === 'ace_test') {
-            setTimeout(() => { if (!loadContacts()['ace_test']) return; if(soundEnabled) playAudio('snd-msg'); const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const replyMsgId = Date.now().toString(); const replyText = `[Test Reply] Media/Special content received successfully!`; updateMsgStatus('ace_test', msgId, 'seen'); upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' }); if (activePeerId === 'ace_test') addMessage(replyText, 'remote', replyTime, true, 'seen', replyMsgId); }, 1000);
+            setTimeout(() => { if (!loadContacts()['ace_test']) return; if(soundEnabled) playAudio('snd-msg'); const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const replyMsgId = Date.now().toString(); const replyText = `[Test Reply] Media/Special content received successfully!`; updateMsgStatus('ace_test', msgId, 'seen'); upsertContact('ace_test', 'Test', { type: 'remote', rawText: replyText, body: replyText, time: replyTime, msgId: replyMsgId, status: 'seen' }); if (activePeerId === 'ace_test') addMessage(replyText, 'remote', replyTime, true, 'seen', replyMsgId); }, 1000);
             return;
         }
         const targets = connections.filter(c => c.peer === activePeerId);
@@ -4156,7 +4158,7 @@
         const title = CL(e.kind === 'video' ? 'video' : 'voice');
         const state = ok ? CL(e.dir === 'out' ? 'outAnswered' : 'inAnswered') : CL(e.status);
         const arrow = e.dir === 'out' ? '↗' : '↙';
-        const when = new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const when = new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
         return `<div class="call-card ${ok ? 'ok' : bad ? 'bad' : ''}" data-kind="${e.kind === 'video' ? 'video' : 'audio'}">` +
             `<div class="cc-icon">${CALL_ICONS[e.kind === 'video' ? 'video' : 'audio']}</div>` +
             `<div class="cc-title">${esc(title)}</div>` +
@@ -4166,7 +4168,7 @@
     }
     function logCall(pid, kind, dir, status, dur, at) {
         const e = { kind, dir, status, dur: Math.round(dur || 0), at: at || Date.now() };
-        const time = new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const msgId = 'call' + Date.now();
+        const time = new Date(e.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const msgId = 'call' + Date.now();
         const body = callCardHtml(e);
         upsertContact(pid, peerNames[pid] || null, { type: 'system', rawText: '', body, time, msgId, status: 'seen', call: e });
         if (activePeerId === pid) { addMessage(body, 'system', time, true, 'seen', msgId); const box = $c('chat-box'); if (box) box.scrollTop = box.scrollHeight; }
@@ -4226,9 +4228,84 @@
 
     function addSOSMessage(fromName, hops) {
         const box = document.getElementById('chat-box'); if(!box) return;
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const hopText = hops > 0 ? `<div style="font-size:10px; color:#ff9999;">↳ reached via ${hops} hops</div>` : '';
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const hopText = hops > 0 ? `<div style="font-size:10px; color:#ff9999;">↳ reached via ${hops} hops</div>` : '';
         const div = document.createElement('div'); div.className = 'msg msg-sos'; div.innerHTML = `<div class="sos-label">SOS EMERGENCY</div><b style="font-size:15px;">${esc(fromName)}</b>${hopText}<div class="msg-meta" style="color:#ffb3b3;">${time}</div>`; box.appendChild(div); box.scrollTop = box.scrollHeight;
     }
+    /* ================= AceTalk 3.4 Dahlia: sounds and online status ================= */
+    (() => {
+        /* --- sounds: made in the browser, so no ad blocker or slow site can stop them --- */
+        let ctx = null;
+        const audio = () => { try { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); } catch (e) { ctx = null; } return ctx; };
+        // browsers only allow sound after the person has touched the page once
+        ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => audio(), { passive: true }));
+        function tone(freqs, start, dur, vol, type = 'sine', shape = 'bell') {
+            const c = audio(); if (!c) return; const t = c.currentTime + start;
+            const g = c.createGain(); g.connect(c.destination);
+            g.gain.setValueAtTime(0.0001, t);
+            if (shape === 'bell') { g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
+            else { g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.setValueAtTime(vol, t + dur - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
+            freqs.forEach(f => { const o = c.createOscillator(); o.type = type; o.frequency.value = f; o.connect(g); o.start(t); o.stop(t + dur + 0.02); });
+        }
+        const SOUNDS = {
+            'snd-msg': () => { tone([1046.5], 0, 0.35, 0.16); tone([1318.5], 0.11, 0.55, 0.14); },                                  // a soft two-note chime
+            'snd-sos': () => { for (let i = 0; i < 6; i++) tone([1400], i * 0.22, 0.16, 0.22, 'square', 'flat'); }                 // an alarm
+        };
+        window.playAudio = id => { if (SOUNDS[id]) SOUNDS[id](); else { const a = document.getElementById(id); if (a) a.play().catch(() => {}); } };
+
+        // a normal telephone ring: "ring-ring … ring-ring". Calls ring even when message sounds are off.
+        let ringTimer = null;
+        window.ringStart = incoming => {
+            window.ringStop(); if (!audio()) return;
+            const once = () => {
+                const v = incoming ? 0.2 : 0.07;            // what the caller hears is quieter
+                [0, 0.6].forEach(off => {
+                    // 400 + 450 Hz, switched on and off 25 times a second like a bell striking
+                    const c = audio(); if (!c) return; const t = c.currentTime + off, g = c.createGain(); g.connect(c.destination); g.gain.setValueAtTime(0.0001, t);
+                    for (let k = 0; k < 10; k++) { g.gain.setValueAtTime(v, t + k * 0.04); g.gain.setValueAtTime(v * 0.35, t + k * 0.04 + 0.02); }
+                    g.gain.setValueAtTime(0.0001, t + 0.4);
+                    [400, 450].forEach(f => { const o = c.createOscillator(); o.frequency.value = f; o.connect(g); o.start(t); o.stop(t + 0.42); });
+                });
+                if (incoming && navigator.vibrate) { try { navigator.vibrate([400, 200, 400]); } catch (e) {} }
+            };
+            once(); ringTimer = setInterval(once, 3000);
+        };
+        window.ringStop = () => { clearInterval(ringTimer); ringTimer = null; if (navigator.vibrate) { try { navigator.vibrate(0); } catch (e) {} } };
+
+        // message sounds: on unless the person turned them off
+        try { if (localStorage.getItem('acetalk_sound') === null) { localStorage.setItem('acetalk_sound', 'true'); soundEnabled = true; } } catch (e) {}
+        window.addEventListener('DOMContentLoaded', () => { const t = document.getElementById('sound-toggle'); if (t) t.checked = soundEnabled; });
+
+        /* --- online / offline: a contact is online while their link is alive and they keep talking --- */
+        // Every AceTalk sends its profile every 10 s; a hidden tab may slow that to once a minute.
+        const STALE_MS = 80000, lastSeen = {};
+        (window.__packetHooks = window.__packetHooks || []).push(pid => { lastSeen[pid] = Date.now(); });
+        const isOn = pid => pid === 'ace_test' || connections.some(c => c.peer === pid);
+        function paintHeader() {
+            const pid = activePeerId; if (!pid) return; const d = dict[currentLang] || dict['en'];
+            const on = isOn(pid), mode = pid === 'ace_test' ? 'online' : (peerStatusModes[pid] || 'online');
+            const st = document.getElementById('current-chat-id'); if (st) { const txt = `@${peerIdToName(pid)} • ${on ? d.online : d.offline}`; if (st.innerText !== txt) st.innerText = txt; }
+            const badge = document.querySelector('#current-chat-avatar .avatar-badge'); if (badge) { const html = getStatusIcon(on, mode, 16); if (badge.innerHTML !== html) badge.innerHTML = html; }
+        }
+        window.paintPresence = paintHeader;
+        let lastSig = '';
+        function check() {
+            const now = Date.now(), contacts = loadContacts();
+            connections.slice().forEach(c => {
+                if (!lastSeen[c.peer]) lastSeen[c.peer] = now;    // a link that just opened
+                // a link that went silent: the other side is gone even if the browser has not noticed yet
+                if (contacts[c.peer] && c.peer !== 'ace_test' && now - lastSeen[c.peer] > STALE_MS) { delete lastSeen[c.peer]; try { c.close(); } catch (e) {} if (connections.includes(c)) handlePeerDisconnect(c.peer); }
+            });
+            const sig = connections.map(c => c.peer + ':' + (peerStatusModes[c.peer] || '')).sort().join(',');
+            if (sig !== lastSig) { lastSig = sig; renderGrid(); }
+            paintHeader();
+        }
+        setInterval(check, 3000);
+        const prevOpen = window.openChat; window.openChat = function () { const r = prevOpen.apply(this, arguments); paintHeader(); return r; };
+        (window.__packetHooks = window.__packetHooks || []).push((pid, pk) => { if (pk.type === 'profile' || pk.type === 'offline') setTimeout(check, 50); });
+        // closing the tab tells contacts right away instead of letting them wait
+        window.addEventListener('pagehide', () => { connections.forEach(c => { try { if (c._rawSend) c._rawSend({ type: 'bye' }); } catch (e) {} }); });
+    })();
+    /* ================= end sounds and online status ================= */
 </script>
 </body>
 </html>
